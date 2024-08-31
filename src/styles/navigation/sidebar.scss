@@ -1,0 +1,49 @@
+.sidebar-frame{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+    border-right: 1px solid lightgray;
+}
+
+.frames{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-around;
+    padding-block: 20px;
+    .content-frame{
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .settings-frame{
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 20px;
+        height: 100%;
+    }
+}
+
+.menu-btn{
+    border: none;
+    background: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 5px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.active{
+    background: lightgray;
+    opacity: 1;
+}
+
+.btn-img{
+    width: 35px;
+    height: 35px;
+}

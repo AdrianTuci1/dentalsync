@@ -1,0 +1,83 @@
+
+.stats-window {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    overflow-y: hidden;
+  }
+  
+  .clinic-stats {
+    background-color: white;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    font-family: 'SUSE', sans-serif;
+    font-size: 24px;
+    font-weight: bold;
+    height: 130px;
+    border-radius: 8px;
+  }
+  
+  .visits-patients, .appointments-review {
+    display: flex;
+    gap: 10px;
+  }
+
+  .visits-patients{
+    height: 100%;
+  }
+
+  .appointments-review{
+    height: 320px;
+  }
+
+  
+  .clinic-visits, .clinic-patients, .clinic-appointments, .clinic-reviews {
+    flex: 1;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+    font-family: 'SUSE', sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+  }
+  
+  .clinic-visits {
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .clinic-patients {
+    color: black;
+    max-width: 350px;
+  }
+  
+  .clinic-appointments {
+    color: black;
+  }
+  
+  .clinic-reviews {
+    color: black;
+    max-width: 350px;
+  }
+  
+  /* Responsive design for smaller screens */
+  @media (max-width: 768px) {
+    .visits-patients, .appointments-review {
+      flex-direction: column;
+    }
+  }
+  
+
+
+  .total-patients{
+    background: gray;
+    width: 200px;
+    height: 60px;
+  }

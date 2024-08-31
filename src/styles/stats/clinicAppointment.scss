@@ -1,0 +1,92 @@
+/* ClinicAppointments.scss */
+.clinic-appointments {
+  padding: 16px;
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .table-container {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse; /* Ensures no separation between cells */
+    color: black;
+    font-family:'Inter', sans-serif;
+  }
+
+  thead {
+    th {
+      padding: 8px 16px;
+      text-align: left;
+      font-weight: 100;
+      border-bottom: 1px solid #000; /* Underline between thead and tbody */
+    }
+  }
+
+  tbody {
+    tr {
+      td {
+        padding: 8px 16px;
+        text-align: left; 
+        font-weight: 100;
+        font-size: 16px;
+      }
+
+      &:last-child td {
+        border-bottom: none; /* Remove border for the last row */
+      }
+
+      .image-wrapper {
+        display: flex;
+        align-items: center;
+        min-width: 40px;
+        height: 40px;
+        object-fit: cover;
+        overflow: hidden;
+        border-radius: 5px;
+        img {
+          width: 40px;
+        }
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 2px;
+        button {
+          background: none;
+          border: none;
+          padding: 0;
+          color: #007bff;
+          cursor: pointer;
+          margin-right: 3px;
+
+          &.approve {
+            color: #28a745;
+          }
+
+          &.cancel {
+            color: #dc3545;
+          }
+        }
+      }
+    }
+  }
+}
+
+
+.approve{
+  filter: opacity(0.7) drop-shadow(0 0 0 green);
+}
+
+.view{
+  filter: opacity(0.5) drop-shadow(0 0 0 blue);
+}
+
+.deny{
+  filter: opacity(0.3) drop-shadow(0 0 0 red);
+}

@@ -1,0 +1,24 @@
+.user-card{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    .user-image{
+        display: flex;
+        align-items: center;
+        width: 40px;
+        height: 40px;
+        background: gray;
+        border-radius: 5px;
+        object-fit: cover;
+        overflow: hidden;
+        img{
+            width: 40px;
+        }
+    }
+    .user-name{
+        p{
+            color: darkgray;
+            font-weight: 100;
+        }
+    }
+}

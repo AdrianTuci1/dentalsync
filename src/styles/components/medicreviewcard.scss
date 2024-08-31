@@ -1,0 +1,41 @@
+.medic-review-card{
+    width: 280px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-align: left;
+    padding: 5px;
+    border-radius: 5px;
+    .medic-review-image{
+        width: 50px;
+        height: 50px;
+        border-radius: 5px;
+        background: blue;
+        display: flex;
+        object-fit: cover;
+        align-items: center;
+        overflow: hidden;
+        img{
+            width: 50px;
+        }
+    }
+
+    .medic-review-info{
+        h3{
+            font-size: 18px;
+        }
+        p{
+            font-size: 14px;
+            color: darkgray;
+        }
+    }
+
+    .medic-review-number{
+        padding-inline-start: 40px;
+        span{
+            font-size: 14px;
+            color: darkgray;
+        }
+    }
+}
