@@ -1,30 +1,24 @@
-import { useEffect, useState } from 'react';
-import '../styles/components/calendar.scss'
-
-
-interface Event {
-  title: string;
-  day: number; // 0-6 for Sunday-Saturday
-  startHour: number;
-  endHour: number;
-}
+import React, { useEffect, useState } from 'react';
+import '../styles/components/calendar.scss';
+import { Appointment } from '../types/appointmentEvent';
+import SlotCardWithPopover from './SlotCardWithHoverCard';
 
 interface CalendarProps {
   workingHoursStart: number;
   workingHoursEnd: number;
-  events: Event[];
+  appointments: Appointment[];
 }
 
 const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
-const Calendar: React.FC<CalendarProps> = ({ workingHoursStart, workingHoursEnd, events }) => {
+const Calendar: React.FC<CalendarProps> = ({ workingHoursStart, workingHoursEnd, appointments }) => {
   const [currentWeek, setCurrentWeek] = useState<Date[]>(getCurrentWeekDates());
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 300000); // Update every minute to keep the current time accurate
+    }, 300000); // Update every 5 minutes to keep the current time accurate
     return () => clearInterval(timer);
   }, []);
 
@@ -56,11 +50,13 @@ const Calendar: React.FC<CalendarProps> = ({ workingHoursStart, workingHoursEnd,
                 </div>
                 {daysOfWeek.map((_, dayIndex) => (
                   <div key={dayIndex} className="day-slot">
-                    {events
-                      .filter(event => event.day === dayIndex && event.startHour === hour)
-                      .map((event, eventIndex) => (
-                        <div key={eventIndex} className="event">
-                          {event.title}
+                    {appointments
+                      .filter(appointment => appointment.day === dayIndex && appointment.startHour === hour)
+                      .map((appointment, appointmentIndex) => (
+                        <div key={appointmentIndex} className="event">
+                          <SlotCardWithPopover
+                            appointment={appointment}
+                          />
                         </div>
                       ))}
                     {dayIndex === currentDayIndex && hour === currentHour && (
@@ -84,7 +80,12 @@ const Calendar: React.FC<CalendarProps> = ({ workingHoursStart, workingHoursEnd,
 function getCurrentWeekDates(): Date[] {
   const today = new Date();
   const startOfWeek = today.getDate() - today.getDay();
-  return Array.from({ length: 7 }, (_, i) => new Date(today.setDate(startOfWeek + i)));
+  const dates = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(today); // Clone the date object to avoid mutation
+    date.setDate(startOfWeek + i);
+    return date;
+  });
+  return dates;
 }
 
 function formatHour(hour: number): string {
