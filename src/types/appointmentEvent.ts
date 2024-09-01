@@ -13,7 +13,8 @@ export interface Appointment {
   bookingDate: string;
   appointmentType: string;
   planningSchedule: { time: string; description: string; doctor: string; assistant: string; room: string }[];
-  day: number; // 0 for Sunday, 1 for Monday, etc.
+  date: Date; 
   startHour: number; // Use 24-hour format, e.g., 13 for 1 PM
   endHour:number;
+  status: 'waiting' | 'in-progress' | 'done';
 }

@@ -7,12 +7,12 @@ interface CalendarProps {
   workingHoursStart: number;
   workingHoursEnd: number;
   appointments: Appointment[];
+  currentWeek: Date[];
 }
 
 const daysOfWeek = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
-const Calendar: React.FC<CalendarProps> = ({ workingHoursStart, workingHoursEnd, appointments }) => {
-  const [currentWeek, setCurrentWeek] = useState<Date[]>(getCurrentWeekDates());
+const Calendar: React.FC<CalendarProps> = ({ workingHoursStart, workingHoursEnd, appointments, currentWeek }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -35,10 +35,10 @@ const Calendar: React.FC<CalendarProps> = ({ workingHoursStart, workingHoursEnd,
             {daysOfWeek.map((day, index) => (
               <div
                 key={index}
-                className={`day-header ${index === currentDayIndex ? 'current-day' : ''}`}
+                className={`day-header ${currentWeek[index].getDay() === currentDayIndex ? 'current-day' : ''}`}
               >
                 <div>{day}</div>
-                <div>{currentWeek[index].getDate()}</div>
+                <div>{currentWeek[index].getDate()}</div> {/* Displaying the date for each day in the current week */}
               </div>
             ))}
           </div>
@@ -51,7 +51,10 @@ const Calendar: React.FC<CalendarProps> = ({ workingHoursStart, workingHoursEnd,
                 {daysOfWeek.map((_, dayIndex) => (
                   <div key={dayIndex} className="day-slot">
                     {appointments
-                      .filter(appointment => appointment.day === dayIndex && appointment.startHour === hour)
+                      .filter(appointment => 
+                        appointment.date.toDateString() === currentWeek[dayIndex].toDateString() &&
+                        appointment.startHour === hour
+                      )
                       .map((appointment, appointmentIndex) => (
                         <div key={appointmentIndex} className="event">
                           <SlotCardWithPopover
@@ -59,7 +62,7 @@ const Calendar: React.FC<CalendarProps> = ({ workingHoursStart, workingHoursEnd,
                           />
                         </div>
                       ))}
-                    {dayIndex === currentDayIndex && hour === currentHour && (
+                    {currentWeek[dayIndex].getDay() === currentDayIndex && hour === currentHour && (
                       <div
                         className="current-time-line"
                         style={{ top: `${(currentMinutes / 60) * 100}%` }}
@@ -75,18 +78,6 @@ const Calendar: React.FC<CalendarProps> = ({ workingHoursStart, workingHoursEnd,
     </div>
   );
 };
-
-// Utility functions to get the current week's dates and format them
-function getCurrentWeekDates(): Date[] {
-  const today = new Date();
-  const startOfWeek = today.getDate() - today.getDay();
-  const dates = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date(today); // Clone the date object to avoid mutation
-    date.setDate(startOfWeek + i);
-    return date;
-  });
-  return dates;
-}
 
 function formatHour(hour: number): string {
   const period = hour < 12 ? 'AM' : 'PM';
