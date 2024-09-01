@@ -1,13 +1,13 @@
 import React, { useState, CSSProperties } from 'react';
 
 interface ButtonSelectorProps {
-  onSelect: (view: 'schedule' | 'kanban') => void;
+  onSelect: (view: 'Week' | 'Day') => void; // Updated to 'Week' | 'Day'
 }
 
 const ButtonSelector: React.FC<ButtonSelectorProps> = ({ onSelect }) => {
-  const [selectedButton, setSelectedButton] = useState<'schedule' | 'kanban'>('schedule');
+  const [selectedButton, setSelectedButton] = useState<'Week' | 'Day'>('Week'); // Updated state
 
-  const selectButton = (view: 'schedule' | 'kanban') => {
+  const selectButton = (view: 'Week' | 'Day') => { // Updated to 'Week' | 'Day'
     setSelectedButton(view);
     onSelect(view); // Pass the selected view to the parent
   };
@@ -33,20 +33,20 @@ const ButtonSelector: React.FC<ButtonSelectorProps> = ({ onSelect }) => {
   };
 
   return (
-    <div>
+    <div style={{ display: 'flex' }}>
       <button
-        id="schedule"
-        style={selectedButton === 'schedule' ? selectedButtonStyle : buttonStyle}
-        onClick={() => selectButton('schedule')}
+        id="week"
+        style={selectedButton === 'Week' ? selectedButtonStyle : buttonStyle} // Updated to 'Week'
+        onClick={() => selectButton('Week')}
       >
-        Schedule
+        Week
       </button>
       <button
-        id="kanban"
-        style={selectedButton === 'kanban' ? selectedButtonStyle : buttonStyle}
-        onClick={() => selectButton('kanban')}
+        id="day"
+        style={selectedButton === 'Day' ? selectedButtonStyle : buttonStyle} // Updated to 'Day'
+        onClick={() => selectButton('Day')}
       >
-        Kanban
+        Day
       </button>
     </div>
   );

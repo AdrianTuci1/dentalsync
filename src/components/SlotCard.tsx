@@ -13,7 +13,7 @@ const SlotCard: React.FC<SlotCardProps> = ({ appointment }) => {
       className="slot-card"
       style={{
         maxWidth: '140px',
-        height: '120px',
+        height: '110px',
         border: '1px solid #ccc',
         borderRadius: '8px',
         padding: '5px',

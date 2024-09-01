@@ -1,12 +1,19 @@
-import { useState } from 'react'
-import '../../styles/components/custommenu.scss'
+import React, { useState, useEffect } from 'react';
+import '../../styles/components/custommenu.scss';
 import { State } from '../../types/menuType';
 
-const CustomMenu01: React.FC = () => {
+interface CustomMenu01Props {
+    onDoctorsChange: (selectedDoctors: string[]) => void;
+}
+
+const CustomMenu01: React.FC<CustomMenu01Props> = ({ onDoctorsChange }) => {
     const [state, setState] = useState<State>({
         availableDoctors: [
             { name: 'Liz Adam', color: '#d1efe1', checked: false },
-            { name: 'Connor Luca', color: '#a1f1f3', checked: false }
+            { name: 'Connor Luca', color: '#a1f1f3', checked: false },
+            { name: 'Ibram Har', color: '#ac3f2f', checked: false },
+            { name: 'Dominic Zima', color: '#ae7f2f', checked: false },
+            { name: 'Chris Luke', color: '#ea2f23', checked: false }
         ],
         treatments: [
             { name: 'Dental Cleaning', checked: false },
@@ -22,7 +29,13 @@ const CustomMenu01: React.FC = () => {
         ]
     });
 
-    // Function to handle checkbox change for doctors
+    useEffect(() => {
+        const selectedDoctors = state.availableDoctors
+            .filter(doctor => doctor.checked)
+            .map(doctor => doctor.name);
+        onDoctorsChange(selectedDoctors);
+    }, [state.availableDoctors, onDoctorsChange]);
+
     const handleDoctorChange = (index: number) => {
         const updatedDoctors = [...state.availableDoctors];
         updatedDoctors[index].checked = !updatedDoctors[index].checked;
@@ -32,7 +45,6 @@ const CustomMenu01: React.FC = () => {
         }));
     };
 
-    // Function to handle checkbox change for treatments
     const handleTreatmentChange = (index: number) => {
         const updatedTreatments = [...state.treatments];
         updatedTreatments[index].checked = !updatedTreatments[index].checked;
