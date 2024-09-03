@@ -5,42 +5,39 @@
   height: 100%;
   border: 1px solid #ccc;
   font-family: Arial, sans-serif;
-  overflow: hidden; /* Prevent overall scrolling to keep the layout intact */
+  overflow-x: auto; /* Enable horizontal scrolling for the entire calendar */
+  overflow-y: hidden; /* Prevent vertical scrolling at the container level */
 
   .body {
     display: flex;
     flex-grow: 1;
-    overflow: hidden;
+    overflow: hidden; /* Prevent overflow at the body level */
 
     .days-content {
-      overflow-x: auto; /* Enable horizontal scrolling */
-      overflow-y: auto; /* Enable vertical scrolling */
+      overflow-x: auto; /* Enable horizontal scrolling for the content */
+      overflow-y: auto; /* Enable vertical scrolling for the content */
       flex-grow: 1;
 
       .header {
         display: flex;
+        min-width: max-content; /* Ensure the header doesn't shrink and aligns with the slots */
         background-color: #f0f0f0;
         border-bottom: 1px solid #ccc;
         position: sticky;
         top: 0;
         z-index: 10;
 
-        .time-header:nth-child(1){
-          max-width: 70px;
-        }
-
         .time-header {
-          width: 150px;
+          width: 70px;
           background-color: #f0f0f0;
         }
 
         .day-header {
-          flex: 1;
-          width: 150px; /* Fixed width for day headers */
-          height: 70px; /* Fixed height for day headers */
+          flex: 0 0 300px; /* Fixed width for day headers */
+          width: 300px;
+          height: 70px;
           padding: 10px;
           text-align: center;
-          // border-left: 1px solid #ccc;
           background-color: #f0f0f0;
           display: flex;
           flex-direction: column;
@@ -58,7 +55,7 @@
       .slots {
         display: flex;
         flex-direction: column;
-        position: relative;
+        min-width: max-content; /* Ensure the slots section doesn't shrink */
 
         .hour-row {
           display: flex;
@@ -70,11 +67,10 @@
           }
 
           .time-slot {
-            width: 70px; /* Fixed width for time slots */
-            height: 150px; /* Fixed height for time slots */
+            width: 70px;
+            height: 150px;
             padding: 10px;
             text-align: right;
-            // border-bottom: 1px solid #ccc;
             background-color: #f0f0f0;
             display: flex;
             align-items: center;
@@ -84,9 +80,9 @@
           }
 
           .day-slot {
-            flex: 1;
-            width: 150px; /* Fixed width for day slots */
-            height: 150px; /* Fixed height for day slots */
+            flex: 0 0 300px; /* Fixed width for day slots */
+            width: 300px;
+            height: 150px;
             padding: 10px;
             border-left: 1px solid #ccc;
             border-bottom: 1px solid #ccc;
@@ -100,7 +96,7 @@
             right: 0;
             height: 3px;
             border-top: 3px dotted red;
-            z-index: 7;
+            z-index: 20;
           }
         }
       }
@@ -108,7 +104,7 @@
   }
 }
 
-.event{
+.event {
   display: flex;
   align-items: center;
   justify-content: center;

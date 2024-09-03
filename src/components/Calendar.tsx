@@ -27,7 +27,7 @@ const Calendar: React.FC<CalendarProps> = ({ workingHoursStart, workingHoursEnd,
   const currentMinutes = currentTime.getMinutes();
 
   return (
-    <div className="calendar">
+    <div className="calendar" style={{width:'100%', overflowX:'scroll'}}>
       <div className="body">
         <div className="days-content">
           <div className="header">

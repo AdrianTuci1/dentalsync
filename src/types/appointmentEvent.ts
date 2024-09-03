@@ -6,6 +6,7 @@ export interface Appointment {
   email: string;
   phone: string;
   medicName: string;
+  medicColor: string;
   treatmentType: string;
   reason: string;
   diagnosis: string;
