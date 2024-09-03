@@ -6,11 +6,13 @@ import Stocks from './nested/Stocks';
 import Payments from './nested/Payments';
 import Help from './nested/Help';
 import Settings from './nested/Settings';
+import Medics from './nested/Medics';
+import Treatments from './nested/Treatments';
 
 // Lazy load content components
 const Stats = lazy(() => import('./nested/Stats'));
 const Appointments = lazy(() => import('./nested/Appointments'));
-const Requests = lazy(() => import('./nested/Requests'));
+const Patients = lazy(() => import('./nested/Requests'));
 
 function Dashboard() {
   // State to track the active tab
@@ -21,10 +23,14 @@ function Dashboard() {
     switch (activeTab) {
       case 'statistics':
         return <Stats />;
-      case 'requests':
-        return <Requests />;
+      case 'patients':
+        return <Patients/>;
       case 'appointments':
         return <Appointments />;
+      case 'medics':
+        return <Medics />;
+      case 'treatments':
+        return <Treatments />;
       case 'stocks':
         return <Stocks />;
       case 'payments':

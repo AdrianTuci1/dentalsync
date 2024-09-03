@@ -19,11 +19,13 @@ const DayNav: React.FC<DayNavProps> = ({ currentDate, onDateChange }) => {
   };
 
   const handleDayClick = (day: number) => {
+    // Creating a new date with the selected day
     const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-    onDateChange(newDate);
-    handleClose();
+    onDateChange(newDate);  // Passing the new date to the parent component
+    handleClose();  // Closing the popover after selection
   };
 
+  // Get the number of days in the current month
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
 
   return (
@@ -40,7 +42,7 @@ const DayNav: React.FC<DayNavProps> = ({ currentDate, onDateChange }) => {
           horizontal: 'left',
         }}
       >
-        <div style={{ padding: '10px' }}>
+        <div style={{ padding: '10px', display:'grid', gridTemplateColumns:'repeat(5, 1fr)' }}>
           {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => (
             <Button key={day} onClick={() => handleDayClick(day)} style={{ minWidth: '36px' }}>
               {day}

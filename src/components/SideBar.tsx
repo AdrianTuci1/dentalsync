@@ -13,7 +13,9 @@ function SideBar({ setActiveTab }: { setActiveTab: (tab: string) => void }) {
   const mainButtons: ButtonAction[] = [
     { id: 'statistics', icon: '/dashboard.png' },
     { id: 'appointments', icon: '/appointments.png' },
-    { id: 'requests', icon: '/requests.png' },
+    { id: 'patients', icon: '/requests.png' },
+    { id: 'medics', icon: '/medics.png' },
+    { id: 'treatments', icon: '/treatments.png' },
     { id: 'stocks', icon: '/stocks.png' },
     { id: 'payments', icon: '/payments.png' },
   ];

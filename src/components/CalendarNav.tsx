@@ -41,7 +41,7 @@ const CalendarNav: React.FC<CalendarNavProps> = ({ currentMonth, currentYear, on
           horizontal: 'left',
         }}
       >
-        <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div style={{ padding: '10px', display: 'grid', gridTemplateColumns:'1fr 1fr 1fr', gap: '10px' }}>
           {months.map((month, index) => (
             <Button
               key={index}

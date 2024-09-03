@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import '../../styles/components/custommenu.scss';
+import { Menu, MenuItem, Checkbox, ListItemText, FormGroup, FormControlLabel, Typography } from '@mui/material';
 import { State } from '../../types/menuType';
 
 interface CustomMenu01Props {
+    anchorEl: null | HTMLElement;
+    open: boolean;
+    onClose: () => void;
     onDoctorsChange: (selectedDoctors: string[]) => void;
 }
 
-const CustomMenu01: React.FC<CustomMenu01Props> = ({ onDoctorsChange }) => {
+const CustomMenu01: React.FC<CustomMenu01Props> = ({ anchorEl, open, onClose, onDoctorsChange }) => {
     const [state, setState] = useState<State>({
         availableDoctors: [
             { name: 'Liz Adam', color: '#d1efe1', checked: false },
@@ -55,61 +58,66 @@ const CustomMenu01: React.FC<CustomMenu01Props> = ({ onDoctorsChange }) => {
     };
 
     return (
-        <div className='custom-menu'>
-            {/* Available Doctors Section */}
-            <div className="doctors-av">
-                <h3>AVAILABLE DOCTORS</h3>
-                <div className="doctors-list">
-                    {state.availableDoctors.map((doctor, index) => (
-                        <div key={index} className="doctor-item" style={{display:'flex', gap:'5px', alignItems:'center'}}>
-                            <input
-                                type="checkbox"
-                                id={`doctor-${index}`}
+        <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={onClose}
+            PaperProps={{
+                style: {
+                    maxHeight: '400px',
+                    width: '250px',
+                    padding: '10px',
+                },
+            }}
+        >
+            <Typography variant="h6" component="div" style={{ padding: '5px 15px' }}>
+                Available Doctors
+            </Typography>
+            {state.availableDoctors.map((doctor, index) => (
+                <MenuItem key={index}>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
                                 checked={doctor.checked}
                                 onChange={() => handleDoctorChange(index)}
-                                style={{width:'15px', height:'15px'}}
                             />
-                            <label htmlFor={`doctor-${index}`} style={{display:'flex', gap:'5px', alignItems:'center'}}>
-                                <div className="identifier" style={{ backgroundColor: doctor.color, width:'15px', height:'15px', borderRadius:'5px' }}></div>
-                                <p>{doctor.name}</p>
-                            </label>
-                        </div>
-                    ))}
-                </div>
-            </div>
+                        }
+                        label={
+                            <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                                <span style={{ backgroundColor: doctor.color, width: '15px', height: '15px', borderRadius: '5px' }}></span>
+                                {doctor.name}
+                            </div>
+                        }
+                    />
+                </MenuItem>
+            ))}
 
-            {/* Type Treatment Section */}
-            <div className="type-treatment">
-                <h3>TYPE TREATMENT</h3>
-                <div className="treatment-type">
-                    {state.treatments.map((treatment, index) => (
-                        <div key={index} className="treatment-item">
-                            <input
-                                type="checkbox"
-                                id={`treatment-${index}`}
+            <Typography variant="h6" component="div" style={{ padding: '5px 15px', marginTop: '10px' }}>
+                Type Treatment
+            </Typography>
+            {state.treatments.map((treatment, index) => (
+                <MenuItem key={index}>
+                    <FormControlLabel
+                        control={
+                            <Checkbox
                                 checked={treatment.checked}
                                 onChange={() => handleTreatmentChange(index)}
                             />
-                            <label htmlFor={`treatment-${index}`}>
-                                {treatment.name}
-                            </label>
-                        </div>
-                    ))}
-                </div>
-            </div>
+                        }
+                        label={treatment.name}
+                    />
+                </MenuItem>
+            ))}
 
-            {/* Patient Queue Section */}
-            <div className="patient-queue">
-                <h3>PATIENT QUEUE</h3>
-                <div className="queue-list">
-                    {state.patientQueue.map((patient) => (
-                        <div key={patient.id} className="patient-item">
-                            {patient.name}
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
+            <Typography variant="h6" component="div" style={{ padding: '5px 15px', marginTop: '10px' }}>
+                Patient Queue
+            </Typography>
+            {state.patientQueue.map((patient) => (
+                <MenuItem key={patient.id}>
+                    <ListItemText primary={patient.name} />
+                </MenuItem>
+            ))}
+        </Menu>
     );
 };
 

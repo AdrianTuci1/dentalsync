@@ -15,15 +15,16 @@ const SpanningSlotCard: React.FC<SpanningSlotCardProps> = ({ appointment, slotHe
       style={{
         backgroundColor: '#1976d2',
         color: '#fff',
-        padding: '10px',
+        margin: '10px',
         borderRadius: '4px',
         textAlign: 'center',
-        width: '100%',
+        width: '90%',
         height: `${height}px`, // Span the appropriate number of slots
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         boxSizing: 'border-box',
+        zIndex:'20'
       }}
     >
       <strong>{appointment.patientName}</strong><br />
