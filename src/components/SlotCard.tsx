@@ -8,17 +8,13 @@ interface SlotCardProps {
 const SlotCard: React.FC<SlotCardProps> = ({ appointment }) => {
   const { patientName, patientImage, treatmentType, startHour, endHour, medicColor } = appointment;
 
-  // Calculate the duration and the height based on it
-  const duration = endHour - startHour;
-  const height = duration * 150; // Assuming each hour slot is 150px tall
-
   return (
     <div
       className="slot-card"
       style={{
         backgroundColor: medicColor, // Set the background color based on the medic's color
-        width: '280px',
-        height: `${height}px`, // Dynamically set the height based on the duration
+        width: '280px', // Fixed width for the card
+        height:'110px',
         border: '1px solid #ccc',
         borderRadius: '8px',
         padding: '10px',
@@ -26,8 +22,8 @@ const SlotCard: React.FC<SlotCardProps> = ({ appointment }) => {
         flexDirection: 'column',
         justifyContent: 'space-between',
         color: '#fff', // Assuming white text looks good on colored backgrounds
-        position:'relative',
-        zIndex:'9'
+        position: 'relative',
+        zIndex: '9',
       }}
     >
       <div className="first-row" style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
