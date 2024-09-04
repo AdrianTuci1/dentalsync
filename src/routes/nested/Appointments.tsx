@@ -81,7 +81,7 @@ function Appointments() {
     {
       id: '1',
       patientName: 'John Doe',
-      patientImage: '/avatar1.avif', // Update this to your actual image path
+      patientImage: '/avatar2.avif', // Update this to your actual image path
       email: 'john@example.com',
       phone: '+123456789',
       medicName: 'Liz Adam',
@@ -104,7 +104,7 @@ function Appointments() {
     {
       id: '2',
       patientName: 'Jane Smith',
-      patientImage: '/avatar2.avif', // Update this to your actual image path
+      patientImage: '/avatar1.avif', // Update this to your actual image path
       email: 'jane@example.com',
       phone: '+987654321',
       medicName: 'Tom Hanks',
@@ -173,7 +173,7 @@ function Appointments() {
     {
       id: '5',
       patientName: 'Charlie Davis',
-      patientImage: '/avatar2.avif', // Update this to your actual image path
+      patientImage: '/avatar3.avif', // Update this to your actual image path
       email: 'charlie@example.com',
       phone: '+9988776655',
       medicName: 'Tom Hanks',
@@ -184,9 +184,9 @@ function Appointments() {
       preferredPharmacy: ['Pharmacy D'],
       bookingDate: 'Wednesday, 11 November, 08.00 AM - 09.00AM',
       appointmentType: 'In-Person',
-      date: new Date(2024, 8, 3),
-      startHour: 8, // 8 AM
-      endHour: 9, // 9 AM
+      date: new Date(2024, 8, 4),
+      startHour: 9, // 8 AM
+      endHour: 11, // 9 AM
       planningSchedule: [
         { time: '08:00', description: 'Filling Procedure', doctor: 'Tom Hanks', assistant: 'Nurse I', room: 'Room 2' },
       ],

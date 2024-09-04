@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import '../styles/components/calendar.scss';
 import { Appointment } from '../types/appointmentEvent';
-import SlotCardWithPopover from './SlotCardWithHoverCard';
+import SlotCardWithPopover from '../components/SlotCardWithHoverCard';
+import '../styles/components/calendar.scss'
 
 interface CalendarProps {
   workingHoursStart: number;
@@ -27,11 +27,12 @@ const Calendar: React.FC<CalendarProps> = ({ workingHoursStart, workingHoursEnd,
   const currentMinutes = currentTime.getMinutes();
 
   return (
-    <div className="calendar" style={{width:'100%', overflowX:'scroll'}}>
+    <div className="calendar" style={{ width: '100%', overflowX: 'scroll' }}>
       <div className="body">
         <div className="days-content">
+          {/* Days of the week header */}
           <div className="header">
-            <div className="time-header"></div>
+            <div className="time-header"></div> {/* Empty space for the time column */}
             {daysOfWeek.map((day, index) => (
               <div
                 key={index}
@@ -42,34 +43,50 @@ const Calendar: React.FC<CalendarProps> = ({ workingHoursStart, workingHoursEnd,
               </div>
             ))}
           </div>
+
+          {/* Time slots and appointments */}
           <div className="slots">
             {Array.from({ length: workingHoursEnd - workingHoursStart + 1 }, (_, i) => workingHoursStart + i).map((hour, hourIndex) => (
               <div key={hourIndex} className="hour-row">
                 <div className="time-slot">
                   {formatHour(hour)}
                 </div>
-                {daysOfWeek.map((_, dayIndex) => (
-                  <div key={dayIndex} className="day-slot">
-                    {appointments
-                      .filter(appointment => 
-                        appointment.date.toDateString() === currentWeek[dayIndex].toDateString() &&
-                        appointment.startHour === hour
-                      )
-                      .map((appointment, appointmentIndex) => (
-                        <div key={appointmentIndex} className="event">
-                          <SlotCardWithPopover
-                            appointment={appointment}
-                          />
-                        </div>
+                {currentWeek.map((day, dayIndex) => {
+                  const appointmentsForSlot = appointments.filter(
+                    appointment => 
+                      appointment.date.toDateString() === currentWeek[dayIndex].toDateString() &&
+                      appointment.startHour <= hour && 
+                      appointment.endHour > hour // Ensure spanning appointments
+                  );
+
+                  return (
+                    <div key={dayIndex} className="day-slot">
+                      {appointmentsForSlot.slice(0, 1).map((appointment) => (
+                        <SlotCardWithPopover key={appointment.id} appointment={appointment} />
                       ))}
-                    {currentWeek[dayIndex].getDay() === currentDayIndex && hour === currentHour && (
-                      <div
-                        className="current-time-line"
-                        style={{ top: `${(currentMinutes / 60) * 100}%` }}
-                      />
-                    )}
-                  </div>
-                ))}
+                      <div className="overlapping-appointments">
+                        {appointmentsForSlot.slice(1).map((appointment) => (
+                          <div key={appointment.id} className="overlapping-appointment">
+                            <SlotCardWithPopover appointment={appointment}>
+                              <img
+                                src={appointment.patientImage}
+                                alt={appointment.patientName}
+                                title={appointment.patientName}
+                                className="appointment-image"
+                              />
+                            </SlotCardWithPopover>
+                          </div>
+                        ))}
+                      </div>
+                      {currentWeek[dayIndex].getDay() === currentDayIndex && hour === currentHour && (
+                        <div
+                          className="current-time-line"
+                          style={{ top: `${(currentMinutes / 60) * 100}%` }}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             ))}
           </div>
@@ -86,3 +103,4 @@ function formatHour(hour: number): string {
 }
 
 export default Calendar;
+

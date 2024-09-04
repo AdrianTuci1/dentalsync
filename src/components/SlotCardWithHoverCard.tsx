@@ -6,9 +6,10 @@ import { Appointment } from '../types/appointmentEvent';
 
 interface SlotCardWithPopoverProps {
   appointment: Appointment;
+  children?: React.ReactNode; // For small images
 }
 
-const SlotCardWithPopover: React.FC<SlotCardWithPopoverProps> = ({ appointment }) => {
+const SlotCardWithPopover: React.FC<SlotCardWithPopoverProps> = ({ appointment, children }) => {
   const [open, setOpen] = useState(false);
   const closeTimeoutRef = useRef<number | null>(null);
 
@@ -22,7 +23,7 @@ const SlotCardWithPopover: React.FC<SlotCardWithPopoverProps> = ({ appointment }
   const handleMouseLeave = () => {
     closeTimeoutRef.current = window.setTimeout(() => {
       setOpen(false);
-    }, 300); // Adjust the delay (in milliseconds) as needed
+    }, 300); // Delay popover closing
   };
 
   return (
@@ -33,7 +34,8 @@ const SlotCardWithPopover: React.FC<SlotCardWithPopoverProps> = ({ appointment }
           onMouseLeave={handleMouseLeave}
           style={{ display: 'inline-block' }}
         >
-          <SlotCard appointment={appointment} />
+          {/* Display the SlotCard or the small image */}
+          {children ? children : <SlotCard appointment={appointment} />}
         </div>
       </PopoverTrigger>
       <PopoverContent
@@ -58,4 +60,3 @@ const SlotCardWithPopover: React.FC<SlotCardWithPopoverProps> = ({ appointment }
 };
 
 export default SlotCardWithPopover;
-

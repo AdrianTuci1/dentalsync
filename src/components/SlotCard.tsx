@@ -14,7 +14,7 @@ const SlotCard: React.FC<SlotCardProps> = ({ appointment }) => {
       style={{
         backgroundColor: medicColor, // Set the background color based on the medic's color
         width: '280px', // Fixed width for the card
-        height:'110px',
+        height:'100px',
         border: '1px solid #ccc',
         borderRadius: '8px',
         padding: '10px',
