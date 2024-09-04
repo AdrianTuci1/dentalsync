@@ -17,5 +17,5 @@ export interface Appointment {
   date: Date; 
   startHour: number; // Use 24-hour format, e.g., 13 for 1 PM
   endHour:number;
-  status: 'waiting' | 'in-progress' | 'done';
+  status: 'not-paid' | 'finished' | 'in-progress' | 'encounter' | 'registered';
 }
