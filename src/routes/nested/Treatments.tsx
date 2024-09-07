@@ -1,7 +1,8 @@
-import * as React from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Checkbox, Button, Chip, Rating, Box, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import FilterListIcon from '@mui/icons-material/FilterList';
+import AddTreatmentDrawer from '../../components/addTreatment/AddTreatmentDrawer'; // Import the drawer component
 
 interface Treatment {
   name: string;
@@ -25,60 +26,73 @@ const treatments: Treatment[] = [
 ];
 
 export const Treatments: React.FC = () => {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Control drawer visibility
+
+  const toggleDrawer = () => {
+    setIsDrawerOpen((prev) => !prev);
+  };
+
   return (
-    <TableContainer component={Paper}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" padding="16px">
-        <Typography variant="h6">{treatments.length} Treatments</Typography>
-        <Box display="flex" gap="8px">
-          <Button startIcon={<FilterListIcon />} variant="outlined">
-            Filters
-          </Button>
-          <Button startIcon={<AddIcon />} variant="contained">
-            Add Treatment
-          </Button>
+    <>
+      <TableContainer component={Paper}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" padding="16px">
+          <Typography variant="h6">{treatments.length} Treatments</Typography>
+          <Box display="flex" gap="8px">
+            <Button startIcon={<FilterListIcon />} variant="outlined">
+              Filters
+            </Button>
+            <Button startIcon={<AddIcon />} variant="contained" onClick={toggleDrawer}>
+              Add Treatment
+            </Button>
+          </Box>
         </Box>
-      </Box>
-      <Table aria-label="treatment table">
-        <TableHead>
-          <TableRow>
-            <TableCell padding="checkbox">
-              <Checkbox />
-            </TableCell>
-            <TableCell>Treatment Name</TableCell>
-            <TableCell>Price</TableCell>
-            <TableCell>Estimate Duration</TableCell>
-            <TableCell>Type of Visit</TableCell>
-            <TableCell>Rating</TableCell>
-            <TableCell>Review</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {treatments.map((treatment) => (
-            <TableRow key={treatment.name}>
+        <Table aria-label="treatment table">
+          <TableHead>
+            <TableRow>
               <TableCell padding="checkbox">
                 <Checkbox />
               </TableCell>
-              <TableCell>
-                {treatment.name}
-                {['General Checkup', 'Teeth Whitening'].includes(treatment.name) && (
-                  <Chip label="SAMPLE" size="small" sx={{ marginLeft: 1 }} />
-                )}
-              </TableCell>
-              <TableCell>{treatment.price}</TableCell>
-              <TableCell>{treatment.duration}</TableCell>
-              <TableCell>
-                <Chip label={treatment.typeOfVisit} color={treatment.typeOfVisit === 'SINGLE VISIT' ? 'primary' : 'secondary'} />
-              </TableCell>
-              <TableCell>
-                {treatment.rating !== null ? <Rating value={treatment.rating} readOnly precision={0.1} /> : 'No Rating'}
-              </TableCell>
-              <TableCell>{treatment.reviewCount} Review(s)</TableCell>
+              <TableCell>Treatment Name</TableCell>
+              <TableCell>Price</TableCell>
+              <TableCell>Estimate Duration</TableCell>
+              <TableCell>Type of Visit</TableCell>
+              <TableCell>Rating</TableCell>
+              <TableCell>Review</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {treatments.map((treatment) => (
+              <TableRow key={treatment.name}>
+                <TableCell padding="checkbox">
+                  <Checkbox />
+                </TableCell>
+                <TableCell>
+                  {treatment.name}
+                  {['General Checkup', 'Teeth Whitening'].includes(treatment.name) && (
+                    <Chip label="SAMPLE" size="small" sx={{ marginLeft: 1 }} />
+                  )}
+                </TableCell>
+                <TableCell>{treatment.price}</TableCell>
+                <TableCell>{treatment.duration}</TableCell>
+                <TableCell>
+                  <Chip label={treatment.typeOfVisit} color={treatment.typeOfVisit === 'SINGLE VISIT' ? 'primary' : 'secondary'} />
+                </TableCell>
+                <TableCell>
+                  {treatment.rating !== null ? <Rating value={treatment.rating} readOnly precision={0.1} /> : 'No Rating'}
+                </TableCell>
+                <TableCell>{treatment.reviewCount} Review(s)</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Drawer component to add treatment */}
+      <div style={{transform:'translateX(-0px)'}}>
+      <AddTreatmentDrawer isOpen={isDrawerOpen} toggleDrawer={toggleDrawer} />
+      </div>
+    </>
   );
 };
 
-export default Treatments
+export default Treatments;

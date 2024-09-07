@@ -13,20 +13,54 @@ const DayView: React.FC<DayViewProps> = ({ appointments, doctors, currentDate })
   const hours = Array.from({ length: 10 }, (_, i) => 9 + i); // From 9 AM to 6 PM (10 hours)
   const slotHeight = 150; // Define height for each 1-hour slot
 
-
-
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', overflowX: 'scroll', backgroundColor: '#f9fafb', width: '100%' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', overflowX: 'auto', backgroundColor: '#f9fafb', width: '100%' }}>
       {/* Header Row with Time and Doctor Names */}
-      <Box sx={{ display: 'grid', gridTemplateColumns: `60px repeat(${doctors.length}, 300px)` }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: `60px repeat(${doctors.length}, 300px)`,
+          position: 'relative',
+        }}
+      >
         {/* Time Column Header */}
-        <Box sx={{ width: '60px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', fontWeight: 'bold', borderRight: '1px solid #e0e0e0', position: 'sticky', left: 0 }}>
+        <Box
+          sx={{
+            width: '60px',
+            height: '60px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#fff',
+            fontWeight: 'bold',
+            borderRight: '1px solid #e0e0e0',
+            position: 'sticky',
+            left: 0, // Sticky on the left
+            top: 0, // Sticky on the top
+            zIndex: 3, // Above other content
+          }}
+        >
           Time
         </Box>
 
         {/* Doctor Headers */}
         {doctors.map((doctor) => (
-          <Box key={doctor} sx={{ height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', fontWeight: 'bold', borderBottom: '1px solid #e0e0e0', borderRight: '1px solid #e0e0e0' }}>
+          <Box
+            key={doctor}
+            sx={{
+              height: '60px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: '#fff',
+              fontWeight: 'bold',
+              borderBottom: '1px solid #e0e0e0',
+              borderRight: '1px solid #e0e0e0',
+              position: 'sticky',
+              top: 0, // Sticky only on the top when scrolling vertically
+              zIndex: 2, // Above slot content, below time header
+            }}
+          >
             {doctor}
           </Box>
         ))}
@@ -38,15 +72,37 @@ const DayView: React.FC<DayViewProps> = ({ appointments, doctors, currentDate })
           {hours.map((hour) => (
             <React.Fragment key={hour}>
               {/* Time Column */}
-              <Box sx={{ width: '60px', height: `${slotHeight}px`, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff', fontWeight: 'bold', borderRight: '1px solid #e0e0e0', position: 'sticky', left: 0, zIndex: '12' }}>
+              <Box
+                sx={{
+                  width: '60px',
+                  height: `${slotHeight}px`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: '#fff',
+                  fontWeight: 'bold',
+                  borderRight: '1px solid #e0e0e0',
+                  position: 'sticky',
+                  left: 0, // Sticky on the left
+                  zIndex: 20, // Stays above slot content
+                }}
+              >
                 {`${hour}:00`}
               </Box>
 
               {/* Empty Slots for Each Doctor */}
               {doctors.map((doctor) => (
-                <Box key={`${doctor}-${hour}`} sx={{ position: 'relative', width: '300px', height: `${slotHeight}px`, borderBottom: '1px solid #e0e0e0', borderRight: '1px solid #e0e0e0', backgroundColor: '#f9fafb' }}>
-                  {/* No content, we are using absolute positioning for the cards */}
-                </Box>
+                <Box
+                  key={`${doctor}-${hour}`}
+                  sx={{
+                    position: 'relative',
+                    width: '300px',
+                    height: `${slotHeight}px`,
+                    borderBottom: '1px solid #e0e0e0',
+                    borderRight: '1px solid #e0e0e0',
+                    backgroundColor: '#f9fafb',
+                  }}
+                />
               ))}
             </React.Fragment>
           ))}

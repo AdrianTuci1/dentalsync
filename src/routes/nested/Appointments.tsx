@@ -4,6 +4,16 @@ import DayView from '../../components/DayView';
 import CalendarHeader from '../../components/CalendarHeader';
 import { Appointment } from '../../types/appointmentEvent';  // Adjust the path according to your project structure
 
+interface FilterCategory {
+  name: string;
+  checked: boolean;
+}
+
+interface Filters {
+  availableDoctors: FilterCategory[];
+  treatmentTypes: FilterCategory[];
+}
+
 const getCurrentWeek = (date: Date): Date[] => {
   const startOfWeek = date.getDate() - date.getDay();
   return Array.from({ length: 7 }, (_, i) => new Date(date.getFullYear(), date.getMonth(), startOfWeek + i));
@@ -15,7 +25,7 @@ function Appointments() {
   const [currentWeek, setCurrentWeek] = useState(getCurrentWeek(new Date()));
   const [currentMonth, setCurrentMonth] = useState(currentDate.toLocaleString('default', { month: 'long' }));
   const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Filters>({
     availableDoctors: [
       { name: 'Liz Adam', checked: true },
       { name: 'Connor Luca', checked: true },
@@ -23,6 +33,13 @@ function Appointments() {
       { name: 'Dominic Zima', checked: true },
       { name: 'Chris Luke', checked: true },
     ],
+    treatmentTypes: [
+      { name: 'Implant', checked: true },
+      { name: 'Root Canal', checked: true },
+      { name: 'Teeth Whitening', checked: true },
+      { name: 'Braces Consultation', checked: true },
+      { name: 'Cavity Filling', checked: true },
+    ]
   });
 
   const handleMonthYearChange = (month: string, year: number) => {
@@ -64,17 +81,56 @@ function Appointments() {
     }
   };
 
+  const handleTodayClick = () => {
+    const today = new Date();
+    handleDateChange(today);
+  };
+
   const handleViewChange = (view: 'Week' | 'Day') => {
     setSelectedView(view);
   };
 
-  const handleFilterChange = (filterName: string, checked: boolean) => {
+  // Function to handle filter changes
+  const handleFilterChange = (filterCategory: string, filterName: string, checked: boolean) => {
+    if (filterCategory in filters) {
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        [filterCategory]: prevFilters[filterCategory as keyof Filters].map((item) =>
+          item.name === filterName ? { ...item, checked } : item
+        ),
+      }));
+    }
+  };
+
+  const handleDentistChange = (dentistName: string, checked: boolean) => {
     setFilters((prevFilters) => ({
       ...prevFilters,
       availableDoctors: prevFilters.availableDoctors.map((doctor) =>
-        doctor.name === filterName ? { ...doctor, checked } : doctor
+        doctor.name === dentistName ? { ...doctor, checked } : doctor
       ),
     }));
+  };
+
+  const handleAllDentistClick = (allSelected: boolean) => {
+    if (allSelected) {
+      // If "All Dentists" is selected, ensure all checkboxes are checked
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        availableDoctors: prevFilters.availableDoctors.map((doctor) => ({
+          ...doctor,
+          checked: true,
+        })),
+      }));
+    } else {
+      // If "All Dentists" is deselected, uncheck all checkboxes
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        availableDoctors: prevFilters.availableDoctors.map((doctor) => ({
+          ...doctor,
+          checked: false,
+        })),
+      }));
+    }
   };
 
   const [appointments, setAppointments] = useState<Appointment[]>([
@@ -92,7 +148,7 @@ function Appointments() {
       preferredPharmacy: ['Pharmacy A', 'Pharmacy B'],
       bookingDate: 'Thursday, 12 November, 09.00 AM - 10.00AM',
       appointmentType: 'Chat WhatsApp',
-      date: new Date(2024, 8, 5),
+      date: new Date(2024, 8, 6),
       startHour: 9, // 9 AM
       endHour: 11,
       planningSchedule: [
@@ -115,7 +171,7 @@ function Appointments() {
       preferredPharmacy: ['Pharmacy C'],
       bookingDate: 'Thursday, 12 November, 11.00 AM - 12.30PM',
       appointmentType: 'Video Call',
-      date: new Date(2024, 8, 5),
+      date: new Date(2024, 8, 6),
       startHour: 9, // 11 AM
       endHour: 10, // 1 PM
       planningSchedule: [
@@ -161,7 +217,7 @@ function Appointments() {
       preferredPharmacy: ['Pharmacy B', 'Pharmacy C'],
       bookingDate: 'Monday, 16 November, 10.00 AM - 11.30AM',
       appointmentType: 'In-Person',
-      date: new Date(2024, 8, 5),
+      date: new Date(2024, 8, 6),
       startHour: 10, // 10 AM
       endHour: 12, // 12 PM
       planningSchedule: [
@@ -195,32 +251,50 @@ function Appointments() {
     // Add more appointments as needed
   ]);
 
+  // Calculate the total number of appointments
+  const totalAppointments = appointments.length;
+
+  // Filter appointments based on selected doctors and treatment types
+  const filteredAppointments = appointments.filter((appointment) => {
+    const doctorFilter = filters.availableDoctors.some(
+      (doctor) => doctor.checked && doctor.name === appointment.medicName
+    );
+    const treatmentFilter = filters.treatmentTypes.some(
+      (type) => type.checked && type.name === appointment.treatmentType
+    );
+    return doctorFilter && treatmentFilter;
+  });
+
   return (
-    <div style={{ display: 'flex', height: 'calc(100vh -60px)', width: '100%', overflow: 'hidden' }}>
-      <div className="content-box" style={{display:'flex', flexDirection:'column'}}>
+    <div style={{ display: 'flex', height: 'calc(100vh - 60px)', width: '100%', overflow: 'hidden' }}>
+      <div className="content-box" style={{ display: 'flex', flexDirection: 'column' }}>
         <CalendarHeader
           currentMonth={currentMonth}
           currentYear={currentYear}
           currentDate={currentDate}
+          totalAppointments={totalAppointments}
           onMonthYearChange={handleMonthYearChange}
           onDateChange={handleDateChange}
           onSelectView={handleViewChange}
           selectedView={selectedView}
           onPrevClick={handlePrevClick}
           onNextClick={handleNextClick}
+          onTodayClick={handleTodayClick}
           filters={filters}
           onFilterChange={handleFilterChange}
+          onDentistChange={handleDentistChange}
+          onAllDentistClick={handleAllDentistClick}
         />
         {selectedView === 'Week' ? (
           <Calendar
             workingHoursStart={5}
             workingHoursEnd={14}
-            appointments={appointments}
+            appointments={filteredAppointments}
             currentWeek={currentWeek}
           />
         ) : (
           <DayView
-            appointments={appointments}
+            appointments={filteredAppointments}
             doctors={filters.availableDoctors.filter((doctor) => doctor.checked).map((doctor) => doctor.name)}
             currentDate={currentDate}
           />
