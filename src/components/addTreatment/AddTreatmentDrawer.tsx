@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { Box, Button, Typography, Backdrop } from '@mui/material';
+import { Box, Backdrop } from '@mui/material';
+import Step1 from './TreatmentStep';
+import Step2 from './MultipleVisitStep';
+import Step3 from './SetupComponentStep';
 
 interface AddTreatmentDrawerProps {
   isOpen: boolean;
@@ -23,15 +26,21 @@ const AddTreatmentDrawer: React.FC<AddTreatmentDrawerProps> = ({ isOpen, toggleD
     }
   };
 
+  // Function to handle drawer close and reset the steps
+  const handleClose = () => {
+    setActiveStep(0); // Reset the step to 0
+    toggleDrawer(); // Close the drawer
+  };
+
   return (
     <>
       {isOpen && (
         <>
           {/* Backdrop to close the drawer when clicking outside */}
-          <Backdrop open={isOpen} onClick={toggleDrawer} sx={{ zIndex: 1000, backgroundColor: 'rgba(0, 0, 0, 0.5)' }} />
+          <Backdrop open={isOpen} onClick={handleClose} sx={{ zIndex: 999, backgroundColor: 'rgba(0, 0, 0, 0.5)' }} />
 
           {/* Stack of drawers */}
-          <Box sx={{ position: 'relative', zIndex: 1300 }}>
+          <Box sx={{ position: 'relative', zIndex: 1000 }}>
             {/* Step 1 */}
             <Box
               sx={{
@@ -46,12 +55,7 @@ const AddTreatmentDrawer: React.FC<AddTreatmentDrawerProps> = ({ isOpen, toggleD
                 zIndex: activeStep === 0 ? 1301 : 1200, // Higher z-index for the current active card
               }}
             >
-              <Box sx={{ padding: '20px' }}>
-                <Typography variant="h6">Step 1: Treatment Details</Typography>
-                <Button variant="contained" onClick={handleNext}>
-                  Next
-                </Button>
-              </Box>
+              <Step1 handleNext={handleNext} handleClose={handleClose}/>
             </Box>
 
             {/* Step 2 */}
@@ -69,18 +73,8 @@ const AddTreatmentDrawer: React.FC<AddTreatmentDrawerProps> = ({ isOpen, toggleD
                   zIndex: activeStep === 1 ? 1301 : 1200,
                 }}
               >
-                <Box sx={{ padding: '20px' }}>
-                  <Typography variant="h6">Step 2: Pricing Details</Typography>
-                  <Box display="flex" justifyContent="space-between">
-                    <Button variant="contained" onClick={handlePrev}>
-                      Back
-                    </Button>
-                    <Button variant="contained" onClick={handleNext}>
-                      Next
-                    </Button>
-                  </Box>
+                <Step2 handleClose={handleClose} handlePrev={handlePrev} handleNext={handleNext} />
                 </Box>
-              </Box>
             )}
 
             {/* Step 3 */}
@@ -98,17 +92,8 @@ const AddTreatmentDrawer: React.FC<AddTreatmentDrawerProps> = ({ isOpen, toggleD
                   zIndex: 1301, // Top card stays on top
                 }}
               >
-                <Box sx={{ padding: '20px' }}>
-                  <Typography variant="h6">Step 3: Review & Confirm</Typography>
-                  <Box display="flex" justifyContent="space-between">
-                    <Button variant="contained" onClick={handlePrev}>
-                      Back
-                    </Button>
-                    <Button variant="contained" onClick={toggleDrawer}>
-                      Submit
-                    </Button>
-                  </Box>
-                </Box>
+                <Step3 handleClose={handleClose} handlePrev={handlePrev} />
+
               </Box>
             )}
           </Box>

@@ -88,9 +88,7 @@ export const Treatments: React.FC = () => {
       </TableContainer>
 
       {/* Drawer component to add treatment */}
-      <div style={{transform:'translateX(-0px)'}}>
       <AddTreatmentDrawer isOpen={isDrawerOpen} toggleDrawer={toggleDrawer} />
-      </div>
     </>
   );
 };

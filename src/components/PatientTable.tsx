@@ -25,6 +25,10 @@ interface Patient {
     lastTreatment: string;
 }
 
+interface PatientTableProps {
+    onPatientClick: (patient: any) => void;
+}
+
 const dummyData: Patient[] = [
     { id: 1, name: 'Willie Jennie', phone: '(302) 555-0107', email: 'willie.jennings@mail.com', imageUrl: 'https://via.placeholder.com/40', registered: 'Mar 12, 2021', lastVisit: '05 Jun 2021', lastTreatment: 'Tooth Scaling + Bleach' },
     { id: 2, name: 'Michelle Rivera', phone: '(208) 555-0112', email: 'michelle.rivera@mail.com', imageUrl: 'https://via.placeholder.com/40', registered: 'Mar 12, 2021', lastVisit: '03 May 2021', lastTreatment: 'Tooth Scaling + Veneers' },
@@ -38,7 +42,7 @@ const dummyData: Patient[] = [
     { id: 10, name: 'Kenzi Lawson', phone: '(270) 555-0117', email: 'kenzi.lawson@mail.com', imageUrl: 'https://via.placeholder.com/40', registered: 'Mar 06, 2021', lastVisit: '01 May 2021', lastTreatment: 'Tooth Scaling' },
 ];
 
-const PatientTable: React.FC = () => {
+const PatientTable: React.FC<PatientTableProps> = ({ onPatientClick }) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [selectedPatient, setSelectedPatient] = React.useState<Patient | null>(null);
 
@@ -79,7 +83,7 @@ const PatientTable: React.FC = () => {
                     {dummyData.map((patient) => (
                         <TableRow
                             key={patient.id}
-                            onClick={() => console.log('Row Clicked:', patient)}
+                            onClick={() => onPatientClick(patient)}
                             sx={{ cursor: 'pointer' }}
                         >
                             <TableCell>

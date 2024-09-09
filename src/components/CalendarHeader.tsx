@@ -12,7 +12,6 @@ interface CalendarHeaderProps {
   currentMonth: string;
   currentYear: number;
   currentDate: Date;
-  totalAppointments: number;
   onMonthYearChange: (month: string, year: number) => void;
   onDateChange: (newDate: Date) => void;
   onSelectView: (view: 'Week' | 'Day') => void;
@@ -24,13 +23,13 @@ interface CalendarHeaderProps {
   onFilterChange: (filterCategory: string, filterName: string, checked: boolean) => void;
   onDentistChange: (dentistName: string, checked: boolean) => void;
   onAllDentistClick: (allSelected: boolean) => void;
+  toggleDrawer: (open: boolean) => void;
 }
 
 const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   currentMonth,
   currentYear,
   currentDate,
-  totalAppointments,
   onMonthYearChange,
   onDateChange,
   onSelectView,
@@ -42,6 +41,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   onFilterChange,
   onDentistChange,
   onAllDentistClick,
+  toggleDrawer,
 }) => {
   const [dentistMenuAnchorEl, setDentistMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [filterMenuAnchorEl, setFilterMenuAnchorEl] = useState<null | HTMLElement>(null);
@@ -83,7 +83,9 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px', width:'100%' }}>
       {/* Left side: Total Appointments */}
       <div style={{ display: 'flex', alignItems: 'center' }}>
-        <div>Total Appointments: {totalAppointments}</div>
+            <Button variant="contained" color="primary" onClick={() => toggleDrawer(true)}>
+                Add Patient
+            </Button>
       </div>
 
       {/* Middle: Calendar/Day navigation */}

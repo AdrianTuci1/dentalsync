@@ -3,6 +3,7 @@ import Calendar from '../../components/Calendar';
 import DayView from '../../components/DayView';
 import CalendarHeader from '../../components/CalendarHeader';
 import { Appointment } from '../../types/appointmentEvent';  // Adjust the path according to your project structure
+import AddPatientDrawer from '../../components/AddPatientDrawer';
 
 interface FilterCategory {
   name: string;
@@ -25,6 +26,7 @@ function Appointments() {
   const [currentWeek, setCurrentWeek] = useState(getCurrentWeek(new Date()));
   const [currentMonth, setCurrentMonth] = useState(currentDate.toLocaleString('default', { month: 'long' }));
   const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     availableDoctors: [
       { name: 'Liz Adam', checked: true },
@@ -148,7 +150,7 @@ function Appointments() {
       preferredPharmacy: ['Pharmacy A', 'Pharmacy B'],
       bookingDate: 'Thursday, 12 November, 09.00 AM - 10.00AM',
       appointmentType: 'Chat WhatsApp',
-      date: new Date(2024, 8, 6),
+      date: new Date(2024, 8, 8),
       startHour: 9, // 9 AM
       endHour: 11,
       planningSchedule: [
@@ -171,7 +173,7 @@ function Appointments() {
       preferredPharmacy: ['Pharmacy C'],
       bookingDate: 'Thursday, 12 November, 11.00 AM - 12.30PM',
       appointmentType: 'Video Call',
-      date: new Date(2024, 8, 6),
+      date: new Date(2024, 8, 8),
       startHour: 9, // 11 AM
       endHour: 10, // 1 PM
       planningSchedule: [
@@ -194,7 +196,7 @@ function Appointments() {
       preferredPharmacy: ['Pharmacy A'],
       bookingDate: 'Friday, 13 November, 02.00 PM - 03.00PM',
       appointmentType: 'In-Person',
-      date: new Date(2024, 8, 3),
+      date: new Date(2024, 8, 6),
       startHour: 14, // 2 PM
       endHour: 15, // 3 PM
       planningSchedule: [
@@ -217,7 +219,7 @@ function Appointments() {
       preferredPharmacy: ['Pharmacy B', 'Pharmacy C'],
       bookingDate: 'Monday, 16 November, 10.00 AM - 11.30AM',
       appointmentType: 'In-Person',
-      date: new Date(2024, 8, 6),
+      date: new Date(2024, 8, 8),
       startHour: 10, // 10 AM
       endHour: 12, // 12 PM
       planningSchedule: [
@@ -240,7 +242,7 @@ function Appointments() {
       preferredPharmacy: ['Pharmacy D'],
       bookingDate: 'Wednesday, 11 November, 08.00 AM - 09.00AM',
       appointmentType: 'In-Person',
-      date: new Date(2024, 8, 5),
+      date: new Date(2024, 8, 8),
       startHour: 9, // 8 AM
       endHour: 11, // 9 AM
       planningSchedule: [
@@ -265,14 +267,18 @@ function Appointments() {
     return doctorFilter && treatmentFilter;
   });
 
+    const toggleDrawer = (open: boolean) => {
+      setDrawerOpen(open);
+  };
+
   return (
+    <>
     <div style={{ display: 'flex', height: 'calc(100vh - 60px)', width: '100%', overflow: 'hidden' }}>
       <div className="content-box" style={{ display: 'flex', flexDirection: 'column' }}>
         <CalendarHeader
           currentMonth={currentMonth}
           currentYear={currentYear}
           currentDate={currentDate}
-          totalAppointments={totalAppointments}
           onMonthYearChange={handleMonthYearChange}
           onDateChange={handleDateChange}
           onSelectView={handleViewChange}
@@ -284,6 +290,7 @@ function Appointments() {
           onFilterChange={handleFilterChange}
           onDentistChange={handleDentistChange}
           onAllDentistClick={handleAllDentistClick}
+          toggleDrawer={toggleDrawer}
         />
         {selectedView === 'Week' ? (
           <Calendar
@@ -301,6 +308,8 @@ function Appointments() {
         )}
       </div>
     </div>
+    <AddPatientDrawer open={drawerOpen} onClose={() => toggleDrawer(false)} />
+    </>
   );
 }
 

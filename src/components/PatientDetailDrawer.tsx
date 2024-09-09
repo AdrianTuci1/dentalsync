@@ -1,8 +1,8 @@
-import React from 'react';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import Button from '@mui/material/Button';
+import React, { useState } from 'react';
+import Box from '@mui/material/Box';
 import { Appointment } from '../types/appointmentEvent';
+import ReservationDetail from './reservationDetails/ReservationDetail';
+import MedicalCheckup from './reservationDetails/MedicalCheckup';
 
 interface PatientDetailDrawerProps {
   open: boolean;
@@ -11,72 +11,60 @@ interface PatientDetailDrawerProps {
 }
 
 const PatientDetailDrawer: React.FC<PatientDetailDrawerProps> = ({ open, onClose, patientData }) => {
+  const [checkupDrawerOpen, setCheckupDrawerOpen] = useState(false);
+
+  // Handler to open the MedicalCheckup drawer
+  const handleOpenMedicalCheckup = () => {
+    setCheckupDrawerOpen(true);
+  };
+
+  // Handler to close the MedicalCheckup drawer
+  const handleCloseMedicalCheckup = () => {
+    setCheckupDrawerOpen(false);
+  };
+
   return (
-    <Drawer
-      anchor="right"
-      open={open}
-      onClose={onClose}
-      PaperProps={{
-        sx: { width: '450px', padding: '20px' },
-      }}
-    >
-      <div className="drawer-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ margin: 0 }}>Request Appointment</h2>
-        <IconButton onClick={onClose}>
-          x
-        </IconButton>
-      </div>
-      <div className="patient-info" style={{ marginTop: '20px' }}>
-        <img src={patientData.patientImage} alt={patientData.patientName} style={{ width: '50px', height: '50px', borderRadius: '50%', marginRight: '15px' }} />
-        <div>
-          <h3>{patientData.patientName}</h3>
-          <p>{patientData.phone} • {patientData.email}</p>
-        </div>
-      </div>
-      <div className="patient-reason" style={{ marginTop: '20px' }}>
-        <h4>Reason</h4>
-        <p>{patientData.reason}</p>
-      </div>
-      <div className="patient-diagnosis" style={{ marginTop: '20px' }}>
-        <h4>Diagnose</h4>
-        <p>{patientData.diagnosis}</p>
-      </div>
-      <div className="pharmacy" style={{ marginTop: '20px' }}>
-        <h4>Preferred Pharmacy</h4>
-        <div>
-          {patientData.preferredPharmacy.map((pharmacy, index) => (
-            <Button key={index} variant="outlined" size="small" style={{ marginRight: '10px', marginBottom: '10px' }}>
-              {pharmacy}
-            </Button>
-          ))}
-        </div>
-      </div>
-      <div className="booking-info" style={{ marginTop: '20px' }}>
-        <h4>Booking Information</h4>
-        <p>{patientData.bookingDate}</p>
-        <p>{patientData.appointmentType}</p>
-      </div>
-      <div className="planning-schedule" style={{ marginTop: '20px' }}>
-        <h4>Planning Schedule</h4>
-        {patientData.planningSchedule.map((item, index) => (
-          <div key={index} style={{ marginBottom: '15px' }}>
-            <h5>{item.time}</h5>
-            <p><strong>{item.description}</strong></p>
-            <p>Doctor: {item.doctor}</p>
-            <p>Assistant: {item.assistant}</p>
-            <p>Room: {item.room}</p>
-          </div>
-        ))}
-      </div>
-      <div className="drawer-footer" style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
-        <Button variant="outlined" color="error">
-          Decline
-        </Button>
-        <Button variant="contained" color="primary">
-          Approve
-        </Button>
-      </div>
-    </Drawer>
+    <>
+      {/* Patient Detail Box (ReservationDetail Drawer) */}
+      <Box
+        sx={{
+          position: 'fixed',
+          right: open ? (checkupDrawerOpen ? '-350px' : '0px') : '-450px', // Leaves 100px visible when checkupDrawerOpen is true
+          top: 0,
+          bottom: 0,
+          width: '450px',
+          padding: '20px',
+          backgroundColor: '#fff',
+          boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+          transition: 'right 0.3s ease',
+          zIndex: 1200,
+        }}
+      >
+        <ReservationDetail
+          onClose={onClose} 
+          onOpenMedicalCheckup={handleOpenMedicalCheckup} 
+          patientData={patientData} 
+        />
+      </Box>
+
+      {/* Medical Checkup Box */}
+      <Box
+        sx={{
+          position: 'fixed',
+          right: checkupDrawerOpen ? '150px' : '-600px', // The new drawer slides in 50px away from the previous drawer
+          top: 0,
+          bottom: 0,
+          width: '450px',
+          padding: '20px',
+          backgroundColor: '#fff',
+          boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+          transition: 'right 0.3s ease',
+          zIndex: 1300,
+        }}
+      >
+        <MedicalCheckup onClose={handleCloseMedicalCheckup} />
+      </Box>
+    </>
   );
 };
 
