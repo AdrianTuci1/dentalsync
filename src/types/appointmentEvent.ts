@@ -1,21 +1,20 @@
-// types.ts
+// types/appointmentEvent.ts
 export interface Appointment {
-  id: string;
-  patientName: string;
-  patientImage: string;
-  email: string;
-  phone: string;
+  id: number;
+  date: string; // YYYY-MM-DD
+  startHour: string; // HH:MM:SS
+  endHour: string; // HH:MM:SS
+  medicId: number;
   medicName: string;
-  medicColor: string;
-  treatmentType: string;
-  reason: string;
-  diagnosis: string;
-  preferredPharmacy: string[];
-  bookingDate: string;
-  appointmentType: string;
-  planningSchedule: { time: string; description: string; doctor: string; assistant: string; room: string }[];
-  date: Date; 
-  startHour: number; // Use 24-hour format, e.g., 13 for 1 PM
-  endHour:number;
-  status: 'not-paid' | 'finished' | 'in-progress' | 'encounter' | 'registered';
+  patientId: number;
+  patientName: string;
+  patientImage?: string; // Optional
+  details?: string;
+  treatment: string;
+  involvedTeeth?: string[];
+  prescription?: string;
+  price: number;
+  paid: boolean;
+  status: 'done' | 'not done' | 'not paid' | 'missed' | 'upcoming';
+  color: string; // HEX or any valid CSS color
 }

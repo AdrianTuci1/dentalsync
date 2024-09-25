@@ -16,7 +16,6 @@ const TreatmentPlan: React.FC = () => {
 
   return (
     <div>
-      <h3>Treatment Plan</h3>
       {/* Form fields for treatment plan */}
       <TeethPermanentChart teeth={teeth}/>
     </div>

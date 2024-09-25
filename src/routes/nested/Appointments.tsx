@@ -1,316 +1,188 @@
-import { useState } from 'react';
-import Calendar from '../../components/Calendar';
-import DayView from '../../components/DayView';
-import CalendarHeader from '../../components/CalendarHeader';
-import { Appointment } from '../../types/appointmentEvent';  // Adjust the path according to your project structure
-import AddPatientDrawer from '../../components/AddPatientDrawer';
+// src/components/Appointments.tsx
 
-interface FilterCategory {
-  name: string;
-  checked: boolean;
-}
+import React, { useEffect, useState } from 'react';
+import AppointmentHeader from '../../components/appointmentsSection/AppointmentHeader';
+import WeekNavigator from '../../components/appointmentsSection/WeekNavigator';
+import WeekView from '../../components/appointmentsSection/WeekView';
+import AppointmentDetailDrawer from '../../components/appointmentsSection/AppointmentDetailDrawer';
+import PatientDetailDrawer from '../../components/appointmentsSection/PatientDetailDrawer';
+import { Appointment } from '../../types/appointmentEvent';
+import { Box } from '@mui/material';
+import { demoAppointments } from '../../utils/demoAppointments';
 
-interface Filters {
-  availableDoctors: FilterCategory[];
-  treatmentTypes: FilterCategory[];
-}
+const Appointments: React.FC = () => {
+  const [appointments, setAppointments] = useState<Appointment[]>(demoAppointments);
+  const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-const getCurrentWeek = (date: Date): Date[] => {
-  const startOfWeek = date.getDate() - date.getDay();
-  return Array.from({ length: 7 }, (_, i) => new Date(date.getFullYear(), date.getMonth(), startOfWeek + i));
-};
+  // Drawer states
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<Appointment | null>(null);
+  const [isAppointmentDrawerOpen, setIsAppointmentDrawerOpen] = useState<boolean>(false);
+  const [isPatientDrawerOpen, setIsPatientDrawerOpen] = useState<boolean>(false);
 
-function Appointments() {
-  const [selectedView, setSelectedView] = useState<'Week' | 'Day'>('Week');
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [currentWeek, setCurrentWeek] = useState(getCurrentWeek(new Date()));
-  const [currentMonth, setCurrentMonth] = useState(currentDate.toLocaleString('default', { month: 'long' }));
-  const [currentYear, setCurrentYear] = useState(currentDate.getFullYear());
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [filters, setFilters] = useState<Filters>({
-    availableDoctors: [
-      { name: 'Liz Adam', checked: true },
-      { name: 'Connor Luca', checked: true },
-      { name: 'Ibram Har', checked: true },
-      { name: 'Dominic Zima', checked: true },
-      { name: 'Chris Luke', checked: true },
-    ],
-    treatmentTypes: [
-      { name: 'Implant', checked: true },
-      { name: 'Root Canal', checked: true },
-      { name: 'Teeth Whitening', checked: true },
-      { name: 'Braces Consultation', checked: true },
-      { name: 'Cavity Filling', checked: true },
-    ]
-  });
+  // Switch state
+  const [isAllAppointments, setIsAllAppointments] = useState<boolean>(true);
 
-  const handleMonthYearChange = (month: string, year: number) => {
-    setCurrentMonth(month);
-    setCurrentYear(year);
-    const newDate = new Date(year, new Date(`${month} 1, ${year}`).getMonth(), 1);
-    setCurrentDate(newDate);
-    setCurrentWeek(getCurrentWeek(newDate));
+  useEffect(() => {
+    // Fetch appointments from API
+    const fetchAppointments = async () => {
+      try {
+        const response = await fetch('/api/appointments'); // Replace with your API endpoint
+        const data: Appointment[] = await response.json();
+        setAppointments(data);
+      } catch (error) {
+        console.error('Error fetching appointments:', error);
+      }
+    };
+
+    fetchAppointments();
+  }, []);
+
+  useEffect(() => {
+    // Calculate the current week based on selectedDate
+    const calculateCurrentWeek = () => {
+      const dayOfWeek = selectedDate.getDay(); // 0 (Sun) to 6 (Sat)
+      const startOfWeek = new Date(selectedDate);
+      startOfWeek.setHours(0, 0, 0, 0);
+      startOfWeek.setDate(selectedDate.getDate() - dayOfWeek);
+
+      const weekDates = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date(startOfWeek);
+        date.setDate(startOfWeek.getDate() + i);
+        return date;
+      });
+
+      setCurrentWeek(weekDates);
+    };
+
+    calculateCurrentWeek();
+  }, [selectedDate]);
+
+  // Handler for selecting a date from WeekNavigator
+  const handleSelectDate = (date: Date) => {
+    setSelectedDate(date);
   };
 
-  const handleDateChange = (newDate: Date) => {
-    setCurrentDate(newDate);
-    setCurrentMonth(newDate.toLocaleString('default', { month: 'long' }));
-    setCurrentYear(newDate.getFullYear());
-    setCurrentWeek(getCurrentWeek(newDate));
+  // Handler for adding a new appointment
+  const handleAddAppointment = () => {
+    // Implement your add appointment logic here
+    console.log('Add Appointment Clicked');
   };
 
-  const handlePrevClick = () => {
-    if (selectedView === 'Week') {
-      const newDate = new Date(currentDate);
-      newDate.setDate(currentDate.getDate() - 7);
-      handleDateChange(newDate);
-    } else {
-      const newDate = new Date(currentDate);
-      newDate.setDate(currentDate.getDate() - 1);
-      handleDateChange(newDate);
-    }
-  };
-
-  const handleNextClick = () => {
-    if (selectedView === 'Week') {
-      const newDate = new Date(currentDate);
-      newDate.setDate(currentDate.getDate() + 7);
-      handleDateChange(newDate);
-    } else {
-      const newDate = new Date(currentDate);
-      newDate.setDate(currentDate.getDate() + 1);
-      handleDateChange(newDate);
-    }
-  };
-
+  // Handler for navigating to today
   const handleTodayClick = () => {
     const today = new Date();
-    handleDateChange(today);
+    setSelectedDate(today);
   };
 
-  const handleViewChange = (view: 'Week' | 'Day') => {
-    setSelectedView(view);
+  // Handler for toggling appointments switch
+  const handleToggleAppointments = () => {
+    setIsAllAppointments((prev) => !prev);
   };
 
-  // Function to handle filter changes
-  const handleFilterChange = (filterCategory: string, filterName: string, checked: boolean) => {
-    if (filterCategory in filters) {
-      setFilters((prevFilters) => ({
-        ...prevFilters,
-        [filterCategory]: prevFilters[filterCategory as keyof Filters].map((item) =>
-          item.name === filterName ? { ...item, checked } : item
-        ),
-      }));
-    }
+  // Handler for previous and next week navigation
+  const handlePreviousWeek = () => {
+    const previousWeek = new Date(selectedDate);
+    previousWeek.setDate(selectedDate.getDate() - 7);
+    setSelectedDate(previousWeek);
   };
 
-  const handleDentistChange = (dentistName: string, checked: boolean) => {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      availableDoctors: prevFilters.availableDoctors.map((doctor) =>
-        doctor.name === dentistName ? { ...doctor, checked } : doctor
-      ),
-    }));
+  const handleNextWeek = () => {
+    const nextWeek = new Date(selectedDate);
+    nextWeek.setDate(selectedDate.getDate() + 7);
+    setSelectedDate(nextWeek);
   };
 
-  const handleAllDentistClick = (allSelected: boolean) => {
-    if (allSelected) {
-      // If "All Dentists" is selected, ensure all checkboxes are checked
-      setFilters((prevFilters) => ({
-        ...prevFilters,
-        availableDoctors: prevFilters.availableDoctors.map((doctor) => ({
-          ...doctor,
-          checked: true,
-        })),
-      }));
-    } else {
-      // If "All Dentists" is deselected, uncheck all checkboxes
-      setFilters((prevFilters) => ({
-        ...prevFilters,
-        availableDoctors: prevFilters.availableDoctors.map((doctor) => ({
-          ...doctor,
-          checked: false,
-        })),
-      }));
-    }
+  // Function to get appointments count for a given date
+  const getAppointmentsCount = (date: Date): number => {
+    return appointments.filter(
+      (appointment) =>
+        new Date(appointment.date).toDateString() === date.toDateString()
+    ).length;
   };
 
-  const [appointments, setAppointments] = useState<Appointment[]>([
-    {
-      id: '1',
-      patientName: 'John Doe',
-      patientImage: '/avatar2.avif', // Update this to your actual image path
-      email: 'john@example.com',
-      phone: '+123456789',
-      medicName: 'Liz Adam',
-      medicColor: '#fe1d3c',
-      treatmentType: 'Implant',
-      reason: 'Needs a dental implant.',
-      diagnosis: 'Missing teeth, bone loss',
-      preferredPharmacy: ['Pharmacy A', 'Pharmacy B'],
-      bookingDate: 'Thursday, 12 November, 09.00 AM - 10.00AM',
-      appointmentType: 'Chat WhatsApp',
-      date: new Date(2024, 8, 8),
-      startHour: 9, // 9 AM
-      endHour: 11,
-      planningSchedule: [
-        { time: '09:00', description: 'Implant Placement', doctor: 'Liz Adam', assistant: 'Nurse A', room: 'Room 1' },
-        { time: '10:00', description: 'Post-Op Care', doctor: 'Liz Adam', assistant: 'Nurse B', room: 'Room 2' },
-      ],
-      status: 'finished',
-    },
-    {
-      id: '2',
-      patientName: 'Jane Smith',
-      patientImage: '/avatar1.avif', // Update this to your actual image path
-      email: 'jane@example.com',
-      phone: '+987654321',
-      medicName: 'Connor Luca',
-      medicColor: '#ff5733',
-      treatmentType: 'Root Canal',
-      reason: 'Severe tooth pain.',
-      diagnosis: 'Infected tooth pulp',
-      preferredPharmacy: ['Pharmacy C'],
-      bookingDate: 'Thursday, 12 November, 11.00 AM - 12.30PM',
-      appointmentType: 'Video Call',
-      date: new Date(2024, 8, 8),
-      startHour: 9, // 11 AM
-      endHour: 10, // 1 PM
-      planningSchedule: [
-        { time: '11:00', description: 'Root Canal Treatment', doctor: 'Tom Hanks', assistant: 'Nurse C', room: 'Room 3' },
-        { time: '12:00', description: 'Medication', doctor: 'Tom Hanks', assistant: 'Nurse D', room: 'Room 4' },
-      ],
-      status: 'not-paid',
-    },
-    {
-      id: '3',
-      patientName: 'Alice Johnson',
-      patientImage: '/avatar3.avif', // Update this to your actual image path
-      email: 'alice@example.com',
-      phone: '+1122334455',
-      medicName: 'Ibram Har',
-      medicColor: '#8e44ad',
-      treatmentType: 'Teeth Whitening',
-      reason: 'Cosmetic treatment.',
-      diagnosis: 'Discolored teeth',
-      preferredPharmacy: ['Pharmacy A'],
-      bookingDate: 'Friday, 13 November, 02.00 PM - 03.00PM',
-      appointmentType: 'In-Person',
-      date: new Date(2024, 8, 6),
-      startHour: 14, // 2 PM
-      endHour: 15, // 3 PM
-      planningSchedule: [
-        { time: '14:00', description: 'Teeth Cleaning', doctor: 'Sara Connor', assistant: 'Nurse E', room: 'Room 2' },
-        { time: '14:30', description: 'Whitening Procedure', doctor: 'Sara Connor', assistant: 'Nurse F', room: 'Room 1' },
-      ],
-      status: 'in-progress',
-    },
-    {
-      id: '4',
-      patientName: 'Bob Brown',
-      patientImage: '/avatar3.avif', // Update this to your actual image path
-      email: 'bob@example.com',
-      phone: '+5566778899',
-      medicName: 'Connor Luca',
-      medicColor: '#1f2e5c',
-      treatmentType: 'Braces Consultation',
-      reason: 'Alignment issues.',
-      diagnosis: 'Misaligned teeth',
-      preferredPharmacy: ['Pharmacy B', 'Pharmacy C'],
-      bookingDate: 'Monday, 16 November, 10.00 AM - 11.30AM',
-      appointmentType: 'In-Person',
-      date: new Date(2024, 8, 8),
-      startHour: 10, // 10 AM
-      endHour: 12, // 12 PM
-      planningSchedule: [
-        { time: '10:00', description: 'Consultation', doctor: 'Liz Adam', assistant: 'Nurse G', room: 'Room 1' },
-        { time: '11:00', description: 'X-Ray', doctor: 'Liz Adam', assistant: 'Nurse H', room: 'Room 3' },
-      ],
-      status: 'registered',
-    },
-    {
-      id: '5',
-      patientName: 'Charlie Davis',
-      patientImage: '/avatar3.avif', // Update this to your actual image path
-      email: 'charlie@example.com',
-      phone: '+9988776655',
-      medicName: 'Ibram Har',
-      medicColor: '#ff5733',
-      treatmentType: 'Cavity Filling',
-      reason: 'Tooth decay.',
-      diagnosis: 'Cavity in molar',
-      preferredPharmacy: ['Pharmacy D'],
-      bookingDate: 'Wednesday, 11 November, 08.00 AM - 09.00AM',
-      appointmentType: 'In-Person',
-      date: new Date(2024, 8, 8),
-      startHour: 9, // 8 AM
-      endHour: 11, // 9 AM
-      planningSchedule: [
-        { time: '08:00', description: 'Filling Procedure', doctor: 'Tom Hanks', assistant: 'Nurse I', room: 'Room 2' },
-      ],
-      status: 'encounter',
-    },
-    // Add more appointments as needed
-  ]);
-
-  // Calculate the total number of appointments
-  const totalAppointments = appointments.length;
-
-  // Filter appointments based on selected doctors and treatment types
-  const filteredAppointments = appointments.filter((appointment) => {
-    const doctorFilter = filters.availableDoctors.some(
-      (doctor) => doctor.checked && doctor.name === appointment.medicName
-    );
-    const treatmentFilter = filters.treatmentTypes.some(
-      (type) => type.checked && type.name === appointment.treatmentType
-    );
-    return doctorFilter && treatmentFilter;
-  });
-
-    const toggleDrawer = (open: boolean) => {
-      setDrawerOpen(open);
+  // Handler for clicking on an appointment card
+  const handleAppointmentClick = (appointment: Appointment) => {
+    setSelectedAppointment(appointment);
+    setIsAppointmentDrawerOpen(true);
   };
+
+  // Handler for clicking on a patient name
+  const handlePatientClick = (appointment: Appointment) => {
+    setSelectedPatient(appointment);
+    setIsPatientDrawerOpen(true);
+  };
+
+  // Handler to close AppointmentDetailDrawer
+  const closeAppointmentDrawer = () => {
+    setIsAppointmentDrawerOpen(false);
+    setSelectedAppointment(null);
+  };
+
+  // Handler to close PatientDetailDrawer
+  const closePatientDrawer = () => {
+    setIsPatientDrawerOpen(false);
+    setSelectedPatient(null);
+  };
+
+  // Filter appointments based on switch
+  const filteredAppointments = isAllAppointments
+    ? appointments
+    : appointments.filter((appointment) => appointment.medicId === YOUR_MEDIC_ID); // Replace YOUR_MEDIC_ID accordingly
 
   return (
-    <>
-    <div style={{ display: 'flex', height: 'calc(100vh - 60px)', width: '100%', overflow: 'hidden' }}>
-      <div className="content-box" style={{ display: 'flex', flexDirection: 'column' }}>
-        <CalendarHeader
-          currentMonth={currentMonth}
-          currentYear={currentYear}
-          currentDate={currentDate}
-          onMonthYearChange={handleMonthYearChange}
-          onDateChange={handleDateChange}
-          onSelectView={handleViewChange}
-          selectedView={selectedView}
-          onPrevClick={handlePrevClick}
-          onNextClick={handleNextClick}
-          onTodayClick={handleTodayClick}
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          onDentistChange={handleDentistChange}
-          onAllDentistClick={handleAllDentistClick}
-          toggleDrawer={toggleDrawer}
-        />
-        {selectedView === 'Week' ? (
-          <Calendar
-            workingHoursStart={5}
-            workingHoursEnd={14}
-            appointments={filteredAppointments}
-            currentWeek={currentWeek}
-          />
-        ) : (
-          <DayView
-            appointments={filteredAppointments}
-            doctors={filters.availableDoctors.filter((doctor) => doctor.checked).map((doctor) => doctor.name)}
-            currentDate={currentDate}
-          />
-        )}
-      </div>
-    </div>
-    <AddPatientDrawer open={drawerOpen} onClose={() => toggleDrawer(false)} />
-    </>
+    <Box sx={{width:'100%'}}>
+      {/* Header */}
+      <AppointmentHeader
+        onAddAppointment={handleAddAppointment}
+        onTodayClick={handleTodayClick}
+        onPreviousWeek={handlePreviousWeek}
+        onNextWeek={handleNextWeek}
+        isAllAppointments={isAllAppointments}
+        onToggleAppointments={handleToggleAppointments}
+        selectedDate={selectedDate}
+        onSelectDate={setSelectedDate}
+      />
+
+      {/* Week Navigator */}
+      <WeekNavigator
+        currentWeek={currentWeek}
+        selectedDate={selectedDate}
+        onSelectDate={handleSelectDate}
+        getAppointmentsCount={getAppointmentsCount}
+        onPreviousWeek={handlePreviousWeek}
+        onNextWeek={handleNextWeek}
+      />
+
+
+      {/* Week View */}
+      <WeekView
+        selectedWeek={currentWeek}
+        appointments={filteredAppointments}
+        onAppointmentClick={handleAppointmentClick}
+        onPatientClick={handlePatientClick}
+      />
+
+      {/* Appointment Detail Drawer */}
+      <AppointmentDetailDrawer
+        open={isAppointmentDrawerOpen}
+        onClose={closeAppointmentDrawer}
+        appointmentData={selectedAppointment}
+      />
+
+      {/* Patient Detail Drawer */}
+      <PatientDetailDrawer
+        open={isPatientDrawerOpen}
+        onClose={closePatientDrawer}
+        patientData={selectedPatient}
+      />
+
+
+      {/*Add Appointment Drawer */}
+      
+    </Box>
   );
-}
+};
 
 export default Appointments;

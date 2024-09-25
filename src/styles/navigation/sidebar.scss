@@ -1,49 +1,98 @@
-.sidebar-frame{
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    width: 100%;
-    border-right: 1px solid lightgray;
-}
-
-.frames{
-    display: flex;
-    flex-direction: column;
+.sidebar-frame {
+    position: fixed;
     height: 100%;
-    justify-content: space-around;
-    padding-block: 20px;
-    .content-frame{
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-
-    .settings-frame{
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-        gap: 20px;
-        height: 100%;
-    }
-}
-
-.menu-btn{
-    border: none;
-    background: none;
+    width: 60px;
+    background-color: #f9f9f9;
+    border-right: 1px solid #ddd;
+    display: flex;
+    flex-direction: column;
+    transition: width 0.3s ease;
+    z-index: 9;
+  }
+  
+  .sidebar-frame.expanded {
+    width: 280px; /* When expanded */
+  }
+  
+  .logo-frame {
     display: flex;
     justify-content: center;
     align-items: center;
-    border-radius: 5px;
+    height: 65px;
+  }
+  
+  .logo-img {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .frames {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+  }
+  
+  .content-frame {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  
+  .settings-frame {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .menu-btn {
+    padding: 10px;
+    border: none;
+    background: none;
     cursor: pointer;
-    opacity: 0.7;
-}
-
-.active{
-    background: lightgray;
-    opacity: 1;
-}
-
-.btn-img{
-    width: 35px;
-    height: 35px;
-}
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+  
+  .menu-btn.active {
+    background-color: #e0e0e0;
+  }
+  
+  .btn-img {
+    width: 30px;
+    height: 30px;
+    margin-right: 10px;
+    margin-left: 5px;
+  }
+  
+  .btn-label {
+    font-size: 16px;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-align: left;
+  }
+  
+  /* Chevron toggle position */
+  .chevron-toggle {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    z-index: 999;
+  }
+  
+  /* Adjustments for smaller screens */
+  @media (max-width: 800px) {
+    .sidebar-frame {
+      width: 60px;
+    }
+  
+    .chevron-toggle {
+      left: 0;
+    }
+  }
+  

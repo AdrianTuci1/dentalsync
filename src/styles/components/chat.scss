@@ -1,0 +1,59 @@
+/* Full height and width layout */
+.chat-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    background-color: #f9f9f9;
+  }
+  
+  /* User list styling */
+  .user-list {
+    width: 30%;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    background-color: #fff;
+  }
+  
+  .user-item {
+    padding: 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .user-item:hover {
+    background-color: #f0f0f0;
+  }
+  
+  /* Chat window styling */
+  .chat-window {
+    width: 70%;
+    padding: 20px;
+    background-color: #f9f9f9;
+    overflow-y: auto;
+  }
+  
+  /* Back button for small screens */
+  .back-button {
+    background-color: #007bff;
+    color: white;
+    padding: 8px;
+    margin-bottom: 20px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .back-button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Responsive layout for small screens */
+  @media (max-width: 800px) {
+    .user-list {
+      width: 100%;
+    }
+  
+    .chat-window {
+      width: 100%;
+    }
+  }
+  

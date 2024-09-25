@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Table,
     TableBody,
@@ -11,18 +11,34 @@ import {
     IconButton,
     Menu,
     MenuItem,
+    Box,
+    Typography,
+    useMediaQuery,
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 interface Patient {
     id: number;
     name: string;
+    gender: string;
+    age: number;
     phone: string;
     email: string;
     imageUrl: string;
     registered: string;
     lastVisit: string;
     lastTreatment: string;
+    previousAppointmentId: number;
+    nextAppointmentId: number;
+    paymentsMade: string;
+    labels: string[];
+}
+
+interface Appointment {
+    id: number;
+    treatment: string;
+    date: string;
+    treatmentColor: string;
 }
 
 interface PatientTableProps {
@@ -30,21 +46,56 @@ interface PatientTableProps {
 }
 
 const dummyData: Patient[] = [
-    { id: 1, name: 'Willie Jennie', phone: '(302) 555-0107', email: 'willie.jennings@mail.com', imageUrl: 'https://via.placeholder.com/40', registered: 'Mar 12, 2021', lastVisit: '05 Jun 2021', lastTreatment: 'Tooth Scaling + Bleach' },
-    { id: 2, name: 'Michelle Rivera', phone: '(208) 555-0112', email: 'michelle.rivera@mail.com', imageUrl: 'https://via.placeholder.com/40', registered: 'Mar 12, 2021', lastVisit: '03 May 2021', lastTreatment: 'Tooth Scaling + Veneers' },
-    { id: 3, name: 'Tim Jennings', phone: '(225) 555-0118', email: 'tim.jennings@mail.com', imageUrl: 'https://via.placeholder.com/40', registered: 'Mar 10, 2021', lastVisit: '17 Oct 2021', lastTreatment: 'Tooth Scaling' },
-    { id: 4, name: 'Deanna Curtis', phone: '(229) 555-0109', email: 'deanna.curtis@mail.com', imageUrl: 'https://via.placeholder.com/40', registered: 'Mar 09, 2021', lastVisit: '26 Oct 2020', lastTreatment: 'Root Canal Treatment' },
-    { id: 5, name: 'Nathan Roberts', phone: '(209) 555-0104', email: 'nathan.roberts@mail.com', imageUrl: 'https://via.placeholder.com/40', registered: 'Mar 06, 2021', lastVisit: '21 Mar 2021', lastTreatment: 'Tooth Scaling' },
-    { id: 6, name: 'Bill Sanders', phone: '(207) 555-0119', email: 'bill.sanders@mail.com', imageUrl: 'https://via.placeholder.com/40', registered: 'Mar 05, 2021', lastVisit: '22 Jan 2020', lastTreatment: 'Tooth Scaling' },
-    { id: 7, name: 'Alma Lawson', phone: '(808) 555-0111', email: 'alma.lawson@mail.com', imageUrl: 'https://via.placeholder.com/40', registered: 'Mar 04, 2021', lastVisit: '16 Apr 2021', lastTreatment: 'Dental Crown and Bridge' },
-    { id: 8, name: 'Debra Holt', phone: '(205) 555-0100', email: 'debra.holt@mail.com', imageUrl: 'https://via.placeholder.com/40', registered: 'Mar 05, 2021', lastVisit: '23 Mar 2020', lastTreatment: 'Tooth Scaling' },
-    { id: 9, name: 'Micheal Mitc', phone: '(219) 555-0114', email: 'michael.mitc@mail.com', imageUrl: 'https://via.placeholder.com/40', registered: 'Mar 06, 2021', lastVisit: '27 Jun 2021', lastTreatment: 'Tooth Scaling' },
-    { id: 10, name: 'Kenzi Lawson', phone: '(270) 555-0117', email: 'kenzi.lawson@mail.com', imageUrl: 'https://via.placeholder.com/40', registered: 'Mar 06, 2021', lastVisit: '01 May 2021', lastTreatment: 'Tooth Scaling' },
+    {
+        id: 1,
+        name: 'Willie Jennie',
+        gender: 'Male',
+        age: 21,
+        phone: '(302) 555-0107',
+        email: 'willie.jennings@mail.com',
+        imageUrl: 'https://via.placeholder.com/40',
+        registered: 'Mar 12, 2021',
+        lastVisit: '05 Jun 2021',
+        lastTreatment: 'Tooth Scaling + Bleach',
+        previousAppointmentId: 101,
+        nextAppointmentId: 102,
+        paymentsMade: '$300',
+        labels: ['VIP', 'Follow-up'],
+    },
+    {
+        id: 2,
+        name: 'Michelle Rivera',
+        gender: 'Female',
+        age: 30,
+        phone: '(208) 555-0112',
+        email: 'michelle.rivera@mail.com',
+        imageUrl: 'https://via.placeholder.com/40',
+        registered: 'Mar 12, 2021',
+        lastVisit: '03 May 2021',
+        lastTreatment: 'Tooth Scaling + Veneers',
+        previousAppointmentId: 103,
+        nextAppointmentId: 104,
+        paymentsMade: '$500',
+        labels: ['New Patient'],
+    },
 ];
 
+const fetchAppointment = async (appointmentId: number): Promise<Appointment> => {
+    // Replace with actual fetch logic
+    const appointments: Appointment[] = [
+        { id: 101, treatment: 'Cleaning', date: '17 Aug 2024', treatmentColor: '#FFEB3B' },
+        { id: 102, treatment: 'Filling', date: '15 Sep 2024', treatmentColor: '#03A9F4' },
+        { id: 103, treatment: 'Scaling', date: '01 Mar 2021', treatmentColor: '#8BC34A' },
+        { id: 104, treatment: 'Whitening', date: '12 Oct 2024', treatmentColor: '#F44336' },
+    ];
+    return appointments.find((appointment) => appointment.id === appointmentId) || appointments[0];
+};
+
 const PatientTable: React.FC<PatientTableProps> = ({ onPatientClick }) => {
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-    const [selectedPatient, setSelectedPatient] = React.useState<Patient | null>(null);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+    const [appointmentsData, setAppointmentsData] = useState<{ [key: number]: Appointment }>({});
+    const isSmallScreen = useMediaQuery('(max-width:800px)');
 
     const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>, patient: Patient) => {
         setAnchorEl(event.currentTarget);
@@ -56,69 +107,162 @@ const PatientTable: React.FC<PatientTableProps> = ({ onPatientClick }) => {
         setSelectedPatient(null);
     };
 
-    const handleEdit = () => {
-        console.log('Edit:', selectedPatient);
-        handleMenuClose();
-    };
-
-    const handleRemove = () => {
-        console.log('Remove:', selectedPatient);
-        handleMenuClose();
-    };
+    useEffect(() => {
+        // Fetch appointments for dummy data
+        dummyData.forEach(async (patient) => {
+            const previousAppointment = await fetchAppointment(patient.previousAppointmentId);
+            const nextAppointment = await fetchAppointment(patient.nextAppointmentId);
+            setAppointmentsData((prevData) => ({
+                ...prevData,
+                [patient.previousAppointmentId]: previousAppointment,
+                [patient.nextAppointmentId]: nextAppointment,
+            }));
+        });
+    }, []);
 
     return (
         <TableContainer component={Paper}>
             <Table stickyHeader>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Patient Name</TableCell>
-                        <TableCell>Contact</TableCell>
-                        <TableCell>Registered</TableCell>
-                        <TableCell>Last Visit</TableCell>
-                        <TableCell>Last Treatment</TableCell>
-                        <TableCell align="right">Actions</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {dummyData.map((patient) => (
-                        <TableRow
-                            key={patient.id}
-                            onClick={() => onPatientClick(patient)}
-                            sx={{ cursor: 'pointer' }}
-                        >
-                            <TableCell>
-                                <Avatar alt={patient.name} src={patient.imageUrl} sx={{ marginRight: 2, display: 'inline-block', verticalAlign: 'middle' }} />
-                                {patient.name}
-                            </TableCell>
-                            <TableCell>
-                                <div>{patient.phone}</div>
-                                <div>{patient.email}</div>
-                            </TableCell>
-                            <TableCell>{patient.registered}</TableCell>
-                            <TableCell>{patient.lastVisit}</TableCell>
-                            <TableCell>{patient.lastTreatment}</TableCell>
-                            <TableCell align="right">
-                                <IconButton
-                                    aria-label="more"
-                                    aria-controls="long-menu"
-                                    aria-haspopup="true"
-                                    onClick={(event) => handleMenuClick(event, patient)}
-                                >
-                                    <MoreVertIcon />
-                                </IconButton>
-                            </TableCell>
+                {!isSmallScreen && (
+                    <TableHead>
+                        <TableRow>
+                            {['Patient Name', 'Appointments', 'Payments Made', 'Labels'].map((column, index) => (
+                                <TableCell key={index}>
+                                    {column}
+                                </TableCell>
+                            ))}
                         </TableRow>
-                    ))}
+                    </TableHead>
+                )}
+                <TableBody>
+                    {dummyData.map((patient) => {
+                        const prevApp = appointmentsData[patient.previousAppointmentId];
+                        const nextApp = appointmentsData[patient.nextAppointmentId];
+                        return (
+                            <TableRow key={patient.id} onClick={() => onPatientClick(patient)} sx={{ cursor: 'pointer' }}>
+                                <TableCell>
+                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <IconButton
+                                            aria-label="more"
+                                            aria-controls="long-menu"
+                                            aria-haspopup="true"
+                                            onClick={(event) => handleMenuClick(event, patient)}
+                                            sx={{ marginRight: 1 }}
+                                        >
+                                            <MoreVertIcon />
+                                        </IconButton>
+                                        <Avatar
+                                            alt={patient.name}
+                                            src={patient.imageUrl}
+                                            sx={{ marginRight: 2, display: 'inline-block', verticalAlign: 'middle' }}
+                                        />
+                                        <Box>
+                                            <Typography variant="body1">{patient.name}</Typography>
+                                            <Typography variant="body2" color="textSecondary">
+                                                {patient.gender} - {patient.age} years old
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </TableCell>
+                                {!isSmallScreen && (
+                                    <>
+                                        <TableCell>
+                                            <Box
+                                                sx={{
+                                                    display: 'flex',
+                                                    flexWrap: 'wrap', // Allow the entire section to wrap
+                                                    justifyContent: 'space-between',
+                                                    gap: 2, // Add space between previous and next
+                                                }}
+                                            >
+                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                    {prevApp && (
+                                                        <Box
+                                                            sx={{
+                                                                width: '40px',
+                                                                height: '40px',
+                                                                bgcolor: prevApp.treatmentColor,
+                                                                display: 'flex',
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                                borderRadius: '4px',
+                                                                marginRight: 1,
+                                                            }}
+                                                        >
+                                                            <img src="/angle-double-left.png" alt="Previous" style={{width:'30px'}}/>
+                                                        </Box>
+                                                    )}
+                                                    <Box sx={{ display: 'flex', flexDirection: 'column', marginLeft: 1 }}>
+                                                        {prevApp && (
+                                                            <>
+                                                                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                                                    {prevApp.treatment}
+                                                                </Typography>
+                                                                <Typography variant="caption">{prevApp.date}</Typography>
+                                                            </>
+                                                        )}
+                                                    </Box>
+                                                </Box>
+
+                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                    {nextApp && (
+                                                        <Box
+                                                            sx={{
+                                                                width: '40px',
+                                                                height: '40px',
+                                                                bgcolor: nextApp.treatmentColor,
+                                                                display: 'flex',
+                                                                justifyContent: 'center',
+                                                                alignItems: 'center',
+                                                                borderRadius: '4px',
+                                                                marginRight: 1,
+                                                            }}
+                                                        >
+                                                            <img src="/angle-double-right.png" alt="Next" style={{width:'30px'}}/>
+                                                        </Box>
+                                                    )}
+                                                    <Box sx={{ display: 'flex', flexDirection: 'column', marginLeft: 1 }}>
+                                                        {nextApp && (
+                                                            <>
+                                                                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                                                    {nextApp.treatment}
+                                                                </Typography>
+                                                                <Typography variant="caption">{nextApp.date}</Typography>
+                                                            </>
+                                                        )}
+                                                    </Box>
+                                                </Box>
+                                            </Box>
+                                        </TableCell>
+                                        <TableCell>{patient.paymentsMade}</TableCell>
+                                        <TableCell>
+                                            {patient.labels.map((label, index) => (
+                                                <Box
+                                                    key={index}
+                                                    sx={{
+                                                        display: 'inline-block',
+                                                        bgcolor: '#e0e0e0',
+                                                        borderRadius: '5px',
+                                                        padding: '2px 8px',
+                                                        marginRight: '4px',
+                                                    }}
+                                                >
+                                                    {label}
+                                                </Box>
+                                            ))}
+                                        </TableCell>
+                                    </>
+                                )}
+                            </TableRow>
+                        );
+                    })}
                 </TableBody>
             </Table>
 
-            <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-            >
-                <MenuItem onClick={handleEdit}>Edit</MenuItem>
-                <MenuItem onClick={handleRemove}>Remove</MenuItem>
+            <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+                <MenuItem onClick={() => console.log('Create Appointment')}>Create Appointment</MenuItem>
+                <MenuItem onClick={() => console.log('Edit')}>Edit</MenuItem>
+                <MenuItem onClick={() => console.log('Delete')}>Delete</MenuItem>
             </Menu>
         </TableContainer>
     );

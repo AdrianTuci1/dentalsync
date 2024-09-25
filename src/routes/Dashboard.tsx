@@ -3,14 +3,13 @@ import SideBar from '../components/SideBar';
 import NavBar from '../components/NavBar';
 import '../styles/dashboard.scss';
 import Stocks from './nested/Stocks';
-import Payments from './nested/Payments';
-import Help from './nested/Help';
 import Settings from './nested/Settings';
 import Medics from './nested/Medics';
 import Treatments from './nested/Treatments';
+import ChatComponent from './nested/Chat';
 
 // Lazy load content components
-const Stats = lazy(() => import('./nested/Stats'));
+const HomePage = lazy(() => import('./nested/HomePage'));
 const Appointments = lazy(() => import('./nested/Appointments'));
 const Patients = lazy(() => import('./nested/Requests'));
 
@@ -21,8 +20,8 @@ function Dashboard() {
   // Function to render content based on the active tab
   const renderContent = () => {
     switch (activeTab) {
-      case 'statistics':
-        return <Stats />;
+      case 'home':
+        return <HomePage />;
       case 'patients':
         return <Patients/>;
       case 'appointments':
@@ -33,14 +32,12 @@ function Dashboard() {
         return <Treatments />;
       case 'stocks':
         return <Stocks />;
-      case 'payments':
-        return <Payments />;
-      case 'help':
-        return <Help />;
+      case 'chat':
+        return <ChatComponent />;
       case 'settings':
         return <Settings />;
       default:
-        return <Stats />;
+        return <HomePage />;
     }
   };
 

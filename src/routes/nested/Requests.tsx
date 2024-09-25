@@ -2,10 +2,11 @@ import { useState } from 'react';
 import PatientTable from '../../components/PatientTable';
 import ActionComponent from '../../components/ActionComponent';
 import PatientDetails from '../../components/PatientDetails';
-import AddPatientDrawer from '../../components/AddPatientDrawer'; // Adjust the import path as needed
+import PatientDrawer from '../../components/drawers/PatientDrawer';
+
+
 
 function Patients() {
-    const [view, setView] = useState<'list' | 'card'>('list');
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [selectedPatient, setSelectedPatient] = useState<any | null>(null);
 
@@ -21,6 +22,19 @@ function Patients() {
         setSelectedPatient(null);
     };
 
+    const patientData = {
+        name: 'John Doe',
+        age: 30,
+        gender: 'Male',
+        avatarUrl: 'john-doe-avatar.png',
+        phone: '123-456-7890',
+        email: 'john.doe@example.com',
+        address: '123 Main St, Anytown, USA',
+        labels: ['VIP', 'Allergic to penicillin'],
+        notes: 'Requires gentle handling due to anxiety.',
+      };
+
+
     return (
         <>
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
@@ -30,7 +44,7 @@ function Patients() {
                             <PatientDetails patient={selectedPatient} onBackToList={handleBackToList} />
                         ) : (
                             <>
-                                <ActionComponent view={view} setView={setView} toggleDrawer={toggleDrawer} />
+                                <ActionComponent toggleDrawer={toggleDrawer} />
                                 <PatientTable onPatientClick={handlePatientClick} />
                             </>
                         )}
@@ -38,7 +52,11 @@ function Patients() {
                 </div>
             </div>
 
-            <AddPatientDrawer open={drawerOpen} onClose={() => toggleDrawer(false)} />
+            <PatientDrawer
+                patient={patientData}
+                isOpen={drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+      />
         </>
     );
 }

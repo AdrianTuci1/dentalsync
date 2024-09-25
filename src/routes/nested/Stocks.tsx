@@ -1,117 +1,110 @@
-import React from 'react';
-import { Box, Typography, Button, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Checkbox, LinearProgress, IconButton } from '@mui/material';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import React, { useState } from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Box,
+  Button,
+  TextField,
+} from '@mui/material';
+import AddStockDrawer from '../../components/drawers/AddStockDrawer'; // Adjust the import path as needed
 
-interface StockItem {
-  id: string;
-  items: string;
-  price: string;
-  date: string;
+interface Stock {
+  name: string;
+  unitPrice: string;
   vendor: string;
-  status: string;
-  itemsReceived: string;
-  canSendEmail: boolean;
-  receiveDisabled: boolean;
+  quantity: number;
 }
 
-const stocksData: StockItem[] = [
-  { id: '#OS12KOS', items: '5 items', price: '$1.500', date: 'July 14, 2015', vendor: 'Barone LLC.', status: 'PENDING', itemsReceived: '0/3', canSendEmail: true, receiveDisabled: false },
-  { id: '#OS11KOS', items: '890 items', price: '$1.270', date: 'October 30, 2017', vendor: 'Acme Co.', status: 'PENDING', itemsReceived: '0/3', canSendEmail: true, receiveDisabled: false },
-  { id: '#OS10KOS', items: '204 items', price: '$1.124', date: 'October 24, 2018', vendor: 'Abstergo Ltd.', status: 'COMPLETE', itemsReceived: '3/3', canSendEmail: true, receiveDisabled: true },
-  { id: '#OS09KOS', items: '564 items', price: '$1.420', date: 'March 6, 2018', vendor: 'Binford Ltd.', status: 'PENDING', itemsReceived: '0/3', canSendEmail: true, receiveDisabled: false },
-  { id: '#OS08KOS', items: '324 items', price: '$1.080', date: 'February 11, 2014', vendor: 'K24', status: 'PARTIALLY RECEIVED', itemsReceived: '2/4', canSendEmail: true, receiveDisabled: false },
-  { id: '#OS12KOS', items: '80 items', price: '$700', date: 'October 31, 2017', vendor: 'Dentalku', status: 'COMPLETE', itemsReceived: '3/3', canSendEmail: true, receiveDisabled: true },
-  { id: '#OS12KOS', items: '2 items', price: '$5.000', date: 'March 13, 2014', vendor: 'K24', status: 'COMPLETE', itemsReceived: '3/3', canSendEmail: true, receiveDisabled: true },
-  { id: '#OS12KOS', items: '1 items', price: '$2.000', date: 'December 2, 2018', vendor: 'Biffco Enterprises Ltd.', status: 'COMPLETE', itemsReceived: '3/3', canSendEmail: true, receiveDisabled: true },
+const initialStocks: Stock[] = [
+  { name: 'Dental Floss', unitPrice: '$3.50', vendor: 'Dental Supplies Inc.', quantity: 120 },
+  { name: 'Toothpaste', unitPrice: '$2.00', vendor: 'Colgate Vendor', quantity: 300 },
+  { name: 'Mouthwash', unitPrice: '$4.00', vendor: 'OralCare Products', quantity: 100 },
+  { name: 'Toothbrush', unitPrice: '$1.50', vendor: 'Clean Teeth Ltd.', quantity: 250 },
+  { name: 'Dental Mirror', unitPrice: '$5.25', vendor: 'DentalTools Co.', quantity: 80 },
+  { name: 'Gloves', unitPrice: '$0.15', vendor: 'SafeHands Vendor', quantity: 1000 },
+  { name: 'Face Masks', unitPrice: '$0.50', vendor: 'Medical Supply Co.', quantity: 600 },
 ];
 
-const Stocks: React.FC = () => {
-  return (
-    <Box sx={{ height:'calc(100vh - 60px)', overflow:'scroll', width:'100%' }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', paddingInline:'16px' }}>
-        <Box>
-          <Typography variant="h6">Total Asset Value</Typography>
-          <Typography variant="h4" sx={{ fontWeight: 'bold' }}>$10,200,323</Typography>
-        </Box>
-        <Box>
-          <Typography variant="body2">32 products</Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: '16px', paddingInline:'16px' }}>
-            <Typography variant="body2" sx={{ color: 'green' }}>In stock: 20</Typography>
-            <Typography variant="body2" sx={{ color: 'orange' }}>Low stock: 4</Typography>
-            <Typography variant="body2" sx={{ color: 'red' }}>Out of stock: 8</Typography>
-          </Box>
-        </Box>
-      </Box>
-      
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingInline:'16px' }}>
-        <Typography variant="h6">Order Stock</Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Button variant="outlined" startIcon={<FilterListIcon />}>Filters</Button>
-          <Button variant="contained" color="primary">+ Order Stock</Button>
-        </Box>
-      </Box>
+export const StocksTable: React.FC = () => {
+  const [stocks, setStocks] = useState<Stock[]>(initialStocks);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const filteredStocks = stocks.filter((stock) =>
+    stock.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleAddStockClick = () => {
+    setDrawerOpen(true);
+  };
+
+  const handleDrawerClose = () => {
+    setDrawerOpen(false);
+  };
+
+  const handleAddStock = (newStock: Stock) => {
+    setStocks((prevStocks) => [...prevStocks, newStock]);
+  };
+
+  return (
+    <>
       <TableContainer component={Paper}>
-        <Table>
+        <Box display="flex" justifyContent="space-between" alignItems="center" padding="10px">
+          {/* Search Box */}
+          <TextField
+            label="Search"
+            variant="outlined"
+            size="small"
+            value={searchTerm}
+            onChange={handleSearchChange}
+            style={{ marginLeft: '20px' }}
+          />
+
+          {/* Add Stock Button */}
+          <Button variant="outlined" color="primary" onClick={handleAddStockClick}>
+            Add New
+          </Button>
+        </Box>
+
+        <Table aria-label="stocks table">
           <TableHead>
             <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox />
-              </TableCell>
-              <TableCell>Order</TableCell>
-              <TableCell>Created</TableCell>
-              <TableCell>From Vendor</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Item Received</TableCell>
-              <TableCell>Send Email</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Unit Price</TableCell>
+              <TableCell>Vendor</TableCell>
+              <TableCell>Quantity</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {stocksData.map((stock) => (
-              <TableRow key={stock.id}>
-                <TableCell padding="checkbox">
-                  <Checkbox />
-                </TableCell>
-                <TableCell>
-                  <Box>
-                    <Typography variant="subtitle2">{stock.id}</Typography>
-                    <Typography variant="body2">{stock.items} • {stock.price}</Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>{stock.date}</TableCell>
+            {filteredStocks.map((stock, index) => (
+              <TableRow key={index}>
+                <TableCell>{stock.name}</TableCell>
+                <TableCell>{stock.unitPrice}</TableCell>
                 <TableCell>{stock.vendor}</TableCell>
-                <TableCell>
-                  <Typography variant="body2" sx={{
-                    color: stock.status === 'COMPLETE' ? 'green' : stock.status === 'PENDING' ? 'orange' : 'purple',
-                    fontWeight: 'bold',
-                  }}>
-                    {stock.status}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <LinearProgress variant="determinate" value={parseInt(stock.itemsReceived.split('/')[0]) / parseInt(stock.itemsReceived.split('/')[1]) * 100} sx={{ width: '60%', height: '8px', borderRadius: '4px' }} />
-                    <Typography variant="body2">{stock.itemsReceived}</Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Button variant="contained" color="primary" disabled={stock.receiveDisabled}>
-                    Receive
-                  </Button>
-                  {stock.canSendEmail && (
-                    <IconButton>
-                      <MoreVertIcon />
-                    </IconButton>
-                  )}
-                </TableCell>
+                <TableCell>{stock.quantity}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
-    </Box>
+
+      {/* AddStockDrawer Component */}
+      <AddStockDrawer
+        open={drawerOpen}
+        onClose={handleDrawerClose}
+        onSave={handleAddStock}
+      />
+    </>
   );
 };
 
-export default Stocks;
+export default StocksTable;

@@ -1,19 +1,39 @@
-import '../styles/components/usercard.scss'
+import React, { useState } from 'react';
+import { Avatar, Box } from '@mui/material';
+import UserDrawer from './UserDrawer';
 
-function UserCard() {
+const UserCard: React.FC = () => {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Toggle Drawer Open/Close
+  const toggleDrawer = (open: boolean) => () => {
+    setDrawerOpen(open);
+  };
+
   return (
     <>
-    <div className="user-card">
-        <div className="user-image">
-            <img src="/avatar3.avif" alt="" />
-        </div>
-        <div className="user-name">
-            <strong>Alex Arnold</strong>
-            <p>Administrator</p>
-        </div>
-    </div>
-    </>
-  )
-}
+      {/* User Card */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          cursor: 'pointer',
+          padding: '8px',
+          borderRadius: '8px',
+        }}
+        onClick={toggleDrawer(true)}
+      >
+        <Avatar
+          src="/user.png"
+          alt="User Avatar"
+          sx={{ width: 30, height: 30, marginRight: '0px', }}
+        />
+      </Box>
 
-export default UserCard
+      {/* Drawer Component */}
+      <UserDrawer open={drawerOpen} onClose={toggleDrawer(false)} />
+    </>
+  );
+};
+
+export default UserCard;
