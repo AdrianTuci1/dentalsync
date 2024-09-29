@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Drawer, IconButton, Divider } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { logout, switchAccount } from '../services/authSlice';
+import { useDispatch } from 'react-redux';
 
 interface UserDrawerProps {
   open: boolean;
@@ -8,7 +10,10 @@ interface UserDrawerProps {
 }
 
 const UserDrawer: React.FC<UserDrawerProps> = ({ open, onClose }) => {
+
+  const dispatch = useDispatch()
   const profile = {
+
     avatar: '/default-avatar.png',
     name: 'John Doe',
     role: 'Admin',
@@ -23,6 +28,14 @@ const UserDrawer: React.FC<UserDrawerProps> = ({ open, onClose }) => {
     { key: 'upcoming', label: 'Upcoming Appointments' },
     { key: 'actions', label: 'Actions' },
   ];
+
+  const handleLogOut = () => {
+    dispatch(logout());
+  }
+
+  const handleSwitchAccount = () => {
+    dispatch(switchAccount());
+  }
 
   return (
     <Drawer anchor="right" open={open} onClose={onClose}>
@@ -72,8 +85,8 @@ const UserDrawer: React.FC<UserDrawerProps> = ({ open, onClose }) => {
         {/* Actions Section for Selected "Actions" Menu */}
         {selectedMenu === 'actions' && (
           <div style={styles.actionsSection}>
-            <button style={styles.actionButton}>Logout</button>
-            <button style={styles.actionButton}>Switch Account</button>
+            <button style={styles.actionButton} onClick={() => handleLogOut()}>Logout</button>
+            <button style={styles.actionButton} onClick={() => handleSwitchAccount()}>Switch Account</button>
           </div>
         )}
       </div>

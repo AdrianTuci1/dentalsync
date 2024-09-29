@@ -216,6 +216,15 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
                 <Typography>Appointment Details</Typography>
               </AccordionSummary>
               <AccordionDetails>
+                {/* Operating Staff */}
+                <TextField
+                  label="Patient"
+                  value={appointmentDetails.patientName}
+                  onChange={(e) => handleInputChange('patientName', e.target.value)}
+                  fullWidth
+                  margin="normal"
+                />
+
                 {/* Date */}
                 <TextField
                   label="Date"

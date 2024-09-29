@@ -1,14 +1,7 @@
-// src/services/AuthService.ts
 class AuthService {
   private static instance: AuthService;
-  private currentProfile: any = null;
 
-  private constructor() {
-    const savedProfile = localStorage.getItem('selectedProfile');
-    if (savedProfile) {
-      this.currentProfile = JSON.parse(savedProfile);
-    }
-  }
+  private constructor() {}
 
   public static getInstance(): AuthService {
     if (!AuthService.instance) {
@@ -17,54 +10,45 @@ class AuthService {
     return AuthService.instance;
   }
 
-  // Get the current profile
-  public getProfile(): any {
-    return this.currentProfile;
+  // Clinic login API call
+  public async login(email: string, password: string, clinicDbName: string): Promise<any> {
+    const response = await fetch(`${import.meta.env.VITE_SERVER}/api/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-clinic-db': clinicDbName,
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      return data; // Return user and subaccounts
+    } else {
+      throw new Error(data.message || 'Login failed.');
+    }
   }
 
-  // Set a new profile and save it globally and to localStorage
-  public setProfile(profile: any): void {
-    this.currentProfile = profile;
-    localStorage.setItem('selectedProfile', JSON.stringify(profile));
-  }
+  // Subaccount PIN login API call
+  public async pinLogin(subaccountId: number, pin: string, clinicDbName: string): Promise<any> {
+    const response = await fetch(`${import.meta.env.VITE_SERVER}/api/auth/subaccount/pin-login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('clinicToken')}`, // Use token from localStorage
+        'x-clinic-db': clinicDbName,
+      },
+      body: JSON.stringify({ subaccountId, pin }),
+    });
 
-  // Sign out and clear profile
-  public signOut(): void {
-    this.currentProfile = null;
-    localStorage.removeItem('selectedProfile');
-    localStorage.removeItem('token'); // Remove token as well
-  }
-
-  // Check if user is authenticated
-  public isAuthenticated(): boolean {
-    return !!this.currentProfile;
-  }
-
-  // Change to a different profile
-  public changeProfile(profile: any): void {
-    this.setProfile(profile); // Use the setProfile method to update the current profile
+    const data = await response.json();
+    if (response.ok) {
+      return data; // Return subaccount user data
+    } else {
+      throw new Error(data.message || 'PIN login failed.');
+    }
   }
 }
 
-// src/services/authService.ts
-
-export const fetchDemoProfiles = async () => {
-  const loginUrl = `${import.meta.env.VITE_SERVER}/api/demo/login`;
-
-  const response = await fetch(loginUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to load demo profiles');
-  }
-
-  const data = await response.json();
-  return data.accounts || [];
-};
-
-
+// Export an instance of AuthService
 export default AuthService.getInstance();

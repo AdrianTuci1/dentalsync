@@ -1,39 +1,32 @@
 import './styles/main.scss';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import SignIn from './routes/SignIn';
 import Dashboard from './routes/Dashboard';
-
-interface Profile {
-  id: number;
-  email: string;
-  role: string;
-}
+import PatientDashboard from './routes/PatientDashboard';
+import { useSelector, useDispatch } from 'react-redux';
+import { loadUserFromLocalStorage } from './services/authSlice';
 
 function App() {
-  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const dispatch = useDispatch();
+  const authState = useSelector((state: any) => state.auth); // Access global auth state
 
-  // Check localStorage for authentication on component mount
+  // Load user data from localStorage on mount
   useEffect(() => {
-    const savedProfile = localStorage.getItem('selectedProfile');
-    if (savedProfile) {
-      setSelectedProfile(JSON.parse(savedProfile));
-    }
-  }, []);
+    dispatch(loadUserFromLocalStorage());
+  }, [dispatch]);
 
-  const handleProfileSelect = (profile: Profile) => {
-    setSelectedProfile(profile);
-    localStorage.setItem('selectedProfile', JSON.stringify(profile)); // Save the profile to localStorage
-  };
+  // Render the correct dashboard based on user role
+  if (!authState.clinicUser) {
+    return <SignIn />;
+  } else if (authState.subaccountUser) {
+    return <Dashboard />; // Medic/Admin users
+  } else if (authState.clinicUser.role === 'clinic') {
+    return <SignIn />; // Clinic role needs to select subaccount and enter PIN
+  } else if (authState.clinicUser.role === 'patient') {
+    return <PatientDashboard />; // Render Patient Dashboard
+  }
 
-  return (
-    <div className="app">
-      {selectedProfile ? (
-        <Dashboard /> // Pass the profile to the dashboard
-      ) : (
-        <SignIn onProfileSelect={handleProfileSelect} /> // Pass the profile selection handler
-      )}
-    </div>
-  );
+  return <div>Loading...</div>;
 }
 
 export default App;

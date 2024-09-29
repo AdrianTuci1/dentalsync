@@ -1,14 +1,14 @@
-// src/components/Appointments.tsx
-
 import React, { useEffect, useState } from 'react';
 import AppointmentHeader from '../../components/appointmentsSection/AppointmentHeader';
 import WeekNavigator from '../../components/appointmentsSection/WeekNavigator';
 import WeekView from '../../components/appointmentsSection/WeekView';
-import AppointmentDetailDrawer from '../../components/appointmentsSection/AppointmentDetailDrawer';
+import AddAppointmentDrawer from '../../components/drawers/AddAppointmentDrawer';
 import PatientDetailDrawer from '../../components/appointmentsSection/PatientDetailDrawer';
 import { Appointment } from '../../types/appointmentEvent';
 import { Box } from '@mui/material';
 import { demoAppointments } from '../../utils/demoAppointments';
+
+const YOUR_MEDIC_ID = 'medic-123'; // Replace with actual medic ID
 
 const Appointments: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>(demoAppointments);
@@ -18,8 +18,7 @@ const Appointments: React.FC = () => {
   // Drawer states
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<Appointment | null>(null);
-  const [isAppointmentDrawerOpen, setIsAppointmentDrawerOpen] = useState<boolean>(false);
-  const [isPatientDrawerOpen, setIsPatientDrawerOpen] = useState<boolean>(false);
+  const [isAddAppointmentDrawerOpen, setIsAddAppointmentDrawerOpen] = useState<boolean>(false);
 
   // Switch state
   const [isAllAppointments, setIsAllAppointments] = useState<boolean>(true);
@@ -66,8 +65,8 @@ const Appointments: React.FC = () => {
 
   // Handler for adding a new appointment
   const handleAddAppointment = () => {
-    // Implement your add appointment logic here
-    console.log('Add Appointment Clicked');
+    setSelectedAppointment(null); // No appointment selected for adding new
+    setIsAddAppointmentDrawerOpen(true);
   };
 
   // Handler for navigating to today
@@ -105,25 +104,47 @@ const Appointments: React.FC = () => {
   // Handler for clicking on an appointment card
   const handleAppointmentClick = (appointment: Appointment) => {
     setSelectedAppointment(appointment);
-    setIsAppointmentDrawerOpen(true);
+    setIsAddAppointmentDrawerOpen(true);
   };
 
   // Handler for clicking on a patient name
   const handlePatientClick = (appointment: Appointment) => {
     setSelectedPatient(appointment);
-    setIsPatientDrawerOpen(true);
   };
 
-  // Handler to close AppointmentDetailDrawer
-  const closeAppointmentDrawer = () => {
-    setIsAppointmentDrawerOpen(false);
+  // Handler to close AddAppointmentDrawer
+  const closeAddAppointmentDrawer = () => {
+    setIsAddAppointmentDrawerOpen(false);
     setSelectedAppointment(null);
   };
 
-  // Handler to close PatientDetailDrawer
-  const closePatientDrawer = () => {
-    setIsPatientDrawerOpen(false);
-    setSelectedPatient(null);
+  // Handler to save new or updated appointment
+  const handleSaveAppointment = (updatedAppointment: Appointment) => {
+    if (updatedAppointment.id) {
+      // Existing appointment
+      if (updatedAppointment.deleted) {
+        // Handle deletion
+        setAppointments((prevAppointments) =>
+          prevAppointments.filter((appt) => appt.id !== updatedAppointment.id)
+        );
+      } else {
+        // Update appointment
+        setAppointments((prevAppointments) =>
+          prevAppointments.map((appt) =>
+            appt.id === updatedAppointment.id ? updatedAppointment : appt
+          )
+        );
+      }
+    } else {
+      // New appointment
+      const newAppointment = {
+        ...updatedAppointment,
+        id: Date.now().toString(), // Generate a unique ID
+      };
+      setAppointments((prevAppointments) => [...prevAppointments, newAppointment]);
+    }
+    setIsAddAppointmentDrawerOpen(false);
+    setSelectedAppointment(null);
   };
 
   // Filter appointments based on switch
@@ -132,7 +153,7 @@ const Appointments: React.FC = () => {
     : appointments.filter((appointment) => appointment.medicId === YOUR_MEDIC_ID); // Replace YOUR_MEDIC_ID accordingly
 
   return (
-    <Box sx={{width:'100%'}}>
+    <Box sx={{ width: '100%' }}>
       {/* Header */}
       <AppointmentHeader
         onAddAppointment={handleAddAppointment}
@@ -155,7 +176,6 @@ const Appointments: React.FC = () => {
         onNextWeek={handleNextWeek}
       />
 
-
       {/* Week View */}
       <WeekView
         selectedWeek={currentWeek}
@@ -164,23 +184,20 @@ const Appointments: React.FC = () => {
         onPatientClick={handlePatientClick}
       />
 
-      {/* Appointment Detail Drawer */}
-      <AppointmentDetailDrawer
-        open={isAppointmentDrawerOpen}
-        onClose={closeAppointmentDrawer}
-        appointmentData={selectedAppointment}
-      />
-
       {/* Patient Detail Drawer */}
       <PatientDetailDrawer
-        open={isPatientDrawerOpen}
-        onClose={closePatientDrawer}
+        open={!!selectedPatient}
+        onClose={() => setSelectedPatient(null)}
         patientData={selectedPatient}
       />
 
-
-      {/*Add Appointment Drawer */}
-      
+      {/* Add Appointment Drawer */}
+      <AddAppointmentDrawer
+        open={isAddAppointmentDrawerOpen}
+        onClose={closeAddAppointmentDrawer}
+        onSave={handleSaveAppointment}
+        appointment={selectedAppointment || undefined}
+      />
     </Box>
   );
 };

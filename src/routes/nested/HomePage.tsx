@@ -51,7 +51,7 @@ const HomePage: React.FC = () => {
     <Box sx={{ width: '100%', height: 'calc(100vh - 60px)', overflowY: 'auto', padding: 0, margin: 0 }}>
       {/* Welcome Box */}
       <Box sx={{ width: '100%', backgroundColor: '#f0f0f0', padding: '5px', marginBottom: '1px' }}>
-        <Typography variant="h5" align="left">
+        <Typography variant="h5" align="left" paddingInlineStart="20px" >
           Welcome, {currentUser}!
         </Typography>
       </Box>
