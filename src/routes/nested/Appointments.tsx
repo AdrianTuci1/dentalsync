@@ -6,12 +6,21 @@ import AddAppointmentDrawer from '../../components/drawers/AddAppointmentDrawer'
 import PatientDetailDrawer from '../../components/appointmentsSection/PatientDetailDrawer';
 import { Appointment } from '../../types/appointmentEvent';
 import { Box } from '@mui/material';
-import { demoAppointments } from '../../utils/demoAppointments';
+import { calculateCurrentWeek } from '../../utils/calculateCurrentWeek'; // Move current week logic here
+import SocketAppointments from '../../services/socketAppointments'; // WebSocket service
+import AppointmentService from '../../services/fetchAppointments';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../services/store';
+import { getSubdomain } from '../../utils/getSubdomains';
 
-const YOUR_MEDIC_ID = 'medic-123'; // Replace with actual medic ID
+
 
 const Appointments: React.FC = () => {
-  const [appointments, setAppointments] = useState<Appointment[]>(demoAppointments);
+
+  const YOUR_MEDIC_ID = useSelector((state: RootState) => state.auth.subaccountUser.id);
+
+
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
@@ -23,40 +32,40 @@ const Appointments: React.FC = () => {
   // Switch state
   const [isAllAppointments, setIsAllAppointments] = useState<boolean>(true);
 
+  // WebSocket service instance
+  const socketService = SocketAppointments;
+
+    // Fetch subaccountToken and database once in the component
+    const subaccountToken = useSelector((state: RootState) => state.auth.subaccountToken);
+    const database = getSubdomain() + '_db';
+
+
   useEffect(() => {
-    // Fetch appointments from API
-    const fetchAppointments = async () => {
-      try {
-        const response = await fetch('/api/appointments'); // Replace with your API endpoint
-        const data: Appointment[] = await response.json();
-        setAppointments(data);
-      } catch (error) {
-        console.error('Error fetching appointments:', error);
-      }
+    // Set up WebSocket connection and fetch appointments from WebSocket
+    const handleAppointment = (tinyAppointment: Appointment) => {
+      setAppointments((prevAppointments) => [...prevAppointments, tinyAppointment]);
     };
 
-    fetchAppointments();
-  }, []);
+    socketService.addListener(handleAppointment);
+
+    socketService.requestAppointments(
+      currentWeek[0]?.toISOString().split('T')[0],
+      currentWeek[6]?.toISOString().split('T')[0],
+      'demo_db' // Get this from the store or elsewhere as needed
+    );
+
+    return () => {
+      socketService.removeListener(handleAppointment);
+      socketService.closeConnection();
+    };
+  }, [currentWeek]);
 
   useEffect(() => {
     // Calculate the current week based on selectedDate
-    const calculateCurrentWeek = () => {
-      const dayOfWeek = selectedDate.getDay(); // 0 (Sun) to 6 (Sat)
-      const startOfWeek = new Date(selectedDate);
-      startOfWeek.setHours(0, 0, 0, 0);
-      startOfWeek.setDate(selectedDate.getDate() - dayOfWeek);
-
-      const weekDates = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date(startOfWeek);
-        date.setDate(startOfWeek.getDate() + i);
-        return date;
-      });
-
-      setCurrentWeek(weekDates);
-    };
-
-    calculateCurrentWeek();
+    const weekDates = calculateCurrentWeek(selectedDate);
+    setCurrentWeek(weekDates);
   }, [selectedDate]);
+
 
   // Handler for selecting a date from WeekNavigator
   const handleSelectDate = (date: Date) => {
@@ -101,11 +110,22 @@ const Appointments: React.FC = () => {
     ).length;
   };
 
-  // Handler for clicking on an appointment card
-  const handleAppointmentClick = (appointment: Appointment) => {
-    setSelectedAppointment(appointment);
-    setIsAddAppointmentDrawerOpen(true);
-  };
+    // Handler for clicking on an appointment card
+    const handleAppointmentClick = async (appointment: Appointment) => {
+      try {
+        if (!subaccountToken || !database) {
+          throw new Error('Missing subaccount token or database');
+        }
+
+        const appointmentService = new AppointmentService(subaccountToken, database);
+        const appointmentDetails = await appointmentService.fetchAppointment(appointment.appointmentId);
+
+        setSelectedAppointment(appointmentDetails);
+        setIsAddAppointmentDrawerOpen(true);
+      } catch (error) {
+        console.error('Error fetching appointment details:', error);
+      }
+    };
 
   // Handler for clicking on a patient name
   const handlePatientClick = (appointment: Appointment) => {
@@ -119,38 +139,45 @@ const Appointments: React.FC = () => {
   };
 
   // Handler to save new or updated appointment
-  const handleSaveAppointment = (updatedAppointment: Appointment) => {
-    if (updatedAppointment.id) {
-      // Existing appointment
-      if (updatedAppointment.deleted) {
-        // Handle deletion
-        setAppointments((prevAppointments) =>
-          prevAppointments.filter((appt) => appt.id !== updatedAppointment.id)
-        );
-      } else {
-        // Update appointment
-        setAppointments((prevAppointments) =>
-          prevAppointments.map((appt) =>
-            appt.id === updatedAppointment.id ? updatedAppointment : appt
-          )
-        );
+  // Handle saving an appointment (create or update)
+  const handleSaveAppointment = async (
+    appointmentId: string | null, // Null if it's a new appointment
+    appointmentData: Appointment // Appointment type
+  ): Promise<Appointment> => {
+    try {
+      // Get subaccountToken from Redux store and database from subdomain
+      const subaccountToken = useSelector((state: RootState) => state.auth.subaccountToken);
+      const database = getSubdomain() + '_db';
+
+      if (!subaccountToken || !database) {
+        throw new Error('Missing subaccount token or database');
       }
-    } else {
-      // New appointment
-      const newAppointment = {
-        ...updatedAppointment,
-        id: Date.now().toString(), // Generate a unique ID
-      };
-      setAppointments((prevAppointments) => [...prevAppointments, newAppointment]);
+
+      const appointmentService = new AppointmentService(subaccountToken, database);
+
+      let savedAppointment: Appointment;
+
+      if (appointmentId) {
+        // Editing an existing appointment
+        savedAppointment = await appointmentService.editAppointment(appointmentId, appointmentData);
+        console.log('Appointment updated:', savedAppointment);
+      } else {
+        // Creating a new appointment
+        savedAppointment = await appointmentService.createAppointment(appointmentData);
+        console.log('Appointment created:', savedAppointment);
+      }
+
+      return savedAppointment; // Return the created/updated appointment
+    } catch (error) {
+      console.error('Error saving appointment:', error);
+      throw error;
     }
-    setIsAddAppointmentDrawerOpen(false);
-    setSelectedAppointment(null);
   };
 
   // Filter appointments based on switch
   const filteredAppointments = isAllAppointments
     ? appointments
-    : appointments.filter((appointment) => appointment.medicId === YOUR_MEDIC_ID); // Replace YOUR_MEDIC_ID accordingly
+    : appointments.filter((appointment) => appointment.medicUser === YOUR_MEDIC_ID); // Replace YOUR_MEDIC_ID accordingly
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -190,7 +217,7 @@ const Appointments: React.FC = () => {
         onClose={() => setSelectedPatient(null)}
         patientData={selectedPatient}
       />
-
+         
       {/* Add Appointment Drawer */}
       <AddAppointmentDrawer
         open={isAddAppointmentDrawerOpen}

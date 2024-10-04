@@ -21,19 +21,20 @@ const WeekView: React.FC<WeekViewProps> = ({
       sx={{
         width: '100%',
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', // Ensures min width of 200px, scales, and wraps
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: 0, // No spacing between the columns
       }}
     >
-      {selectedWeek.map((day, index) => {
-        const dayAppointments = appointments.filter(
-          (appointment) =>
-            new Date(appointment.date).toDateString() === day.toDateString()
-        );
+      {selectedWeek.map((day) => {
+        const dayAppointments = appointments.filter((appointment) => {
+          // Ensure that appointment.date is parsed as a Date object if it's not already
+          const appointmentDate = new Date(appointment.date);
+          return appointmentDate.toDateString() === day.toDateString();
+        });
 
         return (
           <Box
-            key={index}
+            key={day.toISOString()} // Use day.toISOString() as the unique key for each day
             sx={{
               border: '1px solid #ccc',
               backgroundColor: '#fafafa',
@@ -58,7 +59,7 @@ const WeekView: React.FC<WeekViewProps> = ({
               {dayAppointments.length > 0 ? (
                 dayAppointments.map((appointment) => (
                   <AppointmentCard
-                    key={appointment.id}
+                    key={appointment.appointmentId} // Ensure appointmentId exists in Appointment type
                     appointment={appointment}
                     onAppointmentClick={onAppointmentClick}
                     onPatientClick={onPatientClick}

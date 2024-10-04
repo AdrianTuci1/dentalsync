@@ -30,17 +30,18 @@ interface Case {
 }
 
 interface Appointment {
-  id: string;
+  appointmentId: string;
   date: string;
   time: string;
-  done: boolean;
-  operatingStaff: string;
-  cases: Case[];
+  startHour?: string;
+  endHour?: string;
+  isDone: boolean;
   price: number;
-  expenses: number;
-  profit: number;
-  paid: boolean;
-  // Add other fields as necessary
+  isPaid: boolean;
+  status: 'done' | 'upcoming' | 'missed' | 'notpaid';
+  medicUser: string;
+  patientUser: string;
+  initialTreatment?: string;
 }
 
 interface AddAppointmentDrawerProps {
@@ -62,18 +63,21 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
   // State for appointment details
   const [appointmentDetails, setAppointmentDetails] = useState<Appointment>(
     appointment || {
-      id: '', // Generate a new ID when saving if this is a new appointment
+      appointmentId: '', // Generate a new ID when saving if this is a new appointment
       date: '',
       time: '',
-      done: false,
-      operatingStaff: '',
-      cases: [],
+      isDone: false,
       price: 0,
-      expenses: 0,
-      profit: 0,
-      paid: false,
+      isPaid: false,
+      status: 'upcoming',
+      medicUser: '',
+      patientUser: '',
+      initialTreatment: '',
     }
   );
+
+  // State for cases (used in the second tab)
+  const [cases, setCases] = useState<Case[]>([]);
 
   // State for accordion expansion
   const [expandedAccordions, setExpandedAccordions] = useState<{ [key: string]: boolean }>({});
@@ -101,61 +105,46 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
       involvedTeeth: '',
       prescription: '',
     };
-    setAppointmentDetails((prevDetails) => ({
-      ...prevDetails,
-      cases: [...prevDetails.cases, newCase],
-    }));
+    setCases((prevCases) => [...prevCases, newCase]);
   };
 
   // Handle updating a case
   const handleCaseChange = (caseId: string, field: keyof Case, value: any) => {
-    setAppointmentDetails((prevDetails) => ({
-      ...prevDetails,
-      cases: prevDetails.cases.map((c) =>
-        c.id === caseId ? { ...c, [field]: value } : c
-      ),
-    }));
+    setCases((prevCases) =>
+      prevCases.map((c) => (c.id === caseId ? { ...c, [field]: value } : c))
+    );
   };
 
   // Handle removing a case
   const handleRemoveCase = (caseId: string) => {
-    setAppointmentDetails((prevDetails) => ({
-      ...prevDetails,
-      cases: prevDetails.cases.filter((c) => c.id !== caseId),
-    }));
+    setCases((prevCases) => prevCases.filter((c) => c.id !== caseId));
   };
 
   // Handle accordion expansion
-  const handleAccordionChange = (panel: string) => (
-    event: React.SyntheticEvent,
-    isExpanded: boolean
-  ) => {
+  const handleAccordionChange = (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
     setExpandedAccordions((prevState) => ({
       ...prevState,
       [panel]: isExpanded,
     }));
   };
 
-  // Calculate expenses and profit
-  const calculateExpensesAndProfit = () => {
-    // Placeholder calculations
-    const expenses = appointmentDetails.cases.reduce((total, caseItem) => {
-      return total + caseItem.units * 10; // Assume $10 expense per unit
-    }, 0);
-
-    const profit = appointmentDetails.price - expenses;
-
-    setAppointmentDetails((prevDetails) => ({
-      ...prevDetails,
-      expenses,
-      profit,
-    }));
+  // Fetch additional case data for the second tab
+  const fetchCaseData = async () => {
+    try {
+      const response = await fetch(`/api/appointments/${appointmentDetails.appointmentId}/treatments`);
+      const data = await response.json();
+      setCases(data); // Assuming the data is a list of cases
+    } catch (error) {
+      console.error('Error fetching case data:', error);
+    }
   };
 
-  // Recalculate expenses and profit whenever cases or price change
+  // Fetch case data when entering the second tab
   useEffect(() => {
-    calculateExpensesAndProfit();
-  }, [appointmentDetails.cases, appointmentDetails.price]);
+    if (activeTab === 1 && appointmentDetails.appointmentId) {
+      fetchCaseData();
+    }
+  }, [activeTab, appointmentDetails.appointmentId]);
 
   // Reset form when opening the drawer for a new appointment
   useEffect(() => {
@@ -163,17 +152,18 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
       setAppointmentDetails(appointment);
     } else {
       setAppointmentDetails({
-        id: '',
+        appointmentId: '',
         date: '',
         time: '',
-        done: false,
-        operatingStaff: '',
-        cases: [],
+        isDone: false,
         price: 0,
-        expenses: 0,
-        profit: 0,
-        paid: false,
+        isPaid: false,
+        status: 'upcoming',
+        medicUser: '',
+        patientUser: '',
+        initialTreatment: '',
       });
+      setCases([]); // Reset cases for new appointment
     }
   }, [appointment, open]);
 
@@ -216,16 +206,14 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
                 <Typography>Appointment Details</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                {/* Operating Staff */}
                 <TextField
                   label="Patient"
-                  value={appointmentDetails.patientName}
-                  onChange={(e) => handleInputChange('patientName', e.target.value)}
+                  value={appointmentDetails.patientUser}
+                  onChange={(e) => handleInputChange('patientUser', e.target.value)}
                   fullWidth
                   margin="normal"
                 />
 
-                {/* Date */}
                 <TextField
                   label="Date"
                   type="date"
@@ -237,7 +225,7 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
                     shrink: true,
                   }}
                 />
-                {/* Time */}
+
                 <TextField
                   label="Time"
                   type="time"
@@ -249,21 +237,21 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
                     shrink: true,
                   }}
                 />
-                {/* Done/Not Done */}
+
                 <FormControlLabel
                   control={
                     <Switch
-                      checked={appointmentDetails.done}
-                      onChange={(e) => handleInputChange('done', e.target.checked)}
+                      checked={appointmentDetails.isDone}
+                      onChange={(e) => handleInputChange('isDone', e.target.checked)}
                     />
                   }
                   label="Done"
                 />
-                {/* Operating Staff */}
+
                 <TextField
                   label="Operating Staff"
-                  value={appointmentDetails.operatingStaff}
-                  onChange={(e) => handleInputChange('operatingStaff', e.target.value)}
+                  value={appointmentDetails.medicUser}
+                  onChange={(e) => handleInputChange('medicUser', e.target.value)}
                   fullWidth
                   margin="normal"
                 />
@@ -272,22 +260,18 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
           )}
 
           {activeTab === 1 && (
-            // Treatments Tab Content
+            // Treatments Tab Content (fetches data from another route)
             <Box>
               <Button variant="contained" onClick={handleAddCase}>
                 Insert Case
               </Button>
-              {appointmentDetails.cases.map((caseItem) => (
+              {cases.map((caseItem) => (
                 <Accordion
                   key={caseItem.id}
                   expanded={expandedAccordions[caseItem.id] ?? false}
                   onChange={handleAccordionChange(caseItem.id)}
                 >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls={`${caseItem.id}-content`}
-                    id={`${caseItem.id}-header`}
-                  >
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography>Case Details</Typography>
                     <IconButton
                       edge="end"
@@ -300,7 +284,6 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
                     </IconButton>
                   </AccordionSummary>
                   <AccordionDetails>
-                    {/* Details */}
                     <TextField
                       label="Details"
                       value={caseItem.details}
@@ -308,7 +291,6 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
                       fullWidth
                       margin="normal"
                     />
-                    {/* Treatment */}
                     <TextField
                       label="Treatment"
                       value={caseItem.treatment}
@@ -316,18 +298,14 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
                       fullWidth
                       margin="normal"
                     />
-                    {/* Units */}
                     <TextField
                       label="Units"
                       type="number"
                       value={caseItem.units}
-                      onChange={(e) =>
-                        handleCaseChange(caseItem.id, 'units', parseInt(e.target.value) || 1)
-                      }
+                      onChange={(e) => handleCaseChange(caseItem.id, 'units', parseInt(e.target.value) || 1)}
                       fullWidth
                       margin="normal"
                     />
-                    {/* Involved Teeth */}
                     <TextField
                       label="Involved Teeth"
                       value={caseItem.involvedTeeth}
@@ -335,7 +313,6 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
                       fullWidth
                       margin="normal"
                     />
-                    {/* Prescription */}
                     <TextField
                       label="Prescription"
                       value={caseItem.prescription}
@@ -352,15 +329,10 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
           {activeTab === 2 && (
             // Expenses/Price Tab Content
             <Box>
-              {/* Display Expenses */}
               <Typography variant="body1">
-                Expenses: ${appointmentDetails.expenses.toFixed(2)}
+                Price: ${appointmentDetails.price.toFixed(2)}
               </Typography>
-              {/* Display Profit */}
-              <Typography variant="body1">
-                Profit: ${appointmentDetails.profit.toFixed(2)}
-              </Typography>
-              {/* Input for Price */}
+
               <TextField
                 label="Price"
                 type="number"
@@ -369,12 +341,12 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
                 fullWidth
                 margin="normal"
               />
-              {/* Paid/Not Paid Toggle */}
+
               <FormControlLabel
                 control={
                   <Switch
-                    checked={appointmentDetails.paid}
-                    onChange={(e) => handleInputChange('paid', e.target.checked)}
+                    checked={appointmentDetails.isPaid}
+                    onChange={(e) => handleInputChange('isPaid', e.target.checked)}
                   />
                 }
                 label="Paid"
@@ -391,7 +363,7 @@ const AddAppointmentDrawer: React.FC<AddAppointmentDrawerProps> = ({
               <Button
                 variant="contained"
                 color="secondary"
-                onClick={() => onSave({ ...appointmentDetails, deleted: true })} // Mark as deleted
+                onClick={() => onSave({ ...appointmentDetails})} // Mark as deleted
               >
                 Delete Appointment
               </Button>

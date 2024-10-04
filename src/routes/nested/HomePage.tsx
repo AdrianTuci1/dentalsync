@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { format, isToday, isTomorrow, isThisWeek, parseISO } from 'date-fns';
 import { Appointment } from '../../types/appointmentEvent'; // Adjust import path
-import AuthService from '../../services/AuthService'; // To get current user
 import AppointmentCard from '../../components/homeSection/AppointmentCard'; // Adjust import path
 import WeekAppointmentCard from '../../components/homeSection/WeekAppointmentCard'; // Adjust import path
 import { demoAppointments } from '../../utils/demoAppointments';
