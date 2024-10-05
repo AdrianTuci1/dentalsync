@@ -3,5 +3,15 @@
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  "compilerOptions": {
+    "baseUrl": "src",  // Set the base directory for relative paths
+    "paths": {
+      "@types/*": ["types/*"],  // Define path alias for your types
+      "@components/*": ["components/*"], // Alias for components
+      "@services/*": ["services/*"], // Alias for services
+      "@utils/*": ["utils/*"], // Alias for utilities
+      "@styles/*": ["styles/*"],
+    }
+  }
 }

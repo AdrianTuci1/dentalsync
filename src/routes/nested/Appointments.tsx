@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import AppointmentHeader from '../../components/appointmentsSection/AppointmentHeader';
 import WeekNavigator from '../../components/appointmentsSection/WeekNavigator';
 import WeekView from '../../components/appointmentsSection/WeekView';
-import AddAppointmentDrawer from '../../components/drawers/AddAppointmentDrawer';
+import AppointmentDrawer from '../../components/drawers/appointment/AppointmentDrawer';
 import PatientDetailDrawer from '../../components/appointmentsSection/PatientDetailDrawer';
 import { Appointment } from '../../types/appointmentEvent';
 import { Box } from '@mui/material';
@@ -219,7 +219,7 @@ const Appointments: React.FC = () => {
       />
          
       {/* Add Appointment Drawer */}
-      <AddAppointmentDrawer
+      <AppointmentDrawer
         open={isAddAppointmentDrawerOpen}
         onClose={closeAddAppointmentDrawer}
         onSave={handleSaveAppointment}

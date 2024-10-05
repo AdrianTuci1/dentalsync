@@ -1,0 +1,59 @@
+.initial-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  
+    label {
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-size: 14px;
+      color: #333;
+    }
+  
+    input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+      transition: border-color 0.2s ease-in-out;
+  
+      &:focus {
+        border-color: #1976d2;
+        outline: none;
+      }
+    }
+  
+    button {
+      padding: 10px 15px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+  
+      &:first-of-type {
+        background-color: #1976d2;
+        color: #fff;
+        margin-right: 10px;
+  
+        &:hover {
+          background-color: #155a9e;
+        }
+      }
+  
+      &:last-of-type {
+        background-color: #ccc;
+        color: #333;
+  
+        &:hover {
+          background-color: #999;
+        }
+      }
+    }
+  }
+  

@@ -7,6 +7,7 @@ import Settings from './nested/Settings';
 import Medics from './nested/Medics';
 import Treatments from './nested/Treatments';
 import ChatComponent from './nested/Chat';
+import { WebSocketProvider } from '../services/WebSocketContext';
 
 // Lazy load content components
 const HomePage = lazy(() => import('./nested/HomePage'));
@@ -55,7 +56,9 @@ function Dashboard() {
 
           {/* Content */}
           <div className="content-wrapper">
+            <WebSocketProvider>
                 {renderContent()}
+            </WebSocketProvider>
           </div>
         </div>
       </div>
