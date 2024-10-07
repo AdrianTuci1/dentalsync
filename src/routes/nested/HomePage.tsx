@@ -4,11 +4,12 @@ import { format, isToday, isTomorrow, isThisWeek, parseISO } from 'date-fns';
 import { Appointment } from '../../types/appointmentEvent'; // Adjust import path
 import AppointmentCard from '../../components/homeSection/AppointmentCard'; // Adjust import path
 import WeekAppointmentCard from '../../components/homeSection/WeekAppointmentCard'; // Adjust import path
-import { demoAppointments } from '../../utils/demoAppointments';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../services/store';
 
 const HomePage: React.FC = () => {
-  const [appointments, setAppointments] = useState<Appointment[]>(demoAppointments);
-  const currentUser = true //AuthService.getCurrentUser().name; // Get the current user name
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const currentUser = useSelector((state: RootState) => state.auth.subaccountUser.name);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -79,7 +80,7 @@ const HomePage: React.FC = () => {
             Appointments for Today
           </Typography>
           {todayAppointments.length > 0 ? (
-            todayAppointments.map((appointment) => <AppointmentCard key={appointment.id} appointment={appointment} />)
+            todayAppointments.map((appointment) => <AppointmentCard key={appointment.appointmentId} appointment={appointment} />)
           ) : (
             <Typography variant="body2">No appointments for today.</Typography>
           )}
@@ -88,7 +89,7 @@ const HomePage: React.FC = () => {
             Appointments for Tomorrow
           </Typography>
           {tomorrowAppointments.length > 0 ? (
-            tomorrowAppointments.map((appointment) => <AppointmentCard key={appointment.id} appointment={appointment} />)
+            tomorrowAppointments.map((appointment) => <AppointmentCard key={appointment.appointmentId} appointment={appointment} />)
           ) : (
             <Typography variant="body2">No appointments for tomorrow.</Typography>
           )}
@@ -122,9 +123,9 @@ const HomePage: React.FC = () => {
               <Box sx={{ width: '70%' }}>
                 {groupedAppointments[day].map((appointment) => (
                   <WeekAppointmentCard
-                    key={appointment.id}
-                    doctorName={appointment.medicName}
-                    avatar={appointment.medicName.charAt(0)}
+                    key={appointment.appointmentId}
+                    doctorName={appointment.medicUser}
+                    avatar={appointment.medicUser.charAt(0)}
                     appointmentCount={groupedAppointments[day].length}
                     day={day}
                   />

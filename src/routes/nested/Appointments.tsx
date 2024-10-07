@@ -7,21 +7,20 @@ import PatientDetailDrawer from '../../components/appointmentsSection/PatientDet
 import { Appointment } from '../../types/appointmentEvent';
 import { Box } from '@mui/material';
 import { calculateCurrentWeek } from '../../utils/calculateCurrentWeek'; // Move current week logic here
-import SocketAppointments from '../../services/socketAppointments'; // WebSocket service
 import AppointmentService from '../../services/fetchAppointments';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../services/store';
 import { getSubdomain } from '../../utils/getSubdomains';
+import { useWebSocket } from '../../services/WebSocketContext';
 
 
 
 const Appointments: React.FC = () => {
 
   const YOUR_MEDIC_ID = useSelector((state: RootState) => state.auth.subaccountUser.id);
+  const { currentWeek ,setCurrentWeek, appointments, requestAppointments } = useWebSocket(); 
 
 
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
   // Drawer states
@@ -32,33 +31,17 @@ const Appointments: React.FC = () => {
   // Switch state
   const [isAllAppointments, setIsAllAppointments] = useState<boolean>(true);
 
-  // WebSocket service instance
-  const socketService = SocketAppointments;
 
     // Fetch subaccountToken and database once in the component
     const subaccountToken = useSelector((state: RootState) => state.auth.subaccountToken);
     const database = getSubdomain() + '_db';
 
 
-  useEffect(() => {
-    // Set up WebSocket connection and fetch appointments from WebSocket
-    const handleAppointment = (tinyAppointment: Appointment) => {
-      setAppointments((prevAppointments) => [...prevAppointments, tinyAppointment]);
-    };
+    useEffect(() => {
+      // Request appointments based on the current week and toggle state
+      requestAppointments(isAllAppointments, isAllAppointments ? undefined : YOUR_MEDIC_ID);
+    }, [currentWeek, isAllAppointments]);
 
-    socketService.addListener(handleAppointment);
-
-    socketService.requestAppointments(
-      currentWeek[0]?.toISOString().split('T')[0],
-      currentWeek[6]?.toISOString().split('T')[0],
-      'demo_db' // Get this from the store or elsewhere as needed
-    );
-
-    return () => {
-      socketService.removeListener(handleAppointment);
-      socketService.closeConnection();
-    };
-  }, [currentWeek]);
 
   useEffect(() => {
     // Calculate the current week based on selectedDate

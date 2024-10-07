@@ -1,12 +1,13 @@
-// WebSocketContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import SocketAppointments from './socketAppointments'; // Your WebSocket service
+import SocketAppointments from './socketAppointments';
 import { Appointment } from '../types/appointmentEvent';
 
 interface WebSocketContextProps {
   setCurrentWeek: (week: Date[]) => void;
+  currentWeek: Date[];
   appointments: Appointment[];
   setAppointments: React.Dispatch<React.SetStateAction<Appointment[]>>;
+  requestAppointments: (isAllAppointments: boolean, medicUser?: string) => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextProps | undefined>(undefined);
@@ -21,35 +22,56 @@ export const useWebSocket = () => {
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [currentWeek, setCurrentWeek] = useState<Date[]>([]); // Keep track of current week
+  const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
+
+  // Helper function to check for duplicate appointments
+  const addUniqueAppointment = (newAppointment: Appointment) => {
+    setAppointments((prevAppointments) => {
+      // Check if the appointment already exists in the state
+      const appointmentExists = prevAppointments.some(
+        (appointment) => appointment.appointmentId === newAppointment.appointmentId
+      );
+
+      // If not, append the new appointment
+      if (!appointmentExists) {
+        return [...prevAppointments, newAppointment];
+      }
+      return prevAppointments; // Otherwise, return the previous state as is
+    });
+  };
 
   useEffect(() => {
-    // Set up WebSocket connection at the application level
     const handleAppointment = (tinyAppointment: Appointment) => {
-      setAppointments((prevAppointments) => [...prevAppointments, tinyAppointment]);
+      addUniqueAppointment(tinyAppointment);
     };
 
     SocketAppointments.addListener(handleAppointment);
 
     return () => {
       SocketAppointments.removeListener(handleAppointment);
-      SocketAppointments.closeConnection(); // Keep connection open until app closes
+      SocketAppointments.closeConnection();
     };
   }, []);
 
-  useEffect(() => {
-    // Only request appointments if `currentWeek` is available
+  const requestAppointments = (isAllAppointments: boolean, medicUser?: string) => {
     if (currentWeek.length > 0) {
       SocketAppointments.requestAppointments(
         currentWeek[0]?.toISOString().split('T')[0],
         currentWeek[6]?.toISOString().split('T')[0],
-        'demo_db' // Update as necessary
+        'demo_db', // Update as necessary
+        isAllAppointments ? null : medicUser || null
       );
+    }
+  };
+
+  useEffect(() => {
+    if (currentWeek.length > 0) {
+      requestAppointments(true); // Default to fetching all appointments
     }
   }, [currentWeek]);
 
   return (
-    <WebSocketContext.Provider value={{ setCurrentWeek, appointments, setAppointments }}>
+    <WebSocketContext.Provider value={{ setCurrentWeek, currentWeek, appointments, setAppointments, requestAppointments }}>
       {children}
     </WebSocketContext.Provider>
   );

@@ -3,7 +3,7 @@ import { Appointment } from '../types/appointmentEvent';
 interface AppointmentRequest {
   startDate: string | null;
   endDate: string | null;
-  medicUserId?: number | null;
+  medicUser?: string | null;
   clinicDatabase: string;
 }
 
@@ -80,12 +80,12 @@ class SocketAppointments {
     }
   }
 
-  requestAppointments(startDate: string | null, endDate: string | null, clinicDatabase: string, medicUserId: number | null = null) {
+  requestAppointments(startDate: string | null, endDate: string | null, clinicDatabase: string, medicUser: string | null = null) {
     const requestPayload: AppointmentRequest = {
       startDate,
       endDate,
       clinicDatabase,
-      medicUserId,
+      medicUser,
     };
     const message = JSON.stringify(requestPayload);
 

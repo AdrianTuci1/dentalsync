@@ -1,15 +1,6 @@
-export interface Treatment {
-    id: string;
-    name: string;
-    category: string;
-    description: string;
-    duration: number; // Duration in minutes
-    price: number;
-    createdAt: string;
-    updatedAt: string;
-  }
-  
-  class TreatmentService {
+import { Treatment } from "../types/treatmentType";
+
+class TreatmentService {
     private token: string;
     private clinicDb: string;
     private baseUrl: string;
@@ -57,7 +48,22 @@ export interface Treatment {
       }
   
       const data = await response.json();
-      return data;
+      return data.treatments;
+    }
+  
+    // Get treatment by ID
+    async getTreatmentById(treatmentId: string): Promise<Treatment> {
+      const response = await fetch(`${this.baseUrl}/api/treatments/${treatmentId}`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to fetch treatment');
+      }
+  
+      const data = await response.json();
+      return data.treatment;
     }
   
     // Update a treatment by ID

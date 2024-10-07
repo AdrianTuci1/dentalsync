@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Drawer,
   Box,
@@ -8,46 +8,66 @@ import {
   Button,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-
-interface Stock {
-  name: string;
-  unitPrice: string;
-  vendor: string;
-  quantity: number;
-}
+import { Component } from '../../types/componentType'; // Import the Component type
 
 interface AddStockDrawerProps {
   open: boolean;
   onClose: () => void;
-  onSave: (newStock: Stock) => void;
+  onSave: (newStock: Component) => void;
+  stock?: Component | null; // Optional, for editing existing stock
 }
 
-const AddStockDrawer: React.FC<AddStockDrawerProps> = ({ open, onClose, onSave }) => {
-  const [newStock, setNewStock] = useState<Stock>({
-    name: '',
-    unitPrice: '',
+const AddStockDrawer: React.FC<AddStockDrawerProps> = ({
+  open,
+  onClose,
+  onSave,
+  stock,
+}) => {
+  const [newStock, setNewStock] = useState<Partial<Component>>({
+    componentName: '',
+    unitPrice: 0,
     vendor: '',
     quantity: 0,
   });
 
-  const handleNewStockChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  useEffect(() => {
+    if (stock) {
+      setNewStock(stock);
+    } else {
+      setNewStock({
+        componentName: '',
+        unitPrice: 0,
+        vendor: '',
+        quantity: 0,
+      });
+    }
+  }, [stock]);
+
+  const handleNewStockChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setNewStock((prevStock) => ({
       ...prevStock,
-      [name]: name === 'quantity' ? parseInt(value) || 0 : value,
+      [name]: name === 'quantity' || name === 'unitPrice' ? parseFloat(value) || 0 : value,
     }));
   };
 
   const handleSave = () => {
-    onSave(newStock);
-    setNewStock({ name: '', unitPrice: '', vendor: '', quantity: 0 });
+    // Default values for undefined fields
+    const savedStock: Component = {
+      id: newStock.id || '', // Ensure the id exists or handle it appropriately elsewhere
+      componentName: newStock.componentName || '',
+      unitPrice: newStock.unitPrice || 0,
+      vendor: newStock.vendor || '',
+      quantity: newStock.quantity || 0,
+      createdAt: newStock.createdAt || new Date().toISOString(), // Default current time if missing
+      updatedAt: newStock.updatedAt || new Date().toISOString(),
+    };
+
+    onSave(savedStock);
     onClose();
   };
 
   const handleClose = () => {
-    setNewStock({ name: '', unitPrice: '', vendor: '', quantity: 0 });
     onClose();
   };
 
@@ -55,15 +75,15 @@ const AddStockDrawer: React.FC<AddStockDrawerProps> = ({ open, onClose, onSave }
     <Drawer anchor="right" open={open} onClose={handleClose}>
       <Box sx={{ width: 350, padding: 2 }}>
         <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Typography variant="h6">Add New Stock</Typography>
+          <Typography variant="h6">{stock ? 'Edit Stock' : 'Add New Stock'}</Typography>
           <IconButton onClick={handleClose}>
             <CloseIcon />
           </IconButton>
         </Box>
         <TextField
-          label="Name"
-          name="name"
-          value={newStock.name}
+          label="Component Name"
+          name="componentName"
+          value={newStock.componentName || ''}
           onChange={handleNewStockChange}
           fullWidth
           margin="normal"
@@ -71,7 +91,8 @@ const AddStockDrawer: React.FC<AddStockDrawerProps> = ({ open, onClose, onSave }
         <TextField
           label="Unit Price"
           name="unitPrice"
-          value={newStock.unitPrice}
+          value={newStock.unitPrice?.toString() || '0'}
+          type="number"
           onChange={handleNewStockChange}
           fullWidth
           margin="normal"
@@ -79,7 +100,7 @@ const AddStockDrawer: React.FC<AddStockDrawerProps> = ({ open, onClose, onSave }
         <TextField
           label="Vendor"
           name="vendor"
-          value={newStock.vendor}
+          value={newStock.vendor || ''}
           onChange={handleNewStockChange}
           fullWidth
           margin="normal"
@@ -88,7 +109,7 @@ const AddStockDrawer: React.FC<AddStockDrawerProps> = ({ open, onClose, onSave }
           label="Quantity"
           name="quantity"
           type="number"
-          value={newStock.quantity}
+          value={newStock.quantity?.toString() || '0'}
           onChange={handleNewStockChange}
           fullWidth
           margin="normal"
@@ -101,7 +122,7 @@ const AddStockDrawer: React.FC<AddStockDrawerProps> = ({ open, onClose, onSave }
             variant="contained"
             color="primary"
             onClick={handleSave}
-            disabled={!newStock.name || !newStock.unitPrice || !newStock.vendor}
+            disabled={!newStock.componentName || !newStock.vendor || newStock.quantity === 0 || newStock.unitPrice === 0}
           >
             Save
           </Button>

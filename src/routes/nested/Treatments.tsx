@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -7,62 +7,78 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Chip,
   Button,
   Box,
   useMediaQuery,
   TextField,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import AddTreatmentDrawer from '../../components/addTreatment/AddTreatmentDrawer'; // Import the drawer component
-
-interface Treatment {
-  name: string;
-  price: string;
-  duration: string;
-  typeOfVisit: string;
-}
-
-const treatments: Treatment[] = [
-  { name: 'General Checkup', price: 'Start from $50', duration: '± 1 hour(s)', typeOfVisit: 'SINGLE VISIT' },
-  { name: 'Teeth Whitening', price: 'Start from $300', duration: '± 1 hour(s) / treatments', typeOfVisit: 'MULTIPLE VISIT' },
-  { name: 'Teeth Cleaning', price: 'Start from $75', duration: '± 1 hour(s)', typeOfVisit: 'SINGLE VISIT' },
-  { name: 'Tooth Extraction', price: 'Start from $300', duration: '± 2 hour(s) / treatments', typeOfVisit: 'MULTIPLE VISIT' },
-  { name: 'Tooth Fillings', price: 'Start from $210', duration: '± 1.5 hour(s)', typeOfVisit: 'SINGLE VISIT' },
-  { name: 'Tooth Scaling', price: 'Start from $140', duration: '± 1.5 hour(s)', typeOfVisit: 'SINGLE VISIT' },
-  { name: 'Tooth Braces (Metal)', price: 'Start from $3000', duration: '± 1.5 hour(s) / treatments', typeOfVisit: 'MULTIPLE VISIT' },
-  { name: 'Veneers', price: 'Start from $925', duration: '± 1.5 hour(s)', typeOfVisit: 'SINGLE VISIT' },
-  { name: 'Bonding', price: 'Start from $190', duration: '± 1.5 hour(s)', typeOfVisit: 'SINGLE VISIT' },
-];
+import TreatmentDrawer from '../../components/drawers/TreatmentDrawer'; // Import the drawer component
+import TreatmentService from '../../services/treatmentService'; // Import the service to interact with API
+import { Treatment } from '../../types/treatmentType'; // Use the defined Treatment type
+import { useSelector } from 'react-redux';
 
 export const Treatments: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Control drawer visibility
-
+  const [selectedTreatmentId, setSelectedTreatmentId] = useState<string | null>(null); // Selected treatment ID for view/edit
+  const [treatments, setTreatments] = useState<Treatment[]>([]); // Fetched treatments from the server
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const isSmallScreen = useMediaQuery('(max-width:800px)'); // Check screen size
+
+  const token = useSelector((state: any) => state.auth.subaccountToken);
+
+  const treatmentService = new TreatmentService(token, 'demo_db'); // Initialize TreatmentService
+
+  // Fetch treatments from server
+  useEffect(() => {
+    const fetchTreatments = async () => {
+      try {
+        const fetchedTreatments = await treatmentService.getAllTreatments();
+        setTreatments(fetchedTreatments);
+      } catch (error) {
+        console.error('Error fetching treatments:', error);
+      }
+    };
+
+    fetchTreatments();
+  }, [treatmentService]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchTerm(event.target.value);
+    setSearchTerm(event.target.value);
   };
-  
-  const isSmallScreen = useMediaQuery('(max-width:800px)'); // Check screen size
 
   const toggleDrawer = () => {
     setIsDrawerOpen((prev) => !prev);
+    setSelectedTreatmentId(null); // Reset selected treatment ID when drawer is toggled
+  };
+
+  const handleEdit = (treatmentId: string) => {
+    setSelectedTreatmentId(treatmentId); // Set the selected treatment ID
+    setIsDrawerOpen(true); // Open the drawer
+  };
+
+  const handleDelete = async (treatmentId: string) => {
+    try {
+      await treatmentService.deleteTreatment(treatmentId);
+      setTreatments((prev) => prev.filter((t) => t.id !== treatmentId)); // Remove deleted treatment from the list
+    } catch (error) {
+      console.error('Error deleting treatment:', error);
+    }
   };
 
   return (
     <>
       <TableContainer component={Paper}>
         <Box display="flex" justifyContent="space-between" alignItems="center" padding="10px">
-                          {/* Search Box */}
-                <TextField
-                    label="Search"
-                    variant="outlined"
-                    size="small"
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    style={{ marginLeft: '20px' }}
-                />
+          {/* Search Box */}
+          <TextField
+            label="Search"
+            variant="outlined"
+            size="small"
+            value={searchTerm}
+            onChange={handleSearchChange}
+            style={{ marginLeft: '20px' }}
+          />
           <Box display="flex" gap="8px">
             <Button startIcon={<AddIcon />} variant="outlined" onClick={toggleDrawer}>
               Add New
@@ -76,38 +92,46 @@ export const Treatments: React.FC = () => {
                 <TableCell>Treatment Name</TableCell>
                 <TableCell>Price</TableCell>
                 <TableCell>Estimate Duration</TableCell>
-                <TableCell>Type of Visit</TableCell>
+                <TableCell>Category</TableCell> {/* Category instead of Type of Visit */}
+                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
           )}
           <TableBody>
-            {treatments.map((treatment) => (
-              <TableRow key={treatment.name}>
-                <TableCell>
-                  {treatment.name}
-                  {['General Checkup', 'Teeth Whitening'].includes(treatment.name) && (
-                    <Chip label="SAMPLE" size="small" sx={{ marginLeft: 1 }} />
+            {treatments
+              .filter((treatment) =>
+                treatment.name.toLowerCase().includes(searchTerm.toLowerCase())
+              )
+              .map((treatment) => (
+                <TableRow key={treatment.id}>
+                  <TableCell>{treatment.name}</TableCell>
+                  <TableCell>{treatment.price}</TableCell>
+                  {!isSmallScreen && (
+                    <>
+                      <TableCell>{treatment.duration}</TableCell>
+                      <TableCell>{treatment.category}</TableCell> {/* Changed to category */}
+                      <TableCell>
+                        <Button variant="text" onClick={() => handleEdit(treatment.id)}>
+                          Edit
+                        </Button>
+                        <Button variant="text" color="error" onClick={() => handleDelete(treatment.id)}>
+                          Delete
+                        </Button>
+                      </TableCell>
+                    </>
                   )}
-                </TableCell>
-                <TableCell>
-                  {treatment.price}
-                </TableCell>
-                {!isSmallScreen && (
-                  <>
-                    <TableCell>{treatment.duration}</TableCell>
-                    <TableCell>
-                      <Chip label={treatment.typeOfVisit} color={treatment.typeOfVisit === 'SINGLE VISIT' ? 'primary' : 'secondary'} />
-                    </TableCell>
-                  </>
-                )}
-              </TableRow>
-            ))}
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>
 
-      {/* Drawer component to add treatment */}
-      <AddTreatmentDrawer isOpen={isDrawerOpen} toggleDrawer={toggleDrawer} />
+      {/* Drawer component for add/edit treatment */}
+      <TreatmentDrawer
+        isOpen={isDrawerOpen}
+        toggleDrawer={toggleDrawer}
+        treatmentId={selectedTreatmentId} // Pass selected treatment ID for editing
+      />
     </>
   );
 };
