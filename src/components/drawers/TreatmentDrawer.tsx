@@ -5,15 +5,14 @@ import {
   Box,
   Typography,
   IconButton,
-  Paper,
-  List,
-  ListItem,
 } from '@mui/material';
-import { Add, Remove } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import TreatmentService from '../../services/treatmentService';
 import ComponentService from '../../services/componentService';
 import { ComponentWithUnits } from '../../types/treatmentType';
 import { useSelector } from 'react-redux';
+import CategoryInput from '../CategoryInput';
+import ComponentInput from '../ComponentInput';
 
 interface TreatmentDrawerProps {
   isOpen: boolean;
@@ -156,11 +155,10 @@ const TreatmentDrawer: React.FC<TreatmentDrawerProps> = ({ isOpen, toggleDrawer,
           />
 
           <label>Category:</label>
-          <input
-            type="text"
-            value={category || ''}
-            onChange={(e) => setCategory(e.target.value)}
-            style={{ width: '100%', padding: '8px', marginTop: '8px', marginBottom: '16px' }}
+          <CategoryInput
+            value={category}
+            onChange={setCategory}
+            clinicDbName="demo_db"
           />
 
           <label>Price:</label>
@@ -191,64 +189,18 @@ const TreatmentDrawer: React.FC<TreatmentDrawerProps> = ({ isOpen, toggleDrawer,
             Components
           </Typography>
           {components.map((component, index) => (
-            <Box key={index} display="flex" alignItems="center" gap={1} marginTop={1} position="relative">
-              <input
-                type="text"
-                placeholder="Select Component"
-                value={component.componentName || ''}
-                onChange={(e) => handleComponentChange(index, 'componentName', e.target.value)}
-                onFocus={() => handleInputFocus(index)}
-                style={{ width: '100%', padding: '8px', marginRight: '8px' }}
-              />
-              <input
-                type="number"
-                placeholder="Unit Price"
-                value={component.unitPrice ?? 0}
-                disabled
-                style={{ width: '120px', padding: '8px', marginRight: '8px' }}
-              />
-              <input
-                type="number"
-                placeholder="Units"
-                value={component.componentUnits ?? 1}
-                onChange={(e) => handleComponentChange(index, 'componentUnits', parseInt(e.target.value, 10))}
-                style={{ width: '120px', padding: '8px', marginRight: '8px' }}
-              />
-              <IconButton color="secondary" onClick={() => handleRemoveField(index)}>
-                <Remove />
-              </IconButton>
-              {currentIndex === index && (
-                <Paper
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    bottom: '100%',
-                    transform: 'translateY(-8px)',
-                    width: '300px',
-                    maxHeight: '200px',
-                    overflowY: 'auto',
-                    zIndex: 1500,
-                  }}
-                  onMouseDown={(e) => e.preventDefault()}
-                >
-                  <List dense>
-                    {allComponents
-                      .filter((comp) =>
-                        component.componentName ? comp.componentName.toLowerCase().includes(component.componentName.toLowerCase()) : true
-                      )
-                      .map((comp) => (
-                        <ListItem
-                          key={comp.id}
-                          onMouseDown={() => handleComponentSelect(comp, index)}
-                        >
-                          {comp.componentName}
-                        </ListItem>
-                      ))}
-                  </List>
-                </Paper>
-              )}
-            </Box>
-          ))}
+              <ComponentInput
+                key={index}
+                component={component}
+                allComponents={allComponents}
+                index={index}
+                onComponentChange={(index, field, value) => handleComponentChange(index, field, value)}
+                onRemove={() => handleRemoveField(index)}
+                onInputFocus={handleInputFocus}
+                onComponentSelect={handleComponentSelect}
+                currentIndex={currentIndex}
+            />
+            ))}
           <Box display="flex" justifyContent="center" marginTop={2}>
             <IconButton color="primary" onClick={handleAddField}>
               <Add />

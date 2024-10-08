@@ -76,7 +76,7 @@ class SocketAppointments {
         } else {
           clearInterval(this.reconnectInterval);
         }
-      }, 5000); // Retry every 5 seconds
+      }, 15000); // Retry every 5 seconds
     }
   }
 
