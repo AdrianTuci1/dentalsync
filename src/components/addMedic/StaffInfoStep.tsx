@@ -1,126 +1,129 @@
 import React from 'react';
-import { TextField, Grid, Select, MenuItem, InputLabel, FormControl, Button } from '@mui/material';
-import { SelectChangeEvent } from '@mui/material/Select';
 
-interface StaffInfoStepProps {
+interface InfoTabProps {
+  info: {
     name: string;
     employmentType: string;
-    specialist: string;
+    specialization: string;
     phone: string;
     email: string;
     address: string;
-    onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-    onEmploymentTypeChange: (e: SelectChangeEvent<string>) => void;
-    onSpecialistChange: (e: SelectChangeEvent<string>) => void;
-    onPhotoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    photo: string;
+  };
+  onInfoChange: (field: string, value: string | File | null) => void;
 }
 
-const StaffInfoStep: React.FC<StaffInfoStepProps> = ({
-    name,
-    employmentType,
-    specialist,
-    phone,
-    email,
-    address,
-    onInputChange,
-    onEmploymentTypeChange,
-    onSpecialistChange,
-    onPhotoUpload,
-}) => {
-    return (
-        <Grid container spacing={2}>
-            {/* Name Field */}
-            <Grid item xs={12}>
-                <TextField
-                    label="Name"
-                    name="name"
-                    value={name}
-                    onChange={onInputChange}
-                    fullWidth
-                />
-            </Grid>
+const InfoTab: React.FC<InfoTabProps> = ({ info, onInfoChange }) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    onInfoChange(name, value);
+  };
 
-            {/* Employment Type Field */}
-            <Grid item xs={12}>
-                <FormControl fullWidth>
-                    <InputLabel id="employment-type-label">Employment Type</InputLabel>
-                    <Select
-                        labelId="employment-type-label"
-                        value={employmentType}
-                        onChange={onEmploymentTypeChange} // Correct event type
-                    >
-                        <MenuItem value="full-time">Full-Time</MenuItem>
-                        <MenuItem value="part-time">Part-Time</MenuItem>
-                    </Select>
-                </FormControl>
-            </Grid>
+  const handleEmploymentTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    onInfoChange('employmentType', e.target.value);
+  };
 
-            {/* Specialist Field */}
-            <Grid item xs={12}>
-                <FormControl fullWidth>
-                    <InputLabel id="specialist-label">Specialist</InputLabel>
-                    <Select
-                        labelId="specialist-label"
-                        value={specialist}
-                        onChange={onSpecialistChange} // Correct event type
-                    >
-                        <MenuItem value="Orthodontist">Orthodontist</MenuItem>
-                        <MenuItem value="Pediatric Dentist">Pediatric Dentist</MenuItem>
-                        <MenuItem value="Prosthodontist">Prosthodontist</MenuItem>
-                    </Select>
-                </FormControl>
-            </Grid>
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    onInfoChange('photo', file); // Pass the file directly through onInfoChange
+  };
 
-            {/* Phone Field */}
-            <Grid item xs={12}>
-                <TextField
-                    label="Phone"
-                    name="phone"
-                    value={phone}
-                    onChange={onInputChange}
-                    fullWidth
-                />
-            </Grid>
+  return (
+    <div>
+      <div style={{ marginBottom: '1rem' }}>
+        <label>
+          Name:
+          <input
+            type="text"
+            name="name"
+            value={info.name}
+            onChange={handleChange}
+            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+          />
+        </label>
+      </div>
 
-            {/* Email Field */}
-            <Grid item xs={12}>
-                <TextField
-                    label="Email"
-                    name="email"
-                    value={email}
-                    onChange={onInputChange}
-                    fullWidth
-                />
-            </Grid>
+      <div style={{ marginBottom: '1rem' }}>
+        <label>
+          Employment Type:
+          <select
+            name="employmentType"
+            value={info.employmentType}
+            onChange={handleEmploymentTypeChange}
+            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+          >
+            <option value="">Select Employment Type</option>
+            <option value="full-time">Full-time</option>
+            <option value="part-time">Part-time</option>
+          </select>
+        </label>
+      </div>
 
-            {/* Address Field */}
-            <Grid item xs={12}>
-                <TextField
-                    label="Address (Optional)"
-                    name="address"
-                    value={address}
-                    onChange={onInputChange}
-                    fullWidth
-                />
-            </Grid>
+      <div style={{ marginBottom: '1rem' }}>
+        <label>
+          Specialist:
+          <input
+            type="text"
+            name="specialization"
+            value={info.specialization}
+            onChange={handleChange}
+            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+          />
+        </label>
+      </div>
 
-            {/* Photo Upload Field */}
-            <Grid item xs={12}>
-                <input
-                    accept="image/*"
-                    style={{ display: 'none' }}
-                    id="photo-upload"
-                    type="file"
-                    onChange={onPhotoUpload}
-                />
-                <label htmlFor="photo-upload">
-                    <Button variant="contained" component="span">
-                        Upload Photo
-                    </Button>
-                </label>
-            </Grid>
-        </Grid>
-    );
+      <div style={{ marginBottom: '1rem' }}>
+        <label>
+          Phone:
+          <input
+            type="tel"
+            name="phone"
+            value={info.phone}
+            onChange={handleChange}
+            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+          />
+        </label>
+      </div>
+
+      <div style={{ marginBottom: '1rem' }}>
+        <label>
+          Email:
+          <input
+            type="email"
+            name="email"
+            value={info.email}
+            onChange={handleChange}
+            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+          />
+        </label>
+      </div>
+
+      <div style={{ marginBottom: '1rem' }}>
+        <label>
+          Address:
+          <input
+            type="text"
+            name="address"
+            value={info.address}
+            onChange={handleChange}
+            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+          />
+        </label>
+      </div>
+
+      <div style={{ marginBottom: '1rem' }}>
+        <label>
+          Upload Photo:
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoUpload}
+            style={{ width: '100%', marginTop: '0.25rem' }}
+          />
+        </label>
+      </div>
+    </div>
+  );
 };
 
-export default StaffInfoStep;
+export default InfoTab;

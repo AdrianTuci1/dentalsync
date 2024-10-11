@@ -1,3 +1,4 @@
+import { Category } from "../components/addMedic/TreatmentAccordion";
 import { Treatment } from "../types/treatmentType";
 
 class TreatmentService {
@@ -93,7 +94,28 @@ class TreatmentService {
         throw new Error('Failed to delete treatment');
       }
     }
+
+
+
+  // Get treatments sorted by category
+  async getTreatmentsByCategory(): Promise<Category[]> {
+    const response = await fetch(`${this.baseUrl}/api/treatments/category`, {
+      method: 'GET',
+      headers: this.getHeaders(),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch treatments by category');
+    }
+
+    const data = await response.json();
+    return data; // Assuming the response is already formatted as an array of categories with their treatments
   }
+
+  }
+
+
+
   
   export default TreatmentService;
   

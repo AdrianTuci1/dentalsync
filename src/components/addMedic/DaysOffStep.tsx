@@ -1,73 +1,101 @@
 import React, { useState } from 'react';
-import { Box, Typography, Grid, Checkbox, Button, IconButton, TextField, FormControlLabel, Switch, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import {
+    Box,
+    Typography,
+    Grid,
+    Button,
+    IconButton,
+    TextField,
+    FormControlLabel,
+    Switch,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+} from '@mui/material';
 import { Delete } from '@mui/icons-material';
 
 interface DayOff {
     id: string;
     name: string;
-    startDate: Date | null;
-    endDate: Date | null;
+    startDate: string; // Use string for easy date input handling
+    endDate: string;
     repeatYearly: boolean;
 }
 
 interface DaysOffStepProps {
     daysOff: DayOff[];
-    onAddDayOff: (dayOff: DayOff) => void;
-    onRemoveDayOff: (id: string) => void;
-    onToggleRepeat: (id: string) => void;
+    onDaysOffChange: (updatedDaysOff: DayOff[]) => void;
 }
 
-const DaysOffStep: React.FC<DaysOffStepProps> = ({ daysOff, onAddDayOff, onRemoveDayOff, onToggleRepeat }) => {
+const DaysOffStep: React.FC<DaysOffStepProps> = ({ daysOff, onDaysOffChange }) => {
     const [open, setOpen] = useState(false);
     const [dayOffName, setDayOffName] = useState('');
-    const [startDate, setStartDate] = useState<string | null>(null);
-    const [endDate, setEndDate] = useState<string | null>(null);
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
     const [repeatYearly, setRepeatYearly] = useState(false);
 
     const handleAddDayOff = () => {
-        const newDayOff = {
+        const newDayOff: DayOff = {
             id: `${Math.random()}`,
             name: dayOffName,
-            startDate: startDate ? new Date(startDate) : null, // Convert string to Date
-            endDate: endDate ? new Date(endDate) : null, // Convert string to Date
-            repeatYearly: repeatYearly,
+            startDate,
+            endDate,
+            repeatYearly,
         };
-        onAddDayOff(newDayOff);
-        setOpen(false); // Close dialog after adding
+        onDaysOffChange([...daysOff, newDayOff]);
+
+        // Reset form fields
+        setDayOffName('');
+        setStartDate('');
+        setEndDate('');
+        setRepeatYearly(false);
+        setOpen(false); // Close the dialog after adding
+    };
+
+    const handleRemoveDayOff = (id: string) => {
+        const updatedDaysOff = daysOff.filter((dayOff) => dayOff.id !== id);
+        onDaysOffChange(updatedDaysOff);
+    };
+
+    const handleToggleRepeat = (id: string) => {
+        const updatedDaysOff = daysOff.map((dayOff) =>
+            dayOff.id === id ? { ...dayOff, repeatYearly: !dayOff.repeatYearly } : dayOff
+        );
+        onDaysOffChange(updatedDaysOff);
     };
 
     return (
         <Box>
-            <Button variant="contained" onClick={() => setOpen(true)}>
+            <Button variant="contained" onClick={() => setOpen(true)} sx={{ mb: 2 }}>
                 Add Day Off
             </Button>
 
             {daysOff.map((dayOff) => (
-                <Grid container alignItems="center" spacing={2} key={dayOff.id}>
+                <Grid container alignItems="center" spacing={2} key={dayOff.id} sx={{ mb: 1 }}>
                     <Grid item xs={3}>
-                        <Checkbox checked />
+                        <Typography variant="subtitle1">{dayOff.name}</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                        <Typography>{dayOff.name}</Typography>
                         <Typography variant="body2">
-                            {dayOff.startDate ? dayOff.startDate.toLocaleDateString() : 'No start date'} -{' '}
-                            {dayOff.endDate ? dayOff.endDate.toLocaleDateString() : 'No end date'}
+                            {dayOff.startDate} - {dayOff.endDate}
                         </Typography>
                     </Grid>
                     <Grid item xs={2}>
                         <FormControlLabel
-                            control={<Switch checked={dayOff.repeatYearly} onChange={() => onToggleRepeat(dayOff.id)} />}
+                            control={<Switch checked={dayOff.repeatYearly} onChange={() => handleToggleRepeat(dayOff.id)} />}
                             label="Repeat yearly"
                         />
                     </Grid>
                     <Grid item xs={1}>
-                        <IconButton onClick={() => onRemoveDayOff(dayOff.id)}>
+                        <IconButton onClick={() => handleRemoveDayOff(dayOff.id)}>
                             <Delete />
                         </IconButton>
                     </Grid>
                 </Grid>
             ))}
 
+            {/* Dialog for Adding a New Day Off */}
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>Add Day Off</DialogTitle>
                 <DialogContent>
@@ -84,7 +112,7 @@ const DaysOffStep: React.FC<DaysOffStepProps> = ({ daysOff, onAddDayOff, onRemov
                         fullWidth
                         margin="normal"
                         InputLabelProps={{ shrink: true }}
-                        value={startDate || ''}
+                        value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
                     />
                     <TextField
@@ -93,7 +121,7 @@ const DaysOffStep: React.FC<DaysOffStepProps> = ({ daysOff, onAddDayOff, onRemov
                         fullWidth
                         margin="normal"
                         InputLabelProps={{ shrink: true }}
-                        value={endDate || ''}
+                        value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
                     />
                     <FormControlLabel

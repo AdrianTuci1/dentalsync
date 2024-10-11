@@ -6,14 +6,14 @@ export interface ComponentWithUnits {
   }
   
   export interface Treatment {
-    id: string;
+    id: number;
     name: string;
     category: string;
-    description: string;
-    duration: number; // Duration in minutes
-    price: number;
-    components: ComponentWithUnits[]; // Array of components with units
-    createdAt: string;
-    updatedAt: string;
+    description?: string;
+    duration?: number; // Duration in minutes
+    price?: number;
+    components?: ComponentWithUnits[]; // Array of components with units
+    createdAt?: string;
+    updatedAt?: string;
   }
   
