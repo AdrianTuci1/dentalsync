@@ -3,10 +3,10 @@ import { Box, FormControlLabel, Switch, TextField, Typography } from '@mui/mater
 
 interface WorkingHoursStepProps {
   workingHours: { [key: string]: string };
-  onTimeChange: (day: string, hours: string) => void;
+  onWorkingHoursChange: (day: string, hours: string) => void;
 }
 
-const WorkingHoursStep: React.FC<WorkingHoursStepProps> = ({ workingHours, onTimeChange }) => {
+const WorkingHoursStep: React.FC<WorkingHoursStepProps> = ({ workingHours, onWorkingHoursChange }) => {
   const daysOfWeek = [
     { label: 'Monday', key: 'Mon' },
     { label: 'Tuesday', key: 'Tue' },
@@ -27,10 +27,10 @@ const WorkingHoursStep: React.FC<WorkingHoursStepProps> = ({ workingHours, onTim
   const handleToggleDay = (dayKey: string) => {
     if (workingHours[dayKey]) {
       // Day is currently enabled, so disable it by removing it from workingHours
-      onTimeChange(dayKey, ''); // Send empty string to remove from parent
+      onWorkingHoursChange(dayKey, ''); // Send empty string to remove from parent
     } else {
       // Day is currently disabled, so enable it with default hours
-      onTimeChange(dayKey, '9:00-17:00');
+      onWorkingHoursChange(dayKey, '9:00-17:00');
     }
   };
 
@@ -40,7 +40,7 @@ const WorkingHoursStep: React.FC<WorkingHoursStepProps> = ({ workingHours, onTim
       ? formatTimeRange(timeValue, currentRange.endTime)
       : formatTimeRange(currentRange.startTime, timeValue);
 
-    onTimeChange(dayKey, newRange);
+    onWorkingHoursChange(dayKey, newRange);
   };
 
   return (

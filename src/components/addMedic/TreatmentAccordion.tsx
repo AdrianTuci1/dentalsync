@@ -30,27 +30,36 @@ const TreatmentAccordion: React.FC<TreatmentAccordionProps> = ({ assignedTreatme
     const treatmentService = new TreatmentService(token, 'demo_db');
 
     const fetchData = useCallback(async () => {
-        try {
-            const data: Category[] = await treatmentService.getTreatmentsByCategory();
-
-            // Check for treatments without a category and add to "No Category" accordion if needed
-            const noCategoryTreatments = data
-                .flatMap((category) => category.treatments)
-                .filter((treatment) => !treatment.category);
-
-            if (noCategoryTreatments.length > 0) {
-                data.push({
-                    id: 'no_category',
-                    name: 'No Category',
-                    treatments: noCategoryTreatments,
-                });
+      try {
+        let data: Category[] = await treatmentService.getTreatmentsByCategory();
+    
+        // Separate treatments without a category
+        const noCategoryTreatments: Treatment[] = [];
+        data = data.map((category) => {
+          const treatmentsWithCategory = category.treatments.filter((treatment) => {
+            if (!treatment.category) {
+              noCategoryTreatments.push(treatment);
+              return false;
             }
-
-            setCategories(data);
-        } catch (error) {
-            console.error('Error fetching treatments by category:', error);
+            return true;
+          });
+          return { ...category, treatments: treatmentsWithCategory };
+        });
+    
+        if (noCategoryTreatments.length > 0) {
+          data.push({
+            id: 'no_category',
+            name: 'No Category',
+            treatments: noCategoryTreatments,
+          });
         }
+    
+        setCategories(data);
+      } catch (error) {
+        console.error('Error fetching treatments by category:', error);
+      }
     }, [treatmentService]);
+    
 
     useEffect(() => {
         fetchData();

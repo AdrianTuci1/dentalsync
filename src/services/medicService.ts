@@ -20,7 +20,7 @@ class MedicService {
     // Create Medic
     async createMedic(medicData: object) {
       try {
-        const response = await fetch(`${this.BASE_URL}/medics`, {
+        const response = await fetch(`${this.BASE_URL}/api/medics`, {
           method: 'POST',
           headers: this.getHeaders(),
           body: JSON.stringify(medicData),
@@ -35,7 +35,7 @@ class MedicService {
     // View Medic
     async viewMedic(medicId: string) {
       try {
-        const response = await fetch(`${this.BASE_URL}/medics/${medicId}`, {
+        const response = await fetch(`${this.BASE_URL}/api/medics/${medicId}`, {
           method: 'GET',
           headers: this.getHeaders(),
         });
@@ -49,7 +49,7 @@ class MedicService {
     // Update Medic
     async updateMedic(medicId: string, medicData: object) {
       try {
-        const response = await fetch(`${this.BASE_URL}/medics/${medicId}`, {
+        const response = await fetch(`${this.BASE_URL}/api/medics/${medicId}`, {
           method: 'PUT',
           headers: this.getHeaders(),
           body: JSON.stringify(medicData),
@@ -64,7 +64,7 @@ class MedicService {
     // Delete Medic
     async deleteMedic(medicId: string) {
       try {
-        const response = await fetch(`${this.BASE_URL}/medics/${medicId}`, {
+        const response = await fetch(`${this.BASE_URL}/api/medics/${medicId}`, {
           method: 'DELETE',
           headers: this.getHeaders(),
         });
@@ -74,6 +74,21 @@ class MedicService {
         throw error;
       }
     }
+
+
+      // Get Medics with Working Days
+  async getMedicsWithWorkingDays() {
+    try {
+      const response = await fetch(`${this.BASE_URL}/api/medics`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching medics with working days:', error);
+      throw error;
+    }
+  }
   }
   
   export default MedicService;
