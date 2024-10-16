@@ -9,11 +9,11 @@ import {
   Typography,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import WorkingHoursStep from '../addMedic/WorkingHoursStep';
-import DaysOffStep from '../addMedic/DaysOffStep';
-import PermissionsStep from '../addMedic/PermissionsStep';
-import InfoTab from '../addMedic/StaffInfoStep';
-import TreatmentAccordion from '../addMedic/TreatmentAccordion';
+import WorkingHoursStep from './addMedic/WorkingHoursStep';
+import DaysOffStep from './addMedic/DaysOffStep';
+import PermissionsStep from './addMedic/PermissionsStep';
+import InfoTab from './addMedic/StaffInfoStep';
+import TreatmentAccordion from './addMedic/TreatmentAccordion';
 import MedicService from '../../services/medicService';
 import { useSelector } from 'react-redux';
 

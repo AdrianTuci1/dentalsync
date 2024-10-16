@@ -7,8 +7,8 @@ import {
     FormControlLabel
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import TreatmentService from '../../services/treatmentService';
-import { Treatment } from '../../types/treatmentType';
+import TreatmentService from '../../../services/treatmentService';
+import { Treatment } from '../../../types/treatmentType';
 import { useSelector } from 'react-redux';
 
 export interface Category {

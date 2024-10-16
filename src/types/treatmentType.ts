@@ -6,7 +6,7 @@ export interface ComponentWithUnits {
   }
   
   export interface Treatment {
-    id: number;
+    id: string;
     name: string;
     category: string;
     description?: string;

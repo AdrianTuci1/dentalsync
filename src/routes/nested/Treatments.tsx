@@ -109,7 +109,7 @@ export const Treatments: React.FC = () => {
                   {!isSmallScreen && (
                     <>
                       <TableCell>{treatment.duration}</TableCell>
-                      <TableCell>{treatment.category}</TableCell> {/* Changed to category */}
+                      <TableCell>{treatment.category}</TableCell>
                       <TableCell>
                         <Button variant="text" onClick={() => handleEdit(treatment.id)}>
                           Edit

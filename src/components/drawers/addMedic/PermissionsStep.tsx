@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, FormControlLabel, Checkbox, Typography } from '@mui/material';
-import { ApiPermission } from '../../types/Medic';
+import { ApiPermission } from '../../../types/Medic';
 
 interface PermissionsStepProps {
   permissions: ApiPermission[];

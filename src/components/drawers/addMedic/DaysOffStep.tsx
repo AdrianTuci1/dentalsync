@@ -14,7 +14,7 @@ import {
   DialogActions,
 } from '@mui/material';
 import { Delete } from '@mui/icons-material';
-import { DayOff } from '../../types/Medic';
+import { DayOff } from '../../../types/Medic';
 
 
 interface DaysOffStepProps {

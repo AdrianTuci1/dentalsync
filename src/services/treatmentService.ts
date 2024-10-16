@@ -1,4 +1,4 @@
-import { Category } from "../components/addMedic/TreatmentAccordion";
+import { Category } from "../components/drawers/addMedic/TreatmentAccordion";
 import { Treatment } from "../types/treatmentType";
 
 class TreatmentService {
