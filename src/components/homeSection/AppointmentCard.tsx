@@ -44,18 +44,18 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment }) => {
             fontWeight: 'bold',
           }}
         >
-          {appointment.treatment.charAt(0)}
+          {appointment.initialTreatment.charAt(0)}
         </Box>
         <Box sx={{ flexGrow: 1 }}>
-          <Typography variant="subtitle1">{appointment.treatment}</Typography>
+          <Typography variant="subtitle1">{appointment.initialTreatment}</Typography>
           <Typography variant="body2" color="textSecondary">
-            {appointment.patientName}
+            {appointment.patientUser}
           </Typography>
         </Box>
         {/* Doctor Avatar and Name */}
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar sx={{ marginRight: '8px' }}>{appointment.medicName.charAt(0)}</Avatar>
-          <Typography variant="subtitle2">{appointment.medicName}</Typography>
+          <Avatar sx={{ marginRight: '8px' }}>{appointment.medicUser.charAt(0)}</Avatar>
+          <Typography variant="subtitle2">{appointment.medicUser}</Typography>
         </Box>
       </Box>
     </Paper>

@@ -74,6 +74,24 @@ class PatientService {
         throw error;
       }
     }
+
+
+      // Method to get a patient by ID
+  async getPatient(patientId: string) {
+    try {
+      const response = await fetch(`${this.BASE_URL}/api/patients/${patientId}`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch patient');
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching patient:', error);
+      throw error;
+    }
+  }
   }
   
   export default PatientService;

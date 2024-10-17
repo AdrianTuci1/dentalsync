@@ -1,42 +1,70 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { format, isToday, isTomorrow, isThisWeek, parseISO } from 'date-fns';
-import { Appointment } from '../../types/appointmentEvent'; // Adjust import path
-import AppointmentCard from '../../components/homeSection/AppointmentCard'; // Adjust import path
-import WeekAppointmentCard from '../../components/homeSection/WeekAppointmentCard'; // Adjust import path
+import { Appointment } from '../../types/appointmentEvent';
+import AppointmentCard from '../../components/homeSection/AppointmentCard';
+import WeekAppointmentCard from '../../components/homeSection/WeekAppointmentCard';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../services/store';
+import { useWebSocket } from '../../services/WebSocketContext';
 
 const HomePage: React.FC = () => {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const { currentWeek, setCurrentWeek, appointments, requestAppointments } = useWebSocket();
   const currentUser = useSelector((state: RootState) => state.auth.subaccountUser.name);
-
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+
+  const calculateCurrentWeek = () => {
+    const today = new Date();
+    const dayOfWeek = today.getDay() === 0 ? 7 : today.getDay(); // Treat Sunday as 7 for Monday-start weeks
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - dayOfWeek + 1);
+    const weekDates = [];
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek);
+      date.setDate(startOfWeek.getDate() + i);
+      weekDates.push(date); // Store Date objects
+    }
+
+    return weekDates;
+  };
+
   useEffect(() => {
-    // Fetch appointments from an API or service
-    const fetchAppointments = async () => {
-      try {
-        const response = await fetch('/api/appointments'); // Replace with your API endpoint
-        const data: Appointment[] = await response.json();
-        setAppointments(data);
-      } catch (error) {
-        console.error('Error fetching appointments:', error);
-      }
-    };
+    const weekDates = calculateCurrentWeek();
+    setCurrentWeek(weekDates); // Set the week dates once on component mount
+    requestAppointments(true); // Fetch appointments after setting the week
+  }, []); // Run only once on mount by not including dependencies
 
-    fetchAppointments();
-  }, []);
+  // Helper functions to filter appointments by today, tomorrow, and this week
+  const isToday = (dateString: string) => {
+    const today = new Date();
+    const date = new Date(dateString);
+    return date.toDateString() === today.toDateString();
+  };
 
-  // Filter today's, tomorrow's, and this week's appointments
-  const todayAppointments = appointments.filter((appointment) => isToday(parseISO(appointment.date)));
-  const tomorrowAppointments = appointments.filter((appointment) => isTomorrow(parseISO(appointment.date)));
-  const weekAppointments = appointments.filter((appointment) => isThisWeek(parseISO(appointment.date), { weekStartsOn: 1 })); // Assuming the week starts on Monday
+  const isTomorrow = (dateString: string) => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const date = new Date(dateString);
+    return date.toDateString() === tomorrow.toDateString();
+  };
 
+  const isThisWeek = (dateString: string) => {
+    const date = new Date(dateString);
+    return currentWeek.some((weekDate) => weekDate.toDateString() === date.toDateString());
+  };
+
+  // Filtering the appointments
+  const todayAppointments = appointments.filter((appointment) => isToday(appointment.date));
+  const tomorrowAppointments = appointments.filter((appointment) => isTomorrow(appointment.date));
+  const weekAppointments = appointments.filter((appointment) => isThisWeek(appointment.date));
+
+  // Grouping weekly appointments by day
   const groupAppointmentsByDay = (appointments: Appointment[]) => {
     return appointments.reduce((acc, appointment) => {
-      const day = format(parseISO(appointment.date), 'EEEE');
+      const date = new Date(appointment.date);
+      const day = date.toLocaleDateString('en-US', { weekday: 'long' });
       if (!acc[day]) {
         acc[day] = [];
       }
@@ -49,14 +77,12 @@ const HomePage: React.FC = () => {
 
   return (
     <Box sx={{ width: '100%', height: 'calc(100vh - 60px)', overflowY: 'auto', padding: 0, margin: 0 }}>
-      {/* Welcome Box */}
       <Box sx={{ width: '100%', backgroundColor: '#f0f0f0', padding: '5px', marginBottom: '1px' }}>
-        <Typography variant="h5" align="left" paddingInlineStart="20px" >
+        <Typography variant="h5" align="left" paddingInlineStart="20px">
           Welcome, {currentUser}!
         </Typography>
       </Box>
 
-      {/* Responsive Layout: Two columns on larger screens, one column on mobile */}
       <Box
         sx={{
           display: 'flex',
@@ -80,7 +106,9 @@ const HomePage: React.FC = () => {
             Appointments for Today
           </Typography>
           {todayAppointments.length > 0 ? (
-            todayAppointments.map((appointment) => <AppointmentCard key={appointment.appointmentId} appointment={appointment} />)
+            todayAppointments.map((appointment) => (
+              <AppointmentCard key={appointment.appointmentId} appointment={appointment} />
+            ))
           ) : (
             <Typography variant="body2">No appointments for today.</Typography>
           )}
@@ -89,7 +117,9 @@ const HomePage: React.FC = () => {
             Appointments for Tomorrow
           </Typography>
           {tomorrowAppointments.length > 0 ? (
-            tomorrowAppointments.map((appointment) => <AppointmentCard key={appointment.appointmentId} appointment={appointment} />)
+            tomorrowAppointments.map((appointment) => (
+              <AppointmentCard key={appointment.appointmentId} appointment={appointment} />
+            ))
           ) : (
             <Typography variant="body2">No appointments for tomorrow.</Typography>
           )}
@@ -109,7 +139,7 @@ const HomePage: React.FC = () => {
             Appointments for This Week
           </Typography>
           {Object.keys(groupedAppointments).map((day) => (
-            <Box key={day} sx={{ display: 'flex', alignItems: 'center', backgroundColor: '#cccccc', borderBottom:'1px solid #d0d0d0' }}>
+            <Box key={day} sx={{ display: 'flex', alignItems: 'center', backgroundColor: '#cccccc', borderBottom: '1px solid #d0d0d0' }}>
               <Typography
                 sx={{
                   width: '30%',

@@ -16,6 +16,8 @@ class SocketAppointments {
   private listeners: AppointmentListener[];
   private messageQueue: string[] = [];
   private reconnectInterval: number | undefined;
+  private throttleTimeout: NodeJS.Timeout | null = null; // Throttle timeout reference
+  private pendingRequest: string | null = null; // To hold pending request if throttled
 
   private constructor(socketUrl: string) {
     this.socket = new WebSocket(socketUrl);
@@ -34,7 +36,6 @@ class SocketAppointments {
   }
 
   private initWebSocket(socketUrl: string) {
-    // Handle WebSocket connection open
     this.socket.onopen = () => {
       this.isConnected = true;
       console.log('Connected to WebSocket server');
@@ -46,21 +47,18 @@ class SocketAppointments {
       }
     };
 
-    // Handle incoming messages (tiny appointments)
     this.socket.onmessage = (event: MessageEvent) => {
       const tinyAppointment: Appointment = JSON.parse(event.data);
       console.log('Tiny Appointment received:', tinyAppointment);
       this.listeners.forEach((listener) => listener(tinyAppointment));
     };
 
-    // Handle WebSocket close
     this.socket.onclose = () => {
       console.log('WebSocket connection closed');
       this.isConnected = false;
       this.attemptReconnection(socketUrl);
     };
 
-    // Handle WebSocket error
     this.socket.onerror = (error: Event) => {
       console.error('WebSocket error:', error);
     };
@@ -69,17 +67,19 @@ class SocketAppointments {
   private attemptReconnection(socketUrl: string) {
     if (!this.isConnected) {
       console.log('Attempting to reconnect to WebSocket...');
-      this.reconnectInterval = setInterval(() => {
+      this.reconnectInterval = window.setInterval(() => {
         if (!this.isConnected) {
           this.socket = new WebSocket(socketUrl);
           this.initWebSocket(socketUrl);
         } else {
           clearInterval(this.reconnectInterval);
+          this.reconnectInterval = undefined;
         }
-      }, 15000); // Retry every 5 seconds
+      }, 15000); // Retry every 15 seconds
     }
   }
 
+  // Throttled requestAppointments method
   requestAppointments(startDate: string | null, endDate: string | null, clinicDatabase: string, medicUser: string | null = null) {
     const requestPayload: AppointmentRequest = {
       startDate,
@@ -90,10 +90,31 @@ class SocketAppointments {
     const message = JSON.stringify(requestPayload);
 
     if (this.isConnected) {
-      this.socket.send(message);
+      if (this.throttleTimeout) {
+        // If we're within the throttle period, store the latest request
+        this.pendingRequest = message;
+      } else {
+        // Send immediately and start throttling
+        this.socket.send(message);
+        this.throttleTimeout = setTimeout(() => {
+          // When throttle period ends, send pending request if available
+          if (this.pendingRequest) {
+            this.socket.send(this.pendingRequest);
+            this.pendingRequest = null;
+          }
+          this.clearThrottleTimeout();
+        }, 5000); // Throttle period of 5 seconds
+      }
     } else {
       console.error('WebSocket is not connected. Queuing message.');
       this.messageQueue.push(message);
+    }
+  }
+
+  private clearThrottleTimeout() {
+    if (this.throttleTimeout) {
+      clearTimeout(this.throttleTimeout);
+      this.throttleTimeout = null;
     }
   }
 

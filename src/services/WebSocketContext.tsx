@@ -23,20 +23,19 @@ export const useWebSocket = () => {
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
+  const [throttleTimeout, setThrottleTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  // Helper function to check for duplicate appointments
+  // Add appointment only if it's unique
   const addUniqueAppointment = (newAppointment: Appointment) => {
     setAppointments((prevAppointments) => {
-      // Check if the appointment already exists in the state
       const appointmentExists = prevAppointments.some(
         (appointment) => appointment.appointmentId === newAppointment.appointmentId
       );
 
-      // If not, append the new appointment
       if (!appointmentExists) {
         return [...prevAppointments, newAppointment];
       }
-      return prevAppointments; // Otherwise, return the previous state as is
+      return prevAppointments;
     });
   };
 
@@ -53,20 +52,32 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   }, []);
 
+  const throttledRequestAppointments = (isAllAppointments: boolean, medicUser?: string) => {
+    if (throttleTimeout) {
+      clearTimeout(throttleTimeout);
+    }
+    setThrottleTimeout(setTimeout(() => {
+      requestAppointments(isAllAppointments, medicUser);
+      setThrottleTimeout(null);
+    }, 5000)); // Adjust delay as necessary
+  };
+
   const requestAppointments = (isAllAppointments: boolean, medicUser?: string) => {
-    if (currentWeek.length > 0) {
+    if (currentWeek.length === 7) {
+      const startDate = currentWeek[0].toISOString().split('T')[0];
+      const endDate = currentWeek[6].toISOString().split('T')[0];
       SocketAppointments.requestAppointments(
-        currentWeek[0]?.toISOString().split('T')[0],
-        currentWeek[6]?.toISOString().split('T')[0],
-        'demo_db', // Update as necessary
+        startDate,
+        endDate,
+        'demo_db',
         isAllAppointments ? null : medicUser || null
       );
     }
   };
 
   useEffect(() => {
-    if (currentWeek.length > 0) {
-      requestAppointments(true); // Default to fetching all appointments
+    if (currentWeek.length === 7) {
+      throttledRequestAppointments(true); // Fetch all appointments by default
     }
   }, [currentWeek]);
 
