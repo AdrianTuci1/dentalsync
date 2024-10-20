@@ -52,6 +52,19 @@ class AppointmentService {
   async editAppointment(appointmentId: string, updatedData: any) {
     return await this.request(`${BASE_URL}/${appointmentId}`, 'PUT', updatedData);
   }
+
+  // Fetch appointments for a specific patient by patientId
+  async fetchPatientAppointments(patientId: string, limit = 20, offset = 0) {
+    return await this.request(`${BASE_URL}/patient/${patientId}?limit=${limit}&offset=${offset}`, 'GET');
+  }
+
+  // Fetch appointments for a medic (or all if no medicId is passed)
+  async fetchMedicAppointments(medicId?: string) {
+    const url = medicId 
+      ? `${BASE_URL}/medic/${medicId}`
+      : `${BASE_URL}/medic`; // No medicId provided, fetch all appointments
+    return await this.request(url, 'GET');
+  }
 }
 
 export default AppointmentService;
