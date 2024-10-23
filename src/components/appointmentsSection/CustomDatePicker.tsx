@@ -22,7 +22,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
     );
   }, [selectedDate]);
 
-  // Generate array of dates for the current month
+  // Generate array of dates for the current month, adjusting for Monday as the first day
   const generateMonthDays = () => {
     const daysInMonth = new Date(
       currentMonth.getFullYear(),
@@ -34,7 +34,9 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
       currentMonth.getMonth(),
       1
     );
-    const weekDayOffset = firstDay.getDay();
+    
+    // Adjust for Monday as the first day of the week
+    const weekDayOffset = (firstDay.getDay() + 6) % 7;
 
     const days = [];
     for (let i = 1; i <= daysInMonth + weekDayOffset; i++) {
@@ -86,7 +88,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
 
   // Helper function to check if a date is in the selected week
   const isDateInSelectedWeek = (date: Date) => {
-    return isSameWeek(date, selectedDate);
+    return isSameWeek(date, selectedDate, { weekStartsOn: 1 }); // Week starts on Monday
   };
 
   return (
@@ -136,7 +138,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
               <button onClick={handleNextMonth}>▶</button>
             </div>
 
-            {/* Days of the week */}
+            {/* Days of the week starting from Monday */}
             <div
               style={{
                 display: 'grid',
@@ -144,7 +146,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
                 gap: '5px',
               }}
             >
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
                 <span
                   key={day}
                   style={{ textAlign: 'center', fontWeight: 'bold' }}

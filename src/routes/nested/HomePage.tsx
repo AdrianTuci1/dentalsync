@@ -1,40 +1,22 @@
 import React, { useEffect } from 'react';
 import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
-import { Appointment } from '../../types/appointmentEvent';
 import AppointmentCard from '../../components/homeSection/AppointmentCard';
 import WeekAppointmentCard from '../../components/homeSection/WeekAppointmentCard';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../services/store';
 import { useWebSocket } from '../../services/WebSocketContext';
+import { Appointment } from '../../types/appointmentEvent';
 
 const HomePage: React.FC = () => {
-  const { currentWeek, setCurrentWeek, appointments, requestAppointments } = useWebSocket();
+  const { appointments, requestAppointments } = useWebSocket(); // Use WebSocket for fetching appointments
   const currentUser = useSelector((state: RootState) => state.auth.subaccountUser.name);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-
-  const calculateCurrentWeek = () => {
-    const today = new Date();
-    const dayOfWeek = today.getDay() === 0 ? 7 : today.getDay(); // Treat Sunday as 7 for Monday-start weeks
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - dayOfWeek + 1);
-    const weekDates = [];
-
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(startOfWeek);
-      date.setDate(startOfWeek.getDate() + i);
-      weekDates.push(date); // Store Date objects
-    }
-
-    return weekDates;
-  };
-
+  // Fetch appointments for the current week using WebSocket when the component mounts
   useEffect(() => {
-    const weekDates = calculateCurrentWeek();
-    setCurrentWeek(weekDates); // Set the week dates once on component mount
-    requestAppointments(true); // Fetch appointments after setting the week
-  }, []); // Run only once on mount by not including dependencies
+    requestAppointments(); // Fetch appointments for the current week
+  }, []); // Only run once on mount
 
   // Helper functions to filter appointments by today, tomorrow, and this week
   const isToday = (dateString: string) => {
@@ -50,15 +32,9 @@ const HomePage: React.FC = () => {
     return date.toDateString() === tomorrow.toDateString();
   };
 
-  const isThisWeek = (dateString: string) => {
-    const date = new Date(dateString);
-    return currentWeek.some((weekDate) => weekDate.toDateString() === date.toDateString());
-  };
-
   // Filtering the appointments
   const todayAppointments = appointments.filter((appointment) => isToday(appointment.date));
   const tomorrowAppointments = appointments.filter((appointment) => isTomorrow(appointment.date));
-  const weekAppointments = appointments.filter((appointment) => isThisWeek(appointment.date));
 
   // Grouping weekly appointments by day
   const groupAppointmentsByDay = (appointments: Appointment[]) => {
@@ -73,7 +49,8 @@ const HomePage: React.FC = () => {
     }, {} as Record<string, Appointment[]>);
   };
 
-  const groupedAppointments = groupAppointmentsByDay(weekAppointments);
+  // Group appointments for the week
+  const groupedAppointments = groupAppointmentsByDay(appointments);
 
   return (
     <Box sx={{ width: '100%', height: 'calc(100vh - 60px)', overflowY: 'auto', padding: 0, margin: 0 }}>

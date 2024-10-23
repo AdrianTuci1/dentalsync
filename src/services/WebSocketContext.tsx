@@ -1,13 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import SocketAppointments from './socketAppointments';
 import { Appointment } from '../types/appointmentEvent';
+import { getSubdomain } from '../utils/getSubdomains'; // Import getSubdomain utility
 
 interface WebSocketContextProps {
-  setCurrentWeek: (week: Date[]) => void;
-  currentWeek: Date[];
   appointments: Appointment[];
   setAppointments: React.Dispatch<React.SetStateAction<Appointment[]>>;
-  requestAppointments: (isAllAppointments: boolean, medicUser?: string) => void;
+  requestAppointments: (medicUser?: string) => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextProps | undefined>(undefined);
@@ -22,16 +21,13 @@ export const useWebSocket = () => {
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [currentWeek, setCurrentWeek] = useState<Date[]>([]);
-  const [throttleTimeout, setThrottleTimeout] = useState<NodeJS.Timeout | null>(null);
+  const subdomain = getSubdomain(); // Get the clinic's subdomain to send in requests
 
-  // Add appointment only if it's unique
   const addUniqueAppointment = (newAppointment: Appointment) => {
     setAppointments((prevAppointments) => {
       const appointmentExists = prevAppointments.some(
         (appointment) => appointment.appointmentId === newAppointment.appointmentId
       );
-
       if (!appointmentExists) {
         return [...prevAppointments, newAppointment];
       }
@@ -52,37 +48,18 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     };
   }, []);
 
-  const throttledRequestAppointments = (isAllAppointments: boolean, medicUser?: string) => {
-    if (throttleTimeout) {
-      clearTimeout(throttleTimeout);
-    }
-    setThrottleTimeout(setTimeout(() => {
-      requestAppointments(isAllAppointments, medicUser);
-      setThrottleTimeout(null);
-    }, 5000)); // Adjust delay as necessary
+  const requestAppointments = (medicUser?: string) => {
+    // Send the subdomain and medicUser (optional) to the WebSocket server
+    SocketAppointments.requestAppointments(subdomain, medicUser || null);
   };
 
-  const requestAppointments = (isAllAppointments: boolean, medicUser?: string) => {
-    if (currentWeek.length === 7) {
-      const startDate = currentWeek[0].toISOString().split('T')[0];
-      const endDate = currentWeek[6].toISOString().split('T')[0];
-      SocketAppointments.requestAppointments(
-        startDate,
-        endDate,
-        'demo_db',
-        isAllAppointments ? null : medicUser || null
-      );
-    }
-  };
-
+  // Trigger the WebSocket request for the current week's appointments when the context is mounted
   useEffect(() => {
-    if (currentWeek.length === 7) {
-      throttledRequestAppointments(true); // Fetch all appointments by default
-    }
-  }, [currentWeek]);
+    requestAppointments(); // Fetch appointments for the current week on component mount
+  }, []);
 
   return (
-    <WebSocketContext.Provider value={{ setCurrentWeek, currentWeek, appointments, setAppointments, requestAppointments }}>
+    <WebSocketContext.Provider value={{ appointments, setAppointments, requestAppointments }}>
       {children}
     </WebSocketContext.Provider>
   );

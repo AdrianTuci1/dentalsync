@@ -16,6 +16,8 @@ const WeekView: React.FC<WeekViewProps> = ({
   onAppointmentClick,
   onPatientClick,
 }) => {
+  
+
   return (
     <Box
       sx={{
@@ -27,9 +29,8 @@ const WeekView: React.FC<WeekViewProps> = ({
     >
       {selectedWeek.map((day) => {
         const dayAppointments = appointments.filter((appointment) => {
-          // Ensure that appointment.date is parsed as a Date object if it's not already
-          const appointmentDate = new Date(appointment.date);
-          return appointmentDate.toDateString() === day.toDateString();
+          const appointmentDate = new Date(appointment.date); // Ensure appointment.date is a Date object
+          return appointmentDate.toDateString() === day.toDateString(); // Compare dates
         });
 
         return (

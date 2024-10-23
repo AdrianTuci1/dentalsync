@@ -5,6 +5,7 @@ import {
   Box,
   Typography,
   IconButton,
+  Menu,
 } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import TreatmentService from '../../services/treatmentService';
@@ -13,6 +14,7 @@ import { ComponentWithUnits } from '../../types/treatmentType';
 import { useSelector } from 'react-redux';
 import CategoryInput from '../CategoryInput';
 import ComponentInput from '../ComponentInput';
+import { ChromePicker } from 'react-color';
 
 interface TreatmentDrawerProps {
   isOpen: boolean;
@@ -29,6 +31,10 @@ const TreatmentDrawer: React.FC<TreatmentDrawerProps> = ({ isOpen, toggleDrawer,
   const [components, setComponents] = useState<ComponentWithUnits[]>([{ id: '', componentName: '', unitPrice: 0, componentUnits: 1 }]);
   const [allComponents, setAllComponents] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState<number | null>(null);
+  const [color, setColor] = useState('#FF5733');  // Default color
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);  // For color picker menu
+
   const token = useSelector((state: any) => state.auth.subaccountToken);
 
   const treatmentService = new TreatmentService(token, 'demo_db');
@@ -42,39 +48,58 @@ const TreatmentDrawer: React.FC<TreatmentDrawerProps> = ({ isOpen, toggleDrawer,
             treatmentId ? treatmentService.getTreatmentById(treatmentId) : Promise.resolve(null),
             componentService.getAllComponents(),
           ]);
-
+  
           if (fetchedTreatment) {
             setName(fetchedTreatment.name ?? '');
             setCategory(fetchedTreatment.category ?? '');
             setPrice(fetchedTreatment.price ?? 0);
             setDuration(fetchedTreatment.duration ?? 0);
             setDescription(fetchedTreatment.description ?? '');
-
-            const loadedComponents = fetchedTreatment.components.map((component: any) => ({
-              id: component.id,
-              componentName: component.componentName ?? '',
-              unitPrice: component.unitPrice ?? 0,
-              componentUnits: component.componentUnits ?? 1,
-            }));
+            setColor(fetchedTreatment.color ?? '#FF5733');
+  
+            // Safely access components
+            const loadedComponents = fetchedTreatment.components
+              ? fetchedTreatment.components.map((component: any) => ({
+                  id: component.id,
+                  componentName: component.componentName ?? '',
+                  unitPrice: component.unitPrice ?? 0,
+                  componentUnits: component.componentUnits ?? 1,
+                }))
+              : [{ id: '', componentName: '', unitPrice: 0, componentUnits: 1 }];
+  
             setComponents(loadedComponents);
           } else {
+            // Reset form fields when no treatment is fetched
             setName('');
             setCategory('');
             setPrice(0);
             setDuration(0);
             setDescription('');
+            setColor('#FF5733'); // Reset color
             setComponents([{ id: '', componentName: '', unitPrice: 0, componentUnits: 1 }]);
           }
-
+  
           setAllComponents(fetchedComponents);
         } catch (error) {
           console.error('Error fetching data:', error);
         }
       }
     };
-
+  
     fetchData();
   }, [treatmentId, isOpen]);
+  
+  const handleColorChange = (newColor: any) => {
+    setColor(newColor.hex);
+  };
+
+  const handleColorButtonClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleColorPickerClose = () => {
+    setAnchorEl(null);
+  };
 
   const handleAddField = () => {
     setComponents([...components, { id: '', componentName: '', unitPrice: 0, componentUnits: 1 }]);
@@ -121,6 +146,7 @@ const TreatmentDrawer: React.FC<TreatmentDrawerProps> = ({ isOpen, toggleDrawer,
       description,
       price,
       duration,
+      color,
       componentIds,
       componentUnits,
     };
@@ -128,7 +154,6 @@ const TreatmentDrawer: React.FC<TreatmentDrawerProps> = ({ isOpen, toggleDrawer,
     try {
       if (treatmentId) {
         await treatmentService.updateTreatment(treatmentId, treatmentData);
-        console.log(treatmentData)
       } else {
         await treatmentService.createTreatment(treatmentData);
       }
@@ -184,6 +209,25 @@ const TreatmentDrawer: React.FC<TreatmentDrawerProps> = ({ isOpen, toggleDrawer,
             rows={3}
             style={{ width: '100%', padding: '8px', marginTop: '8px', marginBottom: '16px' }}
           />
+
+          {/* Color Picker */}
+          <div>
+            <label>Color:</label>
+            <Button
+              onClick={handleColorButtonClick}
+              style={{ backgroundColor: color, color: '#fff', marginBottom: '16px', width: '100%', textAlign: 'left' }}
+            >
+              {color}
+            </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleColorPickerClose}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            >
+              <ChromePicker color={color} onChange={handleColorChange} />
+            </Menu>
+          </div>
 
           <Typography variant="subtitle1" marginTop={2}>
             Components

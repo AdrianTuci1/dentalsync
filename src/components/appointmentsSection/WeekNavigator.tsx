@@ -19,10 +19,6 @@ const WeekNavigator: React.FC<WeekNavigatorProps> = ({
   onPreviousWeek,
   onNextWeek,
 }) => {
-  // Generate previous and next week dates based on currentWeek
-  const previousWeek = currentWeek.map((day) => subDays(day, 7));
-  const nextWeek = currentWeek.map((day) => addDays(day, 7));
-
   // Responsive design for larger screens
   const isLargeScreen = useMediaQuery('(min-width:800px)');
 
@@ -95,7 +91,7 @@ const WeekNavigator: React.FC<WeekNavigatorProps> = ({
     <Box
       sx={{
         display: isLargeScreen ? 'flex' : 'none', // Hide when window is less than 800px
-        justifyContent: 'space-between',
+        justifyContent: 'center', // Center the current week
         alignItems: 'center',
         width: '100%',
         margin: '0px 0',
@@ -115,7 +111,7 @@ const WeekNavigator: React.FC<WeekNavigatorProps> = ({
           cursor: 'pointer',
         }}
       >
-        {renderDays(previousWeek, false)}
+        {renderDays(currentWeek.map((day) => subDays(day, 7)), false)}
       </Box>
 
       {/* Current Week */}
@@ -143,7 +139,7 @@ const WeekNavigator: React.FC<WeekNavigatorProps> = ({
           cursor: 'pointer',
         }}
       >
-        {renderDays(nextWeek, false)}
+        {renderDays(currentWeek.map((day) => addDays(day, 7)), false)}
       </Box>
     </Box>
   );

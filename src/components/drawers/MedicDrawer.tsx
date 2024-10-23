@@ -169,6 +169,7 @@ const MedicDrawer: React.FC<MedicDrawerProps> = ({ open, onClose, medicId }) => 
         await medicService.updateMedic(medicInfo.id, medicInfo);
       } else {
         await medicService.createMedic(medicInfo);
+        console.log(medicInfo)
       }
       onClose();
     } catch (error) {

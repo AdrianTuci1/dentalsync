@@ -12,6 +12,7 @@ export interface ComponentWithUnits {
     description?: string;
     duration?: number; // Duration in minutes
     price?: number;
+    color?: string;
     components?: ComponentWithUnits[]; // Array of components with units
     createdAt?: string;
     updatedAt?: string;

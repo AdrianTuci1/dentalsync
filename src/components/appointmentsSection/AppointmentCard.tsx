@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, Typography, Box, Avatar, Link } from '@mui/material';
 import { Appointment } from '../../types/appointmentEvent';
+import generateInitials from '../../utils/generateInitials'; // Import the generateInitials function
 
 interface AppointmentCardProps {
   appointment: Appointment;
@@ -13,7 +14,7 @@ const statusColors: Record<string, string> = {
   done: '#4caf50',        // Green for completed appointments
   upcoming: '#1976d2',    // Blue for upcoming appointments
   missed: '#f44336',      // Red for missed appointments
-  notpaid: '#ff9800',  // Orange for unpaid appointments
+  notpaid: '#ff9800',     // Orange for unpaid appointments
 };
 
 const AppointmentCard: React.FC<AppointmentCardProps> = ({
@@ -24,16 +25,16 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
   const {
     status,
     initialTreatment,
-    patientUser, // Assuming you will fetch patient name using this ID
-    medicUser, // Assuming you will fetch medic name using this ID
+    patientUser,
+    medicUser,
     startHour,
     endHour,
+    color, // Assuming treatment color is provided in the appointment data
   } = appointment;
 
   // Fetch patient and medic names using their respective IDs if necessary
   const patientName = `${patientUser}`;
   const medicName = `${medicUser}`;
-
 
   return (
     <Card
@@ -54,10 +55,26 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
           {status.toUpperCase()}
         </Typography>
 
-        {/* Treatment */}
-        <Typography variant="subtitle1" fontWeight="bold">
-          {initialTreatment || 'No Treatment'}
-        </Typography>
+        {/* Treatment Name with Initials */}
+        <Box display="flex" alignItems="center" marginBottom={1}>
+          <Box
+            width={30}
+            height={30}
+            bgcolor={color} // Apply treatment color
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            marginRight={2}
+            style={{ borderRadius: '4px' }}
+          >
+            <Typography variant="body2" color="white">
+              {generateInitials(initialTreatment as string)}
+            </Typography>
+          </Box>
+          <Typography variant="subtitle1" fontWeight="bold">
+            {initialTreatment || 'No Treatment'}
+          </Typography>
+        </Box>
 
         {/* Time */}
         <Typography variant="body2" color="textSecondary">

@@ -65,6 +65,13 @@ class AppointmentService {
       : `${BASE_URL}/medic`; // No medicId provided, fetch all appointments
     return await this.request(url, 'GET');
   }
+
+    // Fetch appointments for a specific week, optionally filtered by medicId
+    async fetchWeekAppointments(startDate: string, endDate: string, medicId?: string) {
+      const url = `${BASE_URL}/week-appointments`;
+      const body = { startDate, endDate, medicId };
+      return await this.request(url, 'POST', body);
+    }
 }
 
 export default AppointmentService;

@@ -9,6 +9,7 @@ export interface Appointment {
   price: number;            // Price of the appointment
   isPaid: boolean;          // Whether the appointment is paid
   status: 'done' | 'upcoming' | 'missed' | 'notpaid';  // Appointment status
+  color?: string;
   medicUser: string;        // ID of the medic attending the appointment
   patientUser: string;      // ID of the patient for the appointment
   createdAt: string;        // Timestamp when the appointment was created
@@ -24,6 +25,7 @@ export interface Treatment {
   description: string;      // Description of the treatment
   duration: number;         // Duration of the treatment in minutes
   price: number;            // Price of the treatment
+  color?: string;
   createdAt: string;        // Timestamp when the treatment was created
   updatedAt: string;        // Timestamp when the treatment was last updated
 }

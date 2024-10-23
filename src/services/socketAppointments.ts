@@ -1,10 +1,8 @@
 import { Appointment } from '../types/appointmentEvent';
 
 interface AppointmentRequest {
-  startDate: string | null;
-  endDate: string | null;
+  subdomain: string;  // Send the subdomain to the server
   medicUser?: string | null;
-  clinicDatabase: string;
 }
 
 type AppointmentListener = (appointment: Appointment) => void;
@@ -80,11 +78,9 @@ class SocketAppointments {
   }
 
   // Throttled requestAppointments method
-  requestAppointments(startDate: string | null, endDate: string | null, clinicDatabase: string, medicUser: string | null = null) {
+  requestAppointments(subdomain: string, medicUser: string | null = null) {
     const requestPayload: AppointmentRequest = {
-      startDate,
-      endDate,
-      clinicDatabase,
+      subdomain,  // Send subdomain to the server
       medicUser,
     };
     const message = JSON.stringify(requestPayload);

@@ -11,12 +11,14 @@ import {
   Box,
   useMediaQuery,
   TextField,
+  Typography,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import TreatmentDrawer from '../../components/drawers/TreatmentDrawer'; // Import the drawer component
 import TreatmentService from '../../services/treatmentService'; // Import the service to interact with API
 import { Treatment } from '../../types/treatmentType'; // Use the defined Treatment type
 import { useSelector } from 'react-redux';
+import generateInitials from '../../utils/generateInitials'; // Import your generateInitials function
 
 export const Treatments: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Control drawer visibility
@@ -89,7 +91,7 @@ export const Treatments: React.FC = () => {
           {!isSmallScreen && (
             <TableHead>
               <TableRow>
-                <TableCell>Treatment Name</TableCell>
+                <TableCell>Treatment</TableCell>
                 <TableCell>Price</TableCell>
                 <TableCell>Estimate Duration</TableCell>
                 <TableCell>Category</TableCell> {/* Category instead of Type of Visit */}
@@ -104,7 +106,25 @@ export const Treatments: React.FC = () => {
               )
               .map((treatment) => (
                 <TableRow key={treatment.id}>
-                  <TableCell>{treatment.name}</TableCell>
+                  <TableCell>
+                    <Box display="flex" alignItems="center">
+                      <Box
+                        width={30}
+                        height={30}
+                        bgcolor={treatment.color} // Apply treatment color
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        marginRight={2}
+                        style={{ borderRadius: '4px' }}
+                      >
+                        <Typography variant="body2" color="white">
+                          {generateInitials(treatment.name)}
+                        </Typography>
+                      </Box>
+                      {treatment.name}
+                    </Box>
+                  </TableCell>
                   <TableCell>{treatment.price}</TableCell>
                   {!isSmallScreen && (
                     <>

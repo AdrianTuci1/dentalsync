@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Typography, Avatar, Paper } from '@mui/material';
 import { Appointment } from '../../types/appointmentEvent'; // Adjust import path
 import { format, isToday, isTomorrow, parseISO } from 'date-fns';
+import generateInitials from '../../utils/generateInitials';
 
 interface AppointmentCardProps {
   appointment: Appointment;
@@ -44,7 +45,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment }) => {
             fontWeight: 'bold',
           }}
         >
-          {appointment.initialTreatment.charAt(0)}
+          {generateInitials(appointment.initialTreatment as string)}
         </Box>
         <Box sx={{ flexGrow: 1 }}>
           <Typography variant="subtitle1">{appointment.initialTreatment}</Typography>
