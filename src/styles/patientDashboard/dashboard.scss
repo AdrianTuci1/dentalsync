@@ -1,0 +1,36 @@
+.dashboard {
+  &__content {
+    padding-top: 70px; // Matches the height of the desktop navbar
+    padding-inline: 150px;
+  }
+}
+
+.top-menu {
+    display: block;
+  }
+  
+  .bottom-menu {
+    display: none;
+  }
+  
+  @media (max-width: 800px) {
+    .dashboard {
+      &__content {
+        padding-top: 10px; // Matches the height of the desktop navbar
+        padding-inline: 0px;
+      }
+    }
+    
+    .top-menu {
+      display: none;
+    }
+    .bottom-menu {
+      display: block;
+    }
+  }
+  
+  .active {
+    font-weight: bold;
+    color: #007bff;
+  }
+  

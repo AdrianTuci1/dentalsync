@@ -3,17 +3,23 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 interface AuthState {
   clinicToken: string | null;
   clinicUser: any | null;
-  subaccounts: any[];
+  subaccounts?: any[] | null;
   subaccountToken: string | null;
   subaccountUser: any | null;
 }
 
 const initialState: AuthState = {
   clinicToken: localStorage.getItem('clinicToken'),
-  clinicUser: localStorage.getItem('clinicUser') ? JSON.parse(localStorage.getItem('clinicUser') as string) : null,
-  subaccounts: localStorage.getItem('subaccounts') ? JSON.parse(localStorage.getItem('subaccounts') as string) : [],
+  clinicUser: localStorage.getItem('clinicUser') && localStorage.getItem('clinicUser') !== "undefined" 
+               ? JSON.parse(localStorage.getItem('clinicUser') as string) 
+               : null,
+  subaccounts: localStorage.getItem('subaccounts') && localStorage.getItem('subaccounts') !== "undefined" 
+               ? JSON.parse(localStorage.getItem('subaccounts') as string) 
+               : null,
   subaccountToken: localStorage.getItem('subaccountToken'),
-  subaccountUser: localStorage.getItem('subaccountUser') ? JSON.parse(localStorage.getItem('subaccountUser') as string) : null,
+  subaccountUser: localStorage.getItem('subaccountUser') && localStorage.getItem('subaccountUser') !== "undefined" 
+                  ? JSON.parse(localStorage.getItem('subaccountUser') as string) 
+                  : null,
 };
 
 const authSlice = createSlice({
@@ -56,15 +62,17 @@ const authSlice = createSlice({
       const subaccountToken = localStorage.getItem('subaccountToken');
       const subaccountUser = localStorage.getItem('subaccountUser');
 
-      if (clinicToken && clinicUser) {
+      if (clinicToken && clinicUser !== "undefined") {
         state.clinicToken = clinicToken;
-        state.clinicUser = JSON.parse(clinicUser);
-        state.subaccounts = subaccounts ? JSON.parse(subaccounts) : [];
+        state.clinicUser = JSON.parse(clinicUser as string);
+        state.subaccounts = subaccounts && subaccounts !== "undefined" 
+                            ? JSON.parse(subaccounts as string) 
+                            : null;
       }
-
-      if (subaccountToken && subaccountUser) {
+    
+      if (subaccountToken && subaccountUser !== "undefined") {
         state.subaccountToken = subaccountToken;
-        state.subaccountUser = JSON.parse(subaccountUser);
+        state.subaccountUser = JSON.parse(subaccountUser as string);
       }
     },
 

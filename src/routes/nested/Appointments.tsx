@@ -44,6 +44,7 @@ useEffect(() => {
     const startDate = weekDates[0].toISOString().split('T')[0];
     const endDate = weekDates[6].toISOString().split('T')[0];
     const appointmentService = new AppointmentService(subaccountToken as string, database);
+    console.log(startDate, endDate)
     
     appointmentService.fetchWeekAppointments(startDate, endDate, isAllAppointments ? undefined : YOUR_MEDIC_ID)
       .then(fetchedAppointments => {

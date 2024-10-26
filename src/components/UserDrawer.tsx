@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Drawer, IconButton, Divider, Typography, Box } from '@mui/material';
+import { Drawer, IconButton, Divider, Typography, Box, Avatar } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { logout, switchAccount } from '../services/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -44,8 +44,8 @@ const UserDrawer: React.FC<UserDrawerProps> = ({ open, onClose }) => {
   const [selectedMenu, setSelectedMenu] = useState('today');
 
   const menuItems = [
-    { key: 'today', label: 'Appointments for Today' },
-    { key: 'upcoming', label: 'Upcoming Appointments' },
+    { key: 'today', label: 'Today' },
+    { key: 'upcoming', label: 'Upcoming' },
     { key: 'actions', label: 'Actions' },
   ];
 
@@ -86,11 +86,11 @@ const UserDrawer: React.FC<UserDrawerProps> = ({ open, onClose }) => {
         <div className={styles.drawerHeader}>
           {profile && (
             <div className={styles.drawerUserInfo}>
-              <img
-                src={profile.avatar || '/default-avatar.png'}
-                alt="User Avatar"
-                className={styles.drawerAvatar}
-              />
+            <Avatar
+              src={profile.avatar || '/avatar.png'}
+              alt="User Avatar"
+              sx={{ width: 40, height: 40, marginRight: '0px', }}
+            />
               <div className={styles.usrInfo}>
                 <p className={styles.drawerName}>{profile.name}</p>
                 <p className={styles.drawerRole}>{profile.role}</p>
@@ -114,6 +114,7 @@ const UserDrawer: React.FC<UserDrawerProps> = ({ open, onClose }) => {
                 className={styles.menuIcon}
                 style={{
                   backgroundColor: selectedMenu === item.key ? 'black' : 'lightgray',
+                  marginRight:'5px'
                 }}
               />
               {selectedMenu === item.key && <p className={styles.menuText}>{item.label}</p>}

@@ -73,7 +73,7 @@ const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
 
   return (
     <Drawer anchor="right" open={open} onClose={onClose} sx={{ width: '400px' }}>
-      <Box sx={{ width: '100%', padding: 2 }}>
+      <Box sx={{ width: '100%', padding: 2, justifyContent:'center', height:'100%' }}>
         {isNewAppointment ? (
           <InitialAppointmentTab
             appointmentDetails={appointmentDetails}
@@ -84,7 +84,7 @@ const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
         ) : (
           <>
             {/* Tab Navigation */}
-            <Tabs value={activeTab} onChange={(event, newValue) => setActiveTab(newValue)}>
+            <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)}>
               <Tab label="Details" />
               <Tab label="Treatments" />
               <Tab label="Price" />
