@@ -27,8 +27,10 @@ function PatientDashboard() {
 
   return (
     <div className="dashboard">
+      <div className="dash__nav">
       <DesktopNavbar onSelect={setActivePage} activePage={activePage} />
       <MobileNavbar onSelect={setActivePage} activePage={activePage} />
+      </div>
       <main className="dashboard__content">
         {renderPage()}
       </main>

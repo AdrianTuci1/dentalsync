@@ -1,36 +1,50 @@
 .dashboard {
-  &__content {
-    padding-top: 70px; // Matches the height of the desktop navbar
-    padding-inline: 150px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  .desktop-navbar,
+  .mobile-navbar {
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
   }
-}
 
-.top-menu {
-    display: block;
+  .desktop-navbar {
+    top: 0;
+    height: 60px; // Height of top navbar
   }
-  
-  .bottom-menu {
-    display: none;
+
+  .mobile-navbar {
+    bottom: 0;
+    height: 60px; // Height of bottom navbar
   }
-  
-  @media (max-width: 800px) {
-    .dashboard {
-      &__content {
-        padding-top: 10px; // Matches the height of the desktop navbar
-        padding-inline: 0px;
-      }
+
+  .dash__nav{
+    flex: 1;
+  }
+  .dashboard__content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+  }
+
+  // For desktop: show top navbar and hide bottom navbar
+  @media (min-width: 1024px) {
+    .desktop-navbar {
+      display: flex;
     }
-    
-    .top-menu {
+    .mobile-navbar {
       display: none;
     }
-    .bottom-menu {
-      display: block;
+  }
+
+  // For mobile: show bottom navbar and hide top navbar
+  @media (max-width: 1023px) {
+    .desktop-navbar {
+      display: none;
+    }
+    .mobile-navbar {
+      display: flex;
     }
   }
-  
-  .active {
-    font-weight: bold;
-    color: #007bff;
-  }
-  
+}

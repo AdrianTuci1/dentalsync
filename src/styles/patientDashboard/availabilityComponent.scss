@@ -1,0 +1,51 @@
+.availability-calendar {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+
+    .icon {
+      cursor: pointer;
+    }
+  }
+
+  .days {
+    display: flex;
+  }
+
+  .body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .row {
+    display: flex;
+  }
+
+  .col {
+    flex: 1;
+    text-align: center;
+    padding: 10px;
+    cursor: pointer;
+
+    &.disabled {
+      color: #ccc;
+      pointer-events: none;
+    }
+
+    &.busy {
+      background-color: rgba(255, 0, 0, 0.1);
+    }
+  }
+
+  .number {
+    font-size: 1.1em;
+  }
+}

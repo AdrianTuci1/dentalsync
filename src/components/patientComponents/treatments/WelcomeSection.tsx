@@ -1,12 +1,42 @@
-import React from 'react';
+import '../../../styles/patientDashboard/welcomeSection.scss'
+import FmdGoodIcon from '@mui/icons-material/FmdGood';
 
-const WelcomeSection: React.FC = () => {
+interface WelcomeSectionProps {
+  clinicName: string;
+  location: string;
+  currentDate: string;
+  patientName: string;
+  greeting: string;
+}
+
+const WelcomeSection: React.FC<WelcomeSectionProps> = ({
+  clinicName,
+  location,
+  currentDate,
+  patientName,
+  greeting,
+}) => {
   return (
     <div className="welcome-section">
-      <img src="/path/to/patient-image.jpg" alt="Patient" className="patient-image" />
-      <div className="patient-info">
-        <h2>Welcome, John Doe</h2>
-        <p>Age: 30</p>
+      <img src="/democlinic.jpg" alt="Background" className="background-image" />
+      <div className="overlay"></div> {/* Overlay for transparency */}
+      <div className="header">
+        <img src="/logoclinic.png" alt="Clinic Logo" className="clinic-logo" />
+        <div className="clinic-info">
+          <h3>{clinicName}</h3>
+          <p>{location}</p>
+        </div>
+        <div className="empty"></div>
+      </div>
+      <div className="content">
+        <p className="date">{currentDate}</p>
+        <h2 className="greeting">Hi {patientName}, {greeting}!</h2>
+      </div>
+      <div className="location">
+        <div className="loc-info" style={{display:'flex', flexDirection:'row', alignItems:'center', gap:'10px'}}>
+        <FmdGoodIcon />
+        <p>Bulevardul Dacia Nr.84</p>
+        </div>
       </div>
     </div>
   );
