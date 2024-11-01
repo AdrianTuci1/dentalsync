@@ -14,7 +14,11 @@
   
 
   .treatment-list {
+    display: flex;
+    flex-direction: column;
     padding-bottom: 30px;
+    padding: 20px;
+    gap: 25px;
     .clinic-info, .previous-treatment, .treatment-categories {
       margin-bottom: 20px;
     }
@@ -31,12 +35,19 @@
   }
   
 
+  .appointment-section{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
     // For mobile: show bottom navbar and hide top navbar
     @media (min-width: 1024px) {
         .outline{
           max-height: 100vh;
         }
         .treatments-page{
+            padding-block-start: 60px;
             height: 100vh;
             padding-inline: 200px;
         }

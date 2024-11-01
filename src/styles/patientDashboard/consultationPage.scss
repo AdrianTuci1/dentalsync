@@ -5,65 +5,6 @@
     padding: 20px;
     width: 100%;
   
-    .consultation-card {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      position: relative;
-  
-      &:hover {
-        background-color: #f5f5f5;
-      }
-  
-      .card-content {
-        width: 100%;
-        padding: 16px;
-        position: relative;
-  
-        .status-text {
-          font-weight: bold;
-          margin-bottom: 8px;
-        }
-  
-        .treatment-section {
-          display: flex;
-          align-items: center;
-          margin-bottom: 8px;
-  
-          .color-box {
-            width: 30px;
-            height: 30px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-            color: #fff;
-            font-weight: bold;
-          }
-  
-          .treatment-name {
-            font-size: 1rem;
-          }
-        }
-  
-        .medic-name,
-        .date {
-          margin-bottom: 8px;
-          font-size: 0.9rem;
-          color: #666;
-        }
-  
-        .arrow-icon {
-          position: absolute;
-          right: 10px;
-          top: 10px;
-        }
-      }
-    }
+
   }
   

@@ -1,0 +1,45 @@
+// ReasonStep.scss
+.reason-step {
+    text-align: center;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  
+    .step-title {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #888;
+      margin-bottom: 10px;
+    }
+  
+    .pick-reason-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #333;
+    }
+  
+    .reason-input {
+      margin: 20px 0;
+    }
+  
+    .suggested-reasons {
+      margin-top: 20px;
+  
+      .suggestions-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+      }
+  
+      .suggested-reason-chip {
+        margin: 5px;
+        font-size: 0.9rem;
+        cursor: pointer;
+      }
+    }
+  
+    .continue-button {
+      margin-top: 20px;
+      width: 150px;
+    }
+  }
+  

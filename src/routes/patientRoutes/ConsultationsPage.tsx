@@ -1,111 +1,105 @@
-
+import React, { useState, useEffect } from 'react';
+import { Tabs, Tab, Box, Typography, Dialog } from '@mui/material';
+import ConsultationCard from '../../components/patientComponents/ConsultationCard';
+import ConsultationDetailsPage from '../../components/patientComponents/ConsultationDetail';
 import '../../styles/patientDashboard/consultationPage.scss';
-
-// ConsultationsPage.tsx
-import React, { useState } from 'react';
-import { Card, CardContent, Typography, IconButton, TextField } from '@mui/material';
-import { ArrowForward } from '@mui/icons-material';
 
 interface Consultation {
   id: string;
-  status: string;
-  treatmentColor: string;
-  initials: string;
-  treatmentName: string;
   medicName: string;
+  medicImage: string;
+  treatmentName: string;
   date: string;
+  time: string;
+  status?: string;
 }
 
 const consultationsData: Consultation[] = [
   {
     id: '1',
-    status: 'Completed',
-    treatmentColor: '#4caf50',
-    initials: 'DC',
-    treatmentName: 'Dental Cleaning',
     medicName: 'Dr. John Doe',
+    medicImage: '/path/to/image1.jpg',
+    treatmentName: 'Dental Cleaning',
     date: '20 Dec 2024',
+    time: '09:00 - 10:00',
+    status: 'Completed',
   },
   {
     id: '2',
-    status: 'Pending',
-    treatmentColor: '#ff9800',
-    initials: 'RC',
-    treatmentName: 'Root Canal',
     medicName: 'Dr. Jane Smith',
+    medicImage: '/path/to/image2.jpg',
+    treatmentName: 'Root Canal',
     date: '22 Dec 2024',
+    time: '10:00 - 11:00',
+    status: 'Upcoming',
   },
-  // Add more consultations as needed
 ];
 
 const ConsultationsPage: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [consultations, setConsultations] = useState<Consultation[]>(consultationsData);
+  const [activeTab, setActiveTab] = useState(0);
+  const [consultations, setConsultations] = useState<Consultation[]>([]);
+  const [openDetails, setOpenDetails] = useState(false);
+  const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
 
-  const handleCardClick = (id: string) => {
-    console.log('Navigate to consultation details for ID:', id);
-    // Future navigation logic will go here
+  const filterConsultations = (tabIndex: number) => {
+    const statusMap = ['Upcoming', 'Completed'];
+    const filteredConsultations = consultationsData.filter(
+      (consultation) => consultation.status === statusMap[tabIndex]
+    );
+    setConsultations(filteredConsultations);
   };
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const term = event.target.value.toLowerCase();
-    setSearchTerm(term);
-    setConsultations(
-      consultationsData.filter(
-        (consultation) =>
-          consultation.status.toLowerCase().includes(term) ||
-          consultation.treatmentName.toLowerCase().includes(term) ||
-          consultation.medicName.toLowerCase().includes(term) ||
-          consultation.date.toLowerCase().includes(term)
-      )
-    );
+  useEffect(() => {
+    filterConsultations(activeTab);
+  }, [activeTab]);
+
+  const handleTabChange = (_: React.ChangeEvent<{}>, newValue: number) => {
+    setActiveTab(newValue);
+    filterConsultations(newValue);
+  };
+
+  const handleCardClick = (consultation: Consultation) => {
+    setSelectedConsultation(consultation);
+    setOpenDetails(true);
+  };
+
+  const handleCloseDetails = () => {
+    setOpenDetails(false);
+    setSelectedConsultation(null);
   };
 
   return (
     <div className="consultations-page">
-      <TextField
-        label="Search Consultations"
-        fullWidth
-        value={searchTerm}
-        onChange={handleSearchChange}
-        className="search-bar"
-        margin="normal"
-      />
-      {consultations.map((consultation) => (
-        <Card key={consultation.id} className="consultation-card">
-          <CardContent className="card-content">
-            <Typography variant="body2" className="status-text">
-              {consultation.status}
-            </Typography>
-            <div className="treatment-section">
-              <div
-                className="color-box"
-                style={{ backgroundColor: consultation.treatmentColor }}
-              >
-                <Typography variant="body2" className="initials">
-                  {consultation.initials}
-                </Typography>
-              </div>
-              <Typography variant="body1" className="treatment-name">
-                {consultation.treatmentName}
-              </Typography>
-            </div>
-            <Typography variant="body2" className="medic-name">
-              {consultation.medicName}
-            </Typography>
-            <Typography variant="body2" className="date">
-              {consultation.date}
-            </Typography>
-            <IconButton
-              className="arrow-icon"
-              size="small"
-              onClick={() => handleCardClick(consultation.id)}
-            >
-              <ArrowForward />
-            </IconButton>
-          </CardContent>
-        </Card>
-      ))}
+      <Box display="flex" alignItems="center" justifyContent="flex-start" mb={2}>
+        <Typography variant="h5">My Appointments</Typography>
+      </Box>
+
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={activeTab} onChange={handleTabChange} centered>
+          <Tab label="Upcoming" />
+          <Tab label="Completed" />
+        </Tabs>
+      </Box>
+
+      <div className="consultation-cards">
+        {consultations.length > 0 ? (
+          consultations.map((consultation) => (
+            <ConsultationCard
+              key={consultation.id}
+              consultation={consultation}
+              onClick={() => handleCardClick(consultation)}
+            />
+          ))
+        ) : (
+          <p>No consultations found</p>
+        )}
+      </div>
+
+      {selectedConsultation && (
+        <Dialog open={openDetails} onClose={handleCloseDetails} fullScreen>
+          <ConsultationDetailsPage consultation={selectedConsultation} onCancel={handleCloseDetails} />
+        </Dialog>
+      )}
     </div>
   );
 };

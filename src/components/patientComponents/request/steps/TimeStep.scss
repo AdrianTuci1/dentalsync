@@ -1,0 +1,56 @@
+// TimeStep.scss
+.time-step {
+    text-align: center;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  
+    .step-title {
+      font-size: 0.9rem;
+      font-weight: bold;
+      color: #888;
+      margin-bottom: 10px;
+    }
+  
+    .pick-time-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #333;
+    }
+  
+    .selected-date {
+      color: #3366cc;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+  
+    .time-slots {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 20px;
+      align-items: center;
+    }
+  
+    .time-slot {
+      width: 100%;
+      max-width: 300px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      text-transform: none;
+      justify-content: center;
+  
+      &.selected {
+        background-color: #3f51b5 !important;
+        color: #fff !important;
+      }
+    }
+  
+    .timezone-info {
+      margin-top: 20px;
+      color: #888;
+    }
+  }
+  

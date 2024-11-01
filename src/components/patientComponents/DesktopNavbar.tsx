@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Assignment, Person, Settings } from '@mui/icons-material';
+import { Home, Assignment, Person, ChatBubble } from '@mui/icons-material';
 import '../../styles/patientDashboard/Navbar.scss'
 
 interface DesktopNavbarProps {
@@ -23,12 +23,12 @@ const DesktopNavbar: React.FC<DesktopNavbarProps> = ({ onSelect, activePage }) =
         </li>
         <li onClick={() => onSelect('profile')}>
           <div className={`icon-box ${activePage === 'profile' ? 'selected' : ''}`}>
-            <Person />
+            <ChatBubble />
           </div>
         </li>
         <li onClick={() => onSelect('settings')}>
           <div className={`icon-box ${activePage === 'settings' ? 'selected' : ''}`}>
-            <Settings />
+            <Person />
           </div>
         </li>
       </ul>

@@ -1,0 +1,67 @@
+// MultiMonthCalendar.scss
+.multi-month-calendar {
+  text-align: center;
+  display: flex;
+
+
+  .calendar-container {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    gap: 20px;
+    padding: 10px 0;
+  }
+
+  .calendar-month {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    padding: 20px;
+
+    p {
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+  }
+
+  .custom-calendar {
+    width: 100% !important;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    .react-calendar__month-view__days__day {
+      width: 50px !important; /* Square width */
+      height: 50px !important; /* Square height */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: background-color 0.3s ease;
+    }
+
+    .react-calendar__tile--now {
+      background-color: transparent !important;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .react-calendar__tile--active {
+      background-color: #3f51b5 !important;
+      color: #fff !important;
+    }
+
+    .react-calendar__tile--disabled {
+      background-color: #e0e0e0 !important;
+      color: #888 !important;
+    }
+
+    .react-calendar__tile--enabled:hover {
+      background-color: #e6f7ff !important;
+      color: #333 !important;
+    }
+  }
+}

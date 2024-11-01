@@ -1,78 +1,75 @@
-// SettingsPage.tsx
-import React, { useState } from 'react';
+
 import '../../styles/patientDashboard/settingsPage.scss'
+// SettingsPage.tsx
+import React from 'react';
+import { Avatar, IconButton, List, ListItem, ListItemText, Typography } from '@mui/material';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import EditIcon from '@mui/icons-material/Edit';
+import PersonIcon from '@mui/icons-material/Person';
+import FolderIcon from '@mui/icons-material/Folder';
+import HistoryIcon from '@mui/icons-material/History';
+import SettingsIcon from '@mui/icons-material/Settings';
+import HelpIcon from '@mui/icons-material/Help';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 const SettingsPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<number>(0);
-
-  const handleTabChange = (newValue: number) => {
-    setActiveTab(newValue);
+  const user = {
+    name: 'Esther Howard',
+    profilePicture: '', // Add the path to the user's profile picture
   };
+
+  // Define the menu items with the icons as component references
+  const menuItems = [
+    { label: 'Your profile', icon: PersonIcon, action: () => console.log('Profile') },
+    { label: 'Files', icon: FolderIcon, action: () => console.log('Files') },
+    { label: 'Dental History', icon: HistoryIcon, action: () => console.log('Dental History') },
+    { label: 'Settings', icon: SettingsIcon, action: () => console.log('Settings') },
+    { label: 'Help Center', icon: HelpIcon, action: () => console.log('Help Center') },
+    { label: 'Log out', icon: LogoutIcon, action: () => console.log('Log out') },
+  ];
 
   return (
     <div className="settings-page">
-      <div className="tabs">
-        <button
-          className={`tab-button ${activeTab === 0 ? 'active' : ''}`}
-          onClick={() => handleTabChange(0)}
-        >
-          Info
-        </button>
-        <button
-          className={`tab-button ${activeTab === 1 ? 'active' : ''}`}
-          onClick={() => handleTabChange(1)}
-        >
-          Files
-        </button>
+      <div className="profile-header">
+        <IconButton className="back-button" onClick={() => console.log('Back')}>
+          {/* Add an icon for the back button if needed, e.g., <ArrowBackIcon /> */}
+        </IconButton>
+        <Typography variant="h6" className="profile-title">Profile</Typography>
+      </div>
+      
+      <div className="profile-section">
+        <Avatar
+          src={user.profilePicture || '/path/to/default/avatar.jpg'}
+          alt={user.name}
+          className="profile-avatar"
+        />
+        <IconButton className="edit-avatar-button">
+          <EditIcon />
+        </IconButton>
+        <Typography variant="h6" className="user-name">{user.name}</Typography>
       </div>
 
-      <div className="tab-content">
-        {activeTab === 0 && (
-          <div className="info-tab">
-            <div className="form-group">
-              <label>Profile Image</label>
-              <input type="file" />
-            </div>
-            <div className="form-group">
-              <label>Name</label>
-              <input type="text" placeholder="Enter your name" />
-            </div>
-            <div className="form-group">
-              <label>Email</label>
-              <input type="email" placeholder="Enter your email" />
-            </div>
-            <div className="form-group">
-              <label>Age</label>
-              <input type="number" placeholder="Enter your age" />
-            </div>
-            <div className="form-group">
-              <label>Gender</label>
-              <input type="text" placeholder="Enter your gender" />
-            </div>
-            <div className="form-group">
-              <label>Address</label>
-              <input type="text" placeholder="Enter your address" />
-            </div>
-            <button className="save-button">Save Changes</button>
-          </div>
-        )}
-        {activeTab === 1 && (
-          <div className="files-tab">
-            <div className="form-group">
-              <label>Upload File</label>
-              <input type="file" />
-            </div>
-            <ul className="files-list">
-              <li>File1.pdf</li>
-              <li>File2.jpg</li>
-              <li>File3.docx</li>
-              {/* Add more files as needed */}
-            </ul>
-          </div>
-        )}
-      </div>
+      <List className="settings-menu">
+        {menuItems.map((item, index) => {
+          const IconComponent = item.icon; // Save icon as a component
+
+          return (
+            <ListItem 
+              key={index} 
+              onClick={item.action} 
+              className="menu-item"
+              component="li"
+            >
+              <IconComponent style={{ marginRight: 15 }} />
+              <ListItemText primary={item.label} />
+              <ArrowForwardIosIcon fontSize="small" />
+            </ListItem>
+          );
+        })}
+      </List>
     </div>
   );
 };
 
 export default SettingsPage;
+

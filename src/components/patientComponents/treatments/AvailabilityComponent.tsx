@@ -97,6 +97,7 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ busyDates }
       {renderHeader()}
       {renderDays()}
       {renderCells()}
+      
     </div>
   );
 };

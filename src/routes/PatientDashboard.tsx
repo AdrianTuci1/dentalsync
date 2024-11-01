@@ -3,9 +3,9 @@ import DesktopNavbar from '../components/patientComponents/DesktopNavbar';
 import MobileNavbar from '../components/patientComponents/MobileNavbar';
 import TreatmentsPage from './patientRoutes/TreatmentsPage';
 import ConsultationsPage from './patientRoutes/ConsultationsPage';
-import ProfilePage from './patientRoutes/ProfilePage';
 import SettingsPage from './patientRoutes/SettingsPage';
 import '../styles/patientDashboard/dashboard.scss';
+import ChatList from './patientRoutes/ChatList';
 
 function PatientDashboard() {
   const [activePage, setActivePage] = useState<string>('treatments');
@@ -17,7 +17,7 @@ function PatientDashboard() {
       case 'consultations':
         return <ConsultationsPage />;
       case 'profile':
-        return <ProfilePage />;
+        return <ChatList />;
       case 'settings':
         return <SettingsPage />;
       default:
