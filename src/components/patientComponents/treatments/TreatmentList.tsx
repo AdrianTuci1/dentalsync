@@ -6,9 +6,33 @@ import ConsultationDetailsPage from '../ConsultationDetail';
 import AvailabilityCalendar from './AvailabilityComponent';
 
 const busyDates = [
-  new Date(2024, 9, 5), // October 5th
-  new Date(2024, 9, 10), // October 10th
-  new Date(2024, 9, 15), // October 15th
+  new Date(2024, 10, 5),  // November 5, 2024
+  new Date(2024, 10, 12), // November 12, 2024
+  new Date(2024, 10, 19), // November 19, 2024
+  new Date(2024, 10, 26), // November 26, 2024
+];
+
+const moderateDates = [
+  new Date(2024, 10, 6),  // November 6, 2024
+  new Date(2024, 10, 13), // November 13, 2024
+  new Date(2024, 10, 20), // November 20, 2024
+  new Date(2024, 10, 27), // November 27, 2024
+];
+
+const normalDates = [
+  new Date(2024, 10, 7),  // November 7, 2024
+  new Date(2024, 10, 14), // November 14, 2024
+  new Date(2024, 10, 21), // November 21, 2024
+  new Date(2024, 10, 28), // November 28, 2024
+];
+
+const nonWorkingDays = [
+  new Date(2024, 10, 2),  // November 2, 2024 (Saturday)
+  new Date(2024, 10, 3),  // November 3, 2024 (Sunday)
+  new Date(2024, 10, 9),  // November 9, 2024 (Saturday)
+  new Date(2024, 10, 10), // November 10, 2024 (Sunday)
+  new Date(2024, 10, 16), // November 16, 2024 (Saturday)
+  new Date(2024, 10, 17), // November 17, 2024 (Sunday)
 ];
 
 // Mock data for appointments
@@ -71,7 +95,12 @@ const TreatmentList: React.FC = () => {
       </div>
 
       <div className="availability">
-        <AvailabilityCalendar busyDates={busyDates} />
+        <AvailabilityCalendar
+          busyDates={busyDates}
+          moderateDates={moderateDates}
+          normalDates={normalDates}
+          nonWorkingDays={nonWorkingDays}
+        />
       </div>
 
       <div className="treatment-categories">

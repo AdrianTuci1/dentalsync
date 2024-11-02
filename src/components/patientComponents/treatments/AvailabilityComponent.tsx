@@ -1,21 +1,36 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import '../../../styles/patientDashboard/availabilityComponent.scss';
-import { format, addDays, startOfMonth, endOfMonth, startOfWeek, endOfWeek, isSameDay, isSameMonth } from 'date-fns';
+import {
+  format,
+  addDays,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  isSameDay,
+  isSameMonth,
+} from 'date-fns';
 
 interface AvailabilityCalendarProps {
-  busyDates: Date[]; // Dates that are busy or booked
+  busyDates: Date[];
+  moderateDates: Date[];
+  normalDates: Date[];
+  nonWorkingDays: Date[];
 }
 
-const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ busyDates }) => {
+const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
+  busyDates,
+  moderateDates,
+  normalDates,
+  nonWorkingDays,
+}) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const renderHeader = () => {
     return (
       <div className="header row flex-middle">
-        <div className="col col-start">
-          <div className="icon" onClick={prevMonth}>
-            &#8249;
-          </div>
+        <div className="col col-start" onClick={prevMonth}>
+          <div className="icon">&#8249;</div>
         </div>
         <div className="col col-center">
           <span>{format(currentMonth, 'MMMM yyyy')}</span>
@@ -51,21 +66,32 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ busyDates }
     const rows = [];
     let days = [];
     let day = startDate;
-    let formattedDate = '';
 
     while (day <= endDate) {
       for (let i = 0; i < 7; i++) {
-        formattedDate = format(day, 'd');
+        const formattedDate = format(day, 'd');
         const cloneDay = day;
+
+        // Determine availability status for each day
         const isBusy = busyDates.some((busyDate) => isSameDay(busyDate, day));
+        const isModerate = moderateDates.some((moderateDate) => isSameDay(moderateDate, day));
+        const isNormal = normalDates.some((normalDate) => isSameDay(normalDate, day));
+        const isNonWorking = nonWorkingDays.some((nonWorkingDate) => isSameDay(nonWorkingDate, day));
+
+        let statusClass = '';
+        if (isBusy) statusClass = 'busy';
+        else if (isModerate) statusClass = 'moderate';
+        else if (isNormal) statusClass = 'normal';
+        else if (isNonWorking) statusClass = 'non-working';
 
         days.push(
           <div
-            className={`col cell ${!isSameMonth(day, monthStart) ? 'disabled' : isBusy ? 'busy' : ''}`}
+            className={`col cell ${!isSameMonth(day, monthStart) ? 'disabled' : statusClass}`}
             key={day.toString()}
             onClick={() => onDateClick(cloneDay)}
           >
             <span className="number">{formattedDate}</span>
+            <span className={`status-circle ${statusClass}`}></span>
           </div>
         );
         day = addDays(day, 1);
@@ -97,7 +123,24 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({ busyDates }
       {renderHeader()}
       {renderDays()}
       {renderCells()}
-      
+      <div className="legend">
+        <div className="legend-item busy">
+          <div className="legend-color"></div>
+          <span className="legend-text">Busy</span>
+        </div>
+        <div className="legend-item moderate">
+          <div className="legend-color"></div>
+          <span className="legend-text">Moderate</span>
+        </div>
+        <div className="legend-item normal">
+          <div className="legend-color"></div>
+          <span className="legend-text">Normal</span>
+        </div>
+        <div className="legend-item non-working">
+          <div className="legend-color"></div>
+          <span className="legend-text">Non-Working</span>
+        </div>
+      </div>
     </div>
   );
 };

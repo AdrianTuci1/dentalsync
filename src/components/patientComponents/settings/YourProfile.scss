@@ -1,0 +1,54 @@
+.your-profile {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  
+    .back-button {
+      align-self: flex-start;
+    }
+  
+    .page-title {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+  
+    .avatar-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px 0;
+  
+      .edit-avatar-button {
+        position: relative;
+        bottom: 25px;
+        right: -30px;
+        background-color: white;
+        border: 1px solid #ddd;
+        padding: 3px;
+      }
+    }
+  
+    .profile-form {
+      width: 100%;
+      max-width: 400px;
+  
+      .phone-field {
+        display: flex;
+        align-items: center;
+  
+        .change-button {
+          margin-left: 10px;
+          font-size: 0.9rem;
+          color: #1976d2;
+        }
+      }
+  
+      .update-button {
+        margin-top: 20px;
+        background-color: #757575;
+      }
+    }
+  }
+  

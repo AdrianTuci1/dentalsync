@@ -4,20 +4,26 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
 
   .header {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 10px;
 
     .icon {
       cursor: pointer;
+      font-size: 1.5em;
+      color: #333;
     }
   }
 
   .days {
     display: flex;
+    justify-content: space-around;
+    font-weight: bold;
+    color: #666;
+    margin-bottom: 5px;
   }
 
   .body {
@@ -33,7 +39,7 @@
     flex: 1;
     text-align: center;
     padding: 10px;
-    cursor: pointer;
+    position: relative;
 
     &.disabled {
       color: #ccc;
@@ -42,10 +48,75 @@
 
     &.busy {
       background-color: rgba(255, 0, 0, 0.1);
+      border-radius: 50%;
+    }
+
+    &.moderate {
+      background-color: rgba(255, 165, 0, 0.1);
+      border-radius: 50%;
+    }
+
+    &.normal {
+      background-color: rgba(0, 128, 0, 0.1);
+      border-radius: 50%;
+    }
+
+    &.non-working {
+      background-color: #f0f0f0;
+      color: #999;
+      border-radius: 50%;
+    }
+
+    .number {
+      font-size: 1.1em;
+      color: #333;
+      z-index: 1;
+    }
+
+    &:hover:not(.disabled):not(.non-working) {
+      background-color: rgba(0, 0, 255, 0.1);
+      border-radius: 50%;
     }
   }
 
-  .number {
-    font-size: 1.1em;
+  // Legend
+  .legend {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20px;
+    gap: 5px;
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+
+      .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-right: 5px;
+      }
+
+      &.busy .legend-color {
+        background-color: rgba(255, 0, 0, 0.5);
+      }
+
+      &.moderate .legend-color {
+        background-color: rgba(255, 165, 0, 0.5);
+      }
+
+      &.normal .legend-color {
+        background-color: rgba(0, 128, 0, 0.5);
+      }
+
+      &.non-working .legend-color {
+        background-color: #ccc;
+      }
+
+      .legend-text {
+        font-size: 1.2em;
+        color: #666;
+      }
+    }
   }
 }

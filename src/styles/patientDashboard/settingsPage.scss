@@ -1,76 +1,129 @@
 .settings-page {
+  display: flex;
   width: 100%;
-  margin: 0 auto;
-  padding: 20px;
+
+  @media (max-width: 1024px) {
+    padding-inline: 0;
+    flex-direction: column; // Stack content vertically on smaller screens
+    margin-block-end: 60px;
+  }
+
+  @media (min-width: 1024px) {
+    padding-inline: 0;
+    margin-block-start: 60px;
+  }
+
+  &.split-view {
+    height: calc(100vh - 60px);
+    .main-content {
+      width: 50%; // Occupy half screen when menu content is open on larger screens
+    }
+    .menu-content {
+      display: block;
+      width: 50%;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 1024px) {
+      .menu-content{
+        width: 100%;
+      }
+    }
+  }
+
+  .main-content {
+    width: 100%; // Full width when no menu is selected
+    transition: width 0.3s ease;
+  }
 
   .profile-header {
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
-
-    .back-button {
-      margin-right: 15px;
-    }
-
-    .profile-title {
-      font-weight: bold;
-      font-size: 1.2rem;
-    }
+    justify-content: space-between;
+    padding: 16px;
   }
 
   .profile-section {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    margin-bottom: 20px;
-    position: relative;
+    flex-direction: column;
+    padding: 20px;
+    text-align: center;
+
+    @media (min-width: 1024px) {
+      flex-direction: row;
+      text-align: left;
+      justify-content: flex-start;
+    }
 
     .profile-avatar {
-      width: 80px;
-      height: 80px;
+      width: 100px;
+      height: 100px;
       margin-bottom: 10px;
+
+      @media (min-width: 1024px) {
+        margin-bottom: 0;
+        margin-right: 15px;
+      }
     }
 
     .edit-avatar-button {
-      position: absolute;
-      bottom: 20px;
-      right: calc(50% - 40px); // Adjust to position near the avatar
-      background-color: #ffffff;
-      border: 1px solid #ccc;
-      width: 24px;
-      height: 24px;
+      margin-top: -25px;
+
+      @media (min-width: 1024px) {
+        margin-top: 0;
+      }
     }
 
     .user-name {
-      font-weight: 500;
-      font-size: 1.1rem;
-      margin-top: 8px;
+      font-weight: bold;
+      margin-top: 10px;
+
+      @media (min-width: 1024px) {
+        margin-top: 0;
+      }
     }
   }
 
   .settings-menu {
-    width: 100%;
+    padding: 10px 20px;
 
     .menu-item {
       display: flex;
       align-items: center;
-      padding: 12px 0;
-      border-bottom: 1px solid #e0e0e0;
+      justify-content: space-between;
+      cursor: pointer;
+      padding: 10px 0;
 
-      svg {
-        margin-right: 15px;
-        color: #333;
+      &:hover {
+        background-color: #f0f0f0;
       }
+    }
+  }
 
-      .MuiListItemText-root {
-        flex: 1;
-        color: #333;
-        font-weight: 500;
-      }
+  .menu-content {
+    display: none;
+    background: #fafafa;
+    transition: width 0.3s ease;
+    position: relative;
 
-      .MuiSvgIcon-root:last-child {
-        color: #888;
-      }
+    @media (max-width: 850px) {
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1000; // Ensure overlay is above other elements
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .close-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
     }
   }
 }
