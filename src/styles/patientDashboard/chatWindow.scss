@@ -115,3 +115,83 @@
         padding-inline: 200px;
     }
   }
+
+
+  /* chatWindow.scss */
+.appointment-card {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px;
+  margin: 20px auto; /* Centering the card */
+  text-align: center;
+  max-width: 300px;
+
+  .appointment-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 8px;
+
+    .status-text {
+      margin-left: 5px;
+      font-weight: bold;
+      text-transform: capitalize;
+    }
+  }
+
+  .appointment-actions {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+  }
+}
+
+
+/* chatWindow.scss */
+.appointment-request-card {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 300px;
+  margin: 20px auto;
+  text-align: center;
+
+  .status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+
+    .status-text {
+      margin-left: 5px;
+      font-weight: bold;
+      text-transform: capitalize;
+    }
+  }
+}
+
+.fullscreen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it overlays other content */
+}
+
+.modal-content {
+  width: 90%;
+  max-width: 500px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}

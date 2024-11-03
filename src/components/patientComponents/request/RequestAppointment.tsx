@@ -1,6 +1,6 @@
 // RequestAppointment.tsx
 import React, { useState } from 'react';
-import { Button, Typography, IconButton, LinearProgress, Box } from '@mui/material';
+import { Button, IconButton, LinearProgress, Box } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CalendarStep from './steps/CalendarStep';
 import TimeStep from './steps/TimeStep';

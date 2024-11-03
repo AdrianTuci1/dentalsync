@@ -12,8 +12,7 @@
   
       li {
         .icon-box {
-          width: 50px;
-          height: 50px;
+          padding: 13px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -71,3 +70,12 @@
     }
   }
   
+
+  @media (min-width: 1024px) {
+    .desktop-navbar{
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }

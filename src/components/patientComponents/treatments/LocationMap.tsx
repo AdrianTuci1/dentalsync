@@ -15,17 +15,22 @@ interface LocationMapProps {
 }
 
 const LocationMap: React.FC<LocationMapProps> = ({ position }) => {
+
+  const mapboxAccessToken = 'pk.eyJ1IjoidHVjaWFuIiwiYSI6ImNsdzFjbzd2ZTBiZHMyamw4dHlrbDkwajcifQ.fI9gM7lC96wcijF6QCPfKw';
+  const mapboxStyle = 'mapbox/streets-v11'; // You can change to any Mapbox style
+
   return (
     <div className="location-map">
       <MapContainer
         center={position}
-        zoom={13}
-        style={{ height: '150px', width: '100%' }}
+        zoom={14}
+        style={{ height: '400px', width: '350px' }}
         scrollWheelZoom={false}
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
+          url={`https://api.mapbox.com/styles/v1/${mapboxStyle}/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxAccessToken}`}
+          attribution='&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> contributors'
+
         />
         <Marker position={position} icon={customIcon}>
           <Popup>

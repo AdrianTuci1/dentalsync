@@ -70,6 +70,8 @@ const TreatmentList: React.FC = () => {
 
   return (
     <div className="treatment-list">
+      <div className="grid">
+      <div className="sections">
       <div className="appointment-section">
         <h3>Upcoming</h3>
         {upcomingAppointment ? (
@@ -93,6 +95,7 @@ const TreatmentList: React.FC = () => {
           <p>No previous appointment</p>
         )}
       </div>
+      </div>
 
       <div className="availability">
         <AvailabilityCalendar
@@ -102,7 +105,9 @@ const TreatmentList: React.FC = () => {
           nonWorkingDays={nonWorkingDays}
         />
       </div>
+      </div>
 
+      <div className="last-section">
       <div className="treatment-categories">
         <h3>Treatments by Category</h3>
         <Accordion>
@@ -136,6 +141,7 @@ const TreatmentList: React.FC = () => {
           <ExpandMoreIcon />
         </IconButton>
       </Dialog>
+    </div>
     </div>
   );
 };

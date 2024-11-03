@@ -1,5 +1,6 @@
 import '../../../styles/patientDashboard/welcomeSection.scss'
 import FmdGoodIcon from '@mui/icons-material/FmdGood';
+import LocationMap from './LocationMap';
 
 interface WelcomeSectionProps {
   clinicName: string;
@@ -16,7 +17,11 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
   patientName,
   greeting,
 }) => {
+
+  const position: [number, number] = [44.4268, 26.1025];
+
   return (
+    <div className='added-map'>
     <div className="welcome-section">
       <img src="/democlinic.jpg" alt="Background" className="background-image" />
       <div className="overlay"></div> {/* Overlay for transparency */}
@@ -38,6 +43,10 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({
         <p>Bulevardul Dacia Nr.84</p>
         </div>
       </div>
+    </div>
+    <div className="map-part">
+    <LocationMap position={position}/>
+    </div>
     </div>
   );
 };

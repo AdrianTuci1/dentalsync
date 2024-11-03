@@ -1,6 +1,25 @@
+@media (min-width: 1024px){
+.added-map{
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+}
+
+@media (max-width: 1024px){
+  .map-part{
+    display: none;
+  }
+  .added-map{
+    display: flex;
+    flex-direction: row;
+  }
+  }
+
 .welcome-section {
     position: relative;
     min-height: 400px;
+    width: 100%;
     color: #fff;
     padding: 20px;
     display: flex;

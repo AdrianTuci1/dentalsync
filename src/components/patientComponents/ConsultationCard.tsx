@@ -39,7 +39,7 @@ const ConsultationCard: React.FC<ConsultationCardProps> = ({ consultation, onCli
           </IconButton>
         </Box>
 
-        <Box mt={2} display="flex" justifyContent="space-between" className="appointment-details">
+        <Box mt={2} display="flex" className="appointment-details">
           <Box display="flex" alignItems="center">
             <Typography variant="body2" className="date">
               <strong>{consultation.date}</strong>
