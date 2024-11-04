@@ -1,6 +1,6 @@
 import '../../styles/patientDashboard/settingsPage.scss';
 import React, { useState } from 'react';
-import { Avatar, IconButton, List, ListItem, ListItemText, Typography, useMediaQuery } from '@mui/material';
+import { Avatar, IconButton, List, ListItem, ListItemText, Typography } from '@mui/material';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import EditIcon from '@mui/icons-material/Edit';
 import PersonIcon from '@mui/icons-material/Person';

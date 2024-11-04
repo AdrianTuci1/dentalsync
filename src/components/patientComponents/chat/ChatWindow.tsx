@@ -1,4 +1,3 @@
-// ChatWindow.tsx
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Avatar, IconButton, TextField, Button, Menu, MenuItem, Box } from '@mui/material';
@@ -37,15 +36,15 @@ interface ChatWindowProps {
     imageUrl: string;
   };
   onBack: () => void;
+  shouldUsePortal?: boolean;
 }
 
-const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
+const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack, shouldUsePortal = false }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [messageInput, setMessageInput] = useState<string>('');
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [requestAppointmentOpen, setRequestAppointmentOpen] = useState(false);
 
-  // Default appointment request details
   const defaultAppointment: Appointment = {
     date: '2023-11-10',
     time: '10:00',
@@ -91,7 +90,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
     }
   };
 
-  return ReactDOM.createPortal(
+  const chatWindowContent = (
     <div className="chat-window-overlay">
       <div className="chat-window">
         {/* Chat Header */}
@@ -165,9 +164,12 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ chat, onBack }) => {
           </div>
         </div>
       )}
-    </div>,
-    document.body
+    </div>
   );
+
+  return shouldUsePortal
+    ? ReactDOM.createPortal(chatWindowContent, document.body)
+    : chatWindowContent;
 };
 
 export default ChatWindow;

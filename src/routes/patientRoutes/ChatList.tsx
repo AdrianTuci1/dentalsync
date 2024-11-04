@@ -1,10 +1,8 @@
-// ChatList.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Avatar } from '@mui/material';
 import CheckIcon from '@mui/icons-material/Check';
-import '../../styles/patientDashboard/chatList.scss'
+import '../../styles/patientDashboard/chatList.scss';
 import ChatWindow from '../../components/patientComponents/chat/ChatWindow';
-
 
 interface Chat {
   id: string;
@@ -35,54 +33,65 @@ const mockChats: Chat[] = [
     lastMessageDate: 'Oct 27, 2024',
     sentByMe: false,
   },
-  // Add more mock data as needed
 ];
 
 const ChatList: React.FC = () => {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
+  const [isLargeScreen, setIsLargeScreen] = useState(window.innerWidth >= 1024);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsLargeScreen(window.innerWidth >= 1024);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleChatSelect = (chat: Chat) => {
     setSelectedChat(chat);
   };
 
   const handleBackToList = () => {
-    setSelectedChat(null); // Go back to chat list
+    setSelectedChat(null);
   };
 
   return (
-    <div className="chat-list-container">
-      {selectedChat ? (
-        <ChatWindow
-          chat={selectedChat}
-          onBack={handleBackToList} // Function to return to the chat list
-        />
-      ) : (
-        <div className="chat-list">
-          <h2>Chats</h2>
-          {mockChats.map((chat) => (
-            <div
-              key={chat.id}
-              className="chat-card"
-              onClick={() => handleChatSelect(chat)}
-            >
-              <Avatar src={chat.imageUrl} alt={chat.name} className="medic-avatar" />
-              <div className="chat-details">
-                <div className="medic-info">
-                  <span className="medic-name">{chat.name}</span>
-                  <span className="medic-specialization">{chat.specialization}</span>
-                </div>
-                <div className="message-info">
-                  <span className="last-message">
-                    {chat.lastMessage}{' '}
-                    {chat.sentByMe && <CheckIcon fontSize="small" className="check-icon" />}
-                  </span>
-                  <span className="message-date">{chat.lastMessageDate}</span>
-                </div>
+    <div className={`chat-list-container ${isLargeScreen ? 'large-screen' : 'small-screen'}`}>
+      {/* Chat List Section */}
+      <div className="chat-list">
+        <h2>Chats</h2>
+        {mockChats.map((chat) => (
+          <div
+            key={chat.id}
+            className="chat-card"
+            onClick={() => handleChatSelect(chat)}
+          >
+            <Avatar src={chat.imageUrl} alt={chat.name} className="medic-avatar" />
+            <div className="chat-details">
+              <div className="medic-info">
+                <span className="medic-name">{chat.name}</span>
+                <span className="medic-specialization">{chat.specialization}</span>
+              </div>
+              <div className="message-info">
+                <span className="last-message">
+                  {chat.lastMessage}{' '}
+                  {chat.sentByMe && <CheckIcon fontSize="small" className="check-icon" />}
+                </span>
+                <span className="message-date">{chat.lastMessageDate}</span>
               </div>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
+
+      {/* Chat Window Section or "No Chat Selected" */}
+      <div className="chat-window-wrapper">
+        {selectedChat ? (
+          <ChatWindow chat={selectedChat} onBack={handleBackToList} />
+        ) : (
+          isLargeScreen && <div className="no-chat-selected">No chat selected</div>
+        )}
+      </div>
     </div>
   );
 };

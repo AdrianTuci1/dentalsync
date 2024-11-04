@@ -1,197 +1,128 @@
+/* chatWindow.scss */
+
+/* Fullscreen overlay for small screens */
 .chat-window-overlay {
+  @media (max-width: 1024px) {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.4); // Optional dim background
+    background-color: rgba(0, 0, 0, 0.4);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000; // High z-index to ensure it's on top of all content
+    z-index: 1000; // Ensure it's above other content
   }
-  
-  .chat-window {
-    background-color: #f9fafc;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-  
-    .chat-header {
-      display: flex;
-      align-items: center;
-      padding: 15px;
-      background-color: #ffffff;
-      border-bottom: 1px solid #e0e0e0;
-  
-      .medic-avatar {
-        width: 50px;
-        height: 50px;
-        margin-left: 15px;
-      }
-  
-      .medic-details {
-        margin-left: 10px;
-        h3 {
-          margin: 0;
-          font-size: 1.1rem;
-          color: #333;
-        }
-        span {
-          font-size: 0.9rem;
-          color: #666;
-        }
-      }
-    }
-  
-    .message-list {
-      flex-grow: 1;
-      overflow-y: auto;
-      padding: 20px;
-  
-      .message {
-        max-width: 70%;
-        padding: 10px;
-        margin: 5px 0;
-        border-radius: 10px;
-        display: flex;
-        flex-direction: column;
-  
-        &.my-message {
-          align-self: flex-end;
-          background-color: #e1f5fe;
-        }
-  
-        &.their-message {
-          align-self: flex-start;
-          background-color: #f0f0f0;
-        }
-  
-        .message-content {
-          color: #333;
-        }
-  
-        .message-timestamp {
-          font-size: 0.75rem;
-          color: #888;
-          align-self: flex-end;
-          margin-top: 5px;
-        }
-      }
-    }
-  
-    .message-input {
-      display: flex;
-      align-items: center;
-      padding: 10px;
-      background-color: #ffffff;
-      border-top: 1px solid #e0e0e0;
-  
-      .MuiTextField-root {
-        margin-left: 10px;
-        margin-right: 10px;
-        flex-grow: 1;
-      }
-  
-      .MuiButton-root {
-        min-width: 40px;
-        height: 40px;
-      }
-  
-      svg {
-        color: #1976d2;
-      }
-    }
-  }
-  
 
   @media (min-width: 1024px) {
-    .chat-window-overlay{
-        top: 60px;
-        height: calc(100vh - 60px);
-        padding-inline: 200px;
-    }
-  }
-
-
-  /* chatWindow.scss */
-.appointment-card {
-  background: #f9f9f9;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 10px;
-  margin: 20px auto; /* Centering the card */
-  text-align: center;
-  max-width: 300px;
-
-  .appointment-status {
+    /* Inline style for large screens */
+    position: relative;
+    top: 0;
+    left: 200;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    flex: 1;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 8px;
-
-    .status-text {
-      margin-left: 5px;
-      font-weight: bold;
-      text-transform: capitalize;
-    }
-  }
-
-  .appointment-actions {
-    display: flex;
-    justify-content: space-around;
-    margin-top: 10px;
+    flex-direction: column;
+    z-index: 1;
   }
 }
 
-
-/* chatWindow.scss */
-.appointment-request-card {
-  background: #f9f9f9;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 20px;
-  max-width: 300px;
-  margin: 20px auto;
-  text-align: center;
-
-  .status {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 10px;
-
-    .status-text {
-      margin-left: 5px;
-      font-weight: bold;
-      text-transform: capitalize;
-    }
-  }
-}
-
-.fullscreen-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent background */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000; /* Ensure it overlays other content */
-}
-
-.modal-content {
-  width: 90%;
-  max-width: 500px;
-  background: #fff;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+/* Chat window styling */
+.chat-window {
+  background-color: #f9fafc;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  
+  .chat-header {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    
+    .medic-avatar {
+      width: 50px;
+      height: 50px;
+      margin-left: 15px;
+    }
+    
+    .medic-details {
+      margin-left: 10px;
+      h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        color: #333;
+      }
+      span {
+        font-size: 0.9rem;
+        color: #666;
+      }
+    }
+  }
+  
+  .message-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    
+    .message {
+      max-width: 70%;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      
+      &.my-message {
+        align-self: flex-end;
+        background-color: #e1f5fe;
+      }
+      
+      &.their-message {
+        align-self: flex-start;
+        background-color: #f0f0f0;
+      }
+      
+      .message-content {
+        color: #333;
+      }
+      
+      .message-timestamp {
+        font-size: 0.75rem;
+        color: #888;
+        align-self: flex-end;
+        margin-top: 5px;
+      }
+    }
+  }
+  
+  .message-input {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #ffffff;
+    border-top: 1px solid #e0e0e0;
+    
+    .MuiTextField-root {
+      margin-left: 10px;
+      margin-right: 10px;
+      flex-grow: 1;
+    }
+    
+    .MuiButton-root {
+      min-width: 40px;
+      height: 40px;
+    }
+    
+    svg {
+      color: #1976d2;
+    }
+  }
 }
