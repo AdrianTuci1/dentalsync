@@ -1,197 +1,132 @@
-/* Full Page Container */
-
-.top-part{
-  height: 70px;
-  background: white;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+// Outer wrapper for centering the login form on the page
+.signin-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 15px;
-  
-  .logo-section{
-    width: 50px;
-    height: 50px;
-    background: blue;
-  }
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
 }
 
-.signin-page {
+// Background gradient styling to match the image more closely
+.signin-background {
+  background: linear-gradient(135deg, #fad0c4 0%, #ffd1ff 50%, #d5e8ff 100%);
   display: flex;
-  justify-content: center;
   align-items: center;
-  height: 80vh;
-  background: 
-      radial-gradient(farthest-side at -33.33% 50%,#0000 52%,#272cbe 54% 57%,#0000 59%) 0 calc(128px/2),
-      radial-gradient(farthest-side at 50% 133.33%,#0000 52%,#272cbe 54% 57%,#0000 59%) calc(128px/2) 0,
-      radial-gradient(farthest-side at 133.33% 50%,#0000 52%,#272cbe 54% 57%,#0000 59%),
-      radial-gradient(farthest-side at 50% -33.33%,#0000 52%,#272cbe 54% 57%,#0000 59%),
-      #b3edff;
-  background-size: calc(128px/4.667) 128px,128px calc(128px/4.667);
+  justify-content: center;
+  width: 100%;
+  height: 100vh;
 }
 
-/* Main Container Styling */
-.signin-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+// Main container for the sign-in form
+.form-container {
   background-color: #ffffff;
-  padding: 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 450px;
-  text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.signin-container:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
-}
-
-/* Title Styling */
-.signin-title {
-  font-size: 2rem;
-  margin-bottom: 1.75rem;
-  color: #1e293b;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-
-.signin-form{
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  input{
-    padding: 10px;
-  }
-}
-
-.btn-prim{
-  padding: 10px;
-}
-
-/* Input Group */
-.signin-input-container {
-  width: 100%;
-  margin-bottom: 1.5rem;
-}
-
-.signin-input-container label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.signin-input-container input {
-  width: 100%;
-  padding: 0.85rem;
-  font-size: 1rem;
-  border: 1px solid #e2e8f0;
+  padding: 2rem;
   border-radius: 8px;
-  background-color: #f8fafc;
-  transition: all 0.3s ease;
-}
-
-.signin-input-container input:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-  outline: none;
-  background-color: #ffffff;
-}
-
-/* Button Styling */
-.signin-button {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   width: 100%;
-  padding: 0.85rem;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #ffffff;
-  background-color: #3b82f6;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-.signin-button:hover {
-  background-color: #2563eb;
-  transform: translateY(-2px);
-}
-
-.signin-button:active {
-  background-color: #1d4ed8;
-}
-
-/* Error Message */
-.signin-error {
-  color: #ef4444;
-  margin-bottom: 1rem;
-  font-size: 0.95rem;
+  max-width: 400px;
   text-align: left;
 }
 
-/* Profiles Section (if applicable) */
-.signin-profiles {
-  margin-top: 2.5rem;
+// Header section inside the form container
+.header-section {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.5rem;
 }
 
-.signin-profiles h2 {
-  font-size: 1.6rem;
-  margin-bottom: 1.25rem;
-  color: #1e293b;
-  font-weight: 700;
+.clinic-logo {
+  max-width: 50px;
+  margin-bottom: 0.5rem;
 }
 
-.signin-profiles ul {
+.clinic-name {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+// Error message styling
+.error-message {
+  color: red;
+  margin-bottom: 1rem;
+}
+
+// Input fields for email and password
+.input-field {
+  width: 100%;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+// Primary button styling
+.primary-button {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #2c2e3e;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 1rem;
+}
+
+.primary-button:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
+}
+
+// Back button styling
+.back-button {
+  background: none;
+  border: none;
+  color: #2c2e3e;
+  cursor: pointer;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+// Layout for PIN entry, login form, and profile selection
+.pin-entry-form, .login-form, .profile-selection {
+  display: flex;
+  flex-direction: column;
+}
+
+// Profile header text
+.profile-header {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+// Profile list layout
+.profile-list {
   list-style: none;
   padding: 0;
 }
 
-.signin-profiles li {
-  margin-bottom: 0.75rem;
+.profile-item {
+  margin-bottom: 0.5rem;
 }
 
-.signin-profiles button {
-  padding: 0.85rem;
-  width: 100%;
-  font-size: 1rem;
-  font-weight: 600;
-  background-color: #10b981;
-  color: #ffffff;
+// Profile button styling
+.profile-button {
+  background-color: #f0f0f0;
   border: none;
-  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  width: 100%;
+  text-align: center;
+  transition: background-color 0.3s;
 }
 
-.signin-profiles button:hover {
-  background-color: #059669;
-  transform: translateY(-2px);
-}
-
-.signin-profiles button:active {
-  background-color: #047857;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .signin-form {
-    padding: 2rem;
-    max-width: 100%;
-    box-shadow: none;
-  }
-
-  .signin-button {
-    font-size: 1.15rem;
-  }
-
-  .signin-title {
-    font-size: 1.75rem;
-  }
+.profile-button:hover {
+  background-color: #e0e0e0;
 }

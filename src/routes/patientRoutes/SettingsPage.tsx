@@ -15,8 +15,11 @@ import Files from '../../components/patientComponents/settings/Files';
 import DentalHistory from '../../components/patientComponents/settings/DentalHistory';
 import Settings from '../../components/patientComponents/settings/Settings';
 import HelpCenter from '../../components/patientComponents/settings/HelpCenter';
+import { logout } from '../../services/authSlice';
+import { useDispatch } from 'react-redux';
 
 const SettingsPage: React.FC = () => {
+  const dispatch = useDispatch()
   const user = {
     name: 'Esther Howard',
     profilePicture: '', // Add the path to the user's profile picture or leave empty for default
@@ -43,6 +46,11 @@ const SettingsPage: React.FC = () => {
   };
 
   const handleLogoutClose = () => setLogoutDrawerOpen(false);
+
+
+  const handleLogOut = () => {
+    dispatch(logout());
+  };
 
   return (
     <div className={`settings-page ${activeComponent ? 'split-view' : ''}`}>
@@ -95,7 +103,7 @@ const SettingsPage: React.FC = () => {
 
       {/* Logout Modal */}
       {logoutDrawerOpen && (
-        <LogoutDrawer open={logoutDrawerOpen} onClose={handleLogoutClose} onLogout={() => console.log('Logging out...')} />
+        <LogoutDrawer open={logoutDrawerOpen} onClose={handleLogoutClose} onLogout={() => handleLogOut()}/>
       )}
     </div>
   );

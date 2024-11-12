@@ -1,6 +1,6 @@
 import React, { useState, useEffect, startTransition } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { clinicLoginSuccess, subaccountLoginSuccess } from '../services/authSlice';
+import { clinicLoginSuccess, logout, subaccountLoginSuccess } from '../services/authSlice';
 import AuthService from '../services/AuthService';
 import { getSubdomain } from '../utils/getSubdomains';
 import '../styles/signin.scss';
@@ -25,7 +25,7 @@ const SignIn: React.FC = () => {
   const [profiles, setProfiles] = useState<Profile[]>([]);
 
   const dispatch = useDispatch();
-  const authState = useSelector((state: any) => state.auth); // Access global auth state
+  const authState = useSelector((state: any) => state.auth);
 
   const getDatabaseName = (subdomain: string) => `${subdomain}_db`;
 
@@ -36,11 +36,11 @@ const SignIn: React.FC = () => {
     setClinicDbName(dbName);
 
     if (authState.clinicUser && authState.subaccounts) {
-      setProfiles(authState.subaccounts); // Load subaccounts into profiles state
+      setProfiles(authState.subaccounts);
     }
 
     if (authState.subaccountUser) {
-      setSelectedProfile(authState.subaccountUser); // Load selected subaccount
+      setSelectedProfile(authState.subaccountUser);
     }
   }, [authState]);
 
@@ -51,7 +51,6 @@ const SignIn: React.FC = () => {
     try {
       const authResult = await AuthService.login(email, password, clinicDbName);
 
-      // Using startTransition to avoid UI suspension
       startTransition(() => {
         dispatch(
           clinicLoginSuccess({
@@ -61,9 +60,9 @@ const SignIn: React.FC = () => {
           })
         );
         if (authResult.user.role === 'clinic') {
-          setProfiles(authResult.subaccounts); // Show subaccounts for clinic users
+          setProfiles(authResult.subaccounts);
         } else {
-          setSelectedProfile(authResult.user); // Directly proceed to dashboard
+          setSelectedProfile(authResult.user);
         }
       });
     } catch (err) {
@@ -82,7 +81,6 @@ const SignIn: React.FC = () => {
     try {
       const medicProfile = await AuthService.pinLogin(selectedProfile.id, pin, clinicDbName);
 
-      // Using startTransition to avoid UI suspension
       startTransition(() => {
         dispatch(
           subaccountLoginSuccess({
@@ -102,71 +100,89 @@ const SignIn: React.FC = () => {
     setSelectedProfile(profile);
   };
 
+  const handleBackToProfiles = () => {
+    setSelectedProfile(null);
+    setPin('');
+  };
+
+  const handleBackToLogin = () => {
+    dispatch(logout()); // Logs out the user and clears auth state
+    setProfiles([]);
+    setEmail('');
+    setPassword('');
+    setSelectedProfile(null);
+  };
+
   return (
-    <>
-    <div className="top-part">
-      <div className="logo-section">
-        <img src="" alt=""/>
+    <div className="signin-background">
+      <div className="form-container">
+        <div className="header-section">
+          <div className="logo-container">
+            <img src="" alt="Clinic Logo" className="clinic-logo" />
+          </div>
+          <h1 className="clinic-name">{clinicName}</h1>
+        </div>
+
+        {error && <p className="error-message">{error}</p>}
+        
+        {loading && <p>Loading...</p>}
+        
+        {!selectedProfile && profiles.length === 0 && (
+          <div className="login-form">
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input-field"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-field"
+            />
+            <button onClick={handleLogin} disabled={loading || !email || !password} className="primary-button">
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+          </div>
+        )}
+
+        {selectedProfile && profiles.length > 0 && (
+          <div className="pin-entry-form">
+            <button onClick={handleBackToProfiles} className="back-button">Back to Profiles</button>
+            <h2 className="profile-header">Enter PIN for {selectedProfile.name}</h2>
+            <input
+              type="password"
+              placeholder="Enter PIN"
+              value={pin}
+              onChange={(e) => setPin(e.target.value)}
+              className="input-field"
+            />
+            <button onClick={handleSubaccountLogin} disabled={loading || !pin} className="primary-button">
+              {loading ? 'Verifying PIN...' : 'Access Subaccount'}
+            </button>
+          </div>
+        )}
+
+        {profiles.length > 0 && !selectedProfile && (
+          <div className="profile-selection">
+            <button onClick={handleBackToLogin} className="back-button">Back to Login</button>
+            <h2 className="profile-header">Select a Profile</h2>
+            <ul className="profile-list">
+              {profiles.map((profile) => (
+                <li key={profile.id} className="profile-item">
+                  <button onClick={() => handleProfileSelection(profile)} className="profile-button">
+                    {profile.name}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
-      <h1>{clinicName}</h1>
     </div>
-    <div className="signin-page">
-    <div className="signin-container">
-      {error && <p className="signin-error">{error}</p>}
-
-      {loading && <p>Loading...</p>}
-      {!selectedProfile && profiles.length === 0 && (
-        <div className="signin-form">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <button onClick={handleLogin} disabled={loading || !email || !password} className='btn-prim'>
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
-        </div>
-      )}
-
-      {selectedProfile && profiles.length > 0 && (
-        <div className="signin-subaccount">
-          <h2>Enter PIN for {selectedProfile.name}</h2>
-          <input
-            type="password"
-            placeholder="Enter PIN"
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-          />
-          <button onClick={handleSubaccountLogin} disabled={loading || !pin}>
-            {loading ? 'Verifying PIN...' : 'Access Subaccount'}
-          </button>
-        </div>
-      )}
-
-      {profiles.length > 0 && !selectedProfile && (
-        <div className="signin-profiles">
-          <h2>Select a Profile</h2>
-          <ul>
-            {profiles.map((profile) => (
-              <li key={profile.id}>
-                <button onClick={() => handleProfileSelection(profile)}>
-                  {profile.name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
-    </div>
-    </>
   );
 };
 

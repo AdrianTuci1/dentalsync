@@ -2,6 +2,7 @@
 import React from 'react';
 import MultiMonthCalendar from '../../MultiMonthCalendar';
 import { Typography } from '@mui/material';
+import './CalendarStep.scss'
 
 interface CalendarStepProps {
   onDateChange: (date: Date) => void;

@@ -1,7 +1,7 @@
 // ConsultationCard.tsx
 import React from 'react';
-import { Card, CardContent, Typography, IconButton, Avatar, Box } from '@mui/material';
-import { ArrowForward } from '@mui/icons-material';
+import { Card, CardContent, Typography, IconButton, Avatar, Box, Divider } from '@mui/material';
+import { ArrowForward, CalendarToday, AccessTime } from '@mui/icons-material';
 import '../../styles/patientDashboard/appointmentCard.scss';
 
 interface Consultation {
@@ -39,13 +39,16 @@ const ConsultationCard: React.FC<ConsultationCardProps> = ({ consultation, onCli
           </IconButton>
         </Box>
 
-        <Box mt={2} display="flex" className="appointment-details">
+        <Box mt={2} display="flex" alignItems="center" className="appointment-details">
           <Box display="flex" alignItems="center">
+            <CalendarToday fontSize="small" className="icon" />
             <Typography variant="body2" className="date">
-              <strong>{consultation.date}</strong>
+              {consultation.date}
             </Typography>
           </Box>
+          <Divider orientation="vertical" flexItem className="divider" />
           <Box display="flex" alignItems="center">
+            <AccessTime fontSize="small" className="icon" />
             <Typography variant="body2" className="time">
               {consultation.time}
             </Typography>

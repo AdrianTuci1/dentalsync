@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, Dialog, IconButton } from '@mui/material';
+import { Accordion, AccordionSummary, AccordionDetails, Dialog, IconButton, useMediaQuery, Drawer } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ConsultationCard from '../ConsultationCard';
 import ConsultationDetailsPage from '../ConsultationDetail';
@@ -58,6 +58,9 @@ const TreatmentList: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
 
+  // Media query to check screen size
+  const isLargeScreen = useMediaQuery('(min-width:850px)');
+
   const handleCardClick = (appointment: any) => {
     setSelectedAppointment(appointment);
     setOpenDialog(true);
@@ -71,77 +74,95 @@ const TreatmentList: React.FC = () => {
   return (
     <div className="treatment-list">
       <div className="grid">
-      <div className="sections">
-      <div className="appointment-section">
-        <h3>Upcoming</h3>
-        {upcomingAppointment ? (
-          <ConsultationCard
-            consultation={upcomingAppointment}
-            onClick={() => handleCardClick(upcomingAppointment)}
-          />
-        ) : (
-          <p>No upcoming appointment</p>
-        )}
-      </div>
+        <div className="sections">
+          <div className="appointment-section">
+            <h3>Upcoming</h3>
+            {upcomingAppointment ? (
+              <ConsultationCard
+                consultation={upcomingAppointment}
+                onClick={() => handleCardClick(upcomingAppointment)}
+              />
+            ) : (
+              <p>No upcoming appointment</p>
+            )}
+          </div>
 
-      <div className="appointment-section">
-        <h3>Previous</h3>
-        {previousAppointment ? (
-          <ConsultationCard
-            consultation={previousAppointment}
-            onClick={() => handleCardClick(previousAppointment)}
-          />
-        ) : (
-          <p>No previous appointment</p>
-        )}
-      </div>
-      </div>
+          <div className="appointment-section">
+            <h3>Previous</h3>
+            {previousAppointment ? (
+              <ConsultationCard
+                consultation={previousAppointment}
+                onClick={() => handleCardClick(previousAppointment)}
+              />
+            ) : (
+              <p>No previous appointment</p>
+            )}
+          </div>
+        </div>
 
-      <div className="availability">
-        <AvailabilityCalendar
-          busyDates={busyDates}
-          moderateDates={moderateDates}
-          normalDates={normalDates}
-          nonWorkingDays={nonWorkingDays}
-        />
-      </div>
+        <div className="availability">
+          <AvailabilityCalendar
+            busyDates={busyDates}
+            moderateDates={moderateDates}
+            normalDates={normalDates}
+            nonWorkingDays={nonWorkingDays}
+          />
+        </div>
       </div>
 
       <div className="last-section">
-      <div className="treatment-categories">
-        <h3>Treatments by Category</h3>
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <h4>Preventive Care</h4>
-          </AccordionSummary>
-          <AccordionDetails>
-            <p>Teeth Cleaning, Fluoride Treatment...</p>
-          </AccordionDetails>
-        </Accordion>
-        <Accordion>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <h4>Restorative Care</h4>
-          </AccordionSummary>
-          <AccordionDetails>
-            <p>Fillings, Crowns, Root Canals...</p>
-          </AccordionDetails>
-        </Accordion>
-      </div>
+        <div className="treatment-categories">
+          <h3>Treatments by Category</h3>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <h4>Preventive Care</h4>
+            </AccordionSummary>
+            <AccordionDetails>
+              <p>Teeth Cleaning, Fluoride Treatment...</p>
+            </AccordionDetails>
+          </Accordion>
+          <Accordion>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <h4>Restorative Care</h4>
+            </AccordionSummary>
+            <AccordionDetails>
+              <p>Fillings, Crowns, Root Canals...</p>
+            </AccordionDetails>
+          </Accordion>
+        </div>
 
-      <div className="image-contain" style={{ display: 'flex', width: '100%', minHeight: '300px', overflow: 'hidden', marginTop: '20px', borderRadius: '10px', marginBottom: '50px' }}>
-        <img src="/democlinic.jpg" alt="clinic" style={{ width: '100%', objectFit: 'cover' }} />
-      </div>
+        <div className="image-contain" style={{ display: 'flex', width: '100%', minHeight: '300px', overflow: 'hidden', marginTop: '20px', borderRadius: '10px', marginBottom: '50px' }}>
+          <img src="/democlinic.jpg" alt="clinic" style={{ width: '100%', objectFit: 'cover' }} />
+        </div>
 
-      {/* Fullscreen Dialog for Appointment Details */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} fullScreen>
-        {selectedAppointment && (
-          <ConsultationDetailsPage consultation={selectedAppointment} onCancel={handleCloseDialog} />
+        {/* Conditionally render Drawer on large screens or Dialog on small screens */}
+        {isLargeScreen ? (
+          <Drawer
+            anchor="right"
+            open={openDialog}
+            onClose={handleCloseDialog}
+            PaperProps={{
+              style: { width: 400 },
+            }}
+          >
+            {selectedAppointment && (
+              <ConsultationDetailsPage consultation={selectedAppointment} onCancel={handleCloseDialog} />
+            )}
+            <IconButton onClick={handleCloseDialog} style={{ position: 'absolute', top: 10, right: 10 }}>
+              <ExpandMoreIcon />
+            </IconButton>
+          </Drawer>
+        ) : (
+          <Dialog open={openDialog} onClose={handleCloseDialog} fullScreen>
+            {selectedAppointment && (
+              <ConsultationDetailsPage consultation={selectedAppointment} onCancel={handleCloseDialog} />
+            )}
+            <IconButton onClick={handleCloseDialog} style={{ position: 'absolute', top: 10, right: 10 }}>
+              <ExpandMoreIcon />
+            </IconButton>
+          </Dialog>
         )}
-        <IconButton onClick={handleCloseDialog} style={{ position: 'absolute', top: 10, right: 10 }}>
-          <ExpandMoreIcon />
-        </IconButton>
-      </Dialog>
-    </div>
+      </div>
     </div>
   );
 };

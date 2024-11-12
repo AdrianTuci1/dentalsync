@@ -16,7 +16,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    width: 100%;
+    max-width: 400px;
     padding: 20px;
 
     p {
@@ -29,11 +29,10 @@
   .custom-calendar {
     width: 100% !important;
     border: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
     .react-calendar__month-view__days__day {
-      width: 50px !important; /* Square width */
-      height: 50px !important; /* Square height */
+      width: 60px !important; /* Square width */
+      height: 60px !important; /* Square height */
       display: flex;
       justify-content: center;
       align-items: center;

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Tabs, Tab, Box, Typography, Dialog } from '@mui/material';
+import { Tabs, Tab, Box, Typography, Dialog, Drawer, useMediaQuery, IconButton } from '@mui/material';
 import ConsultationCard from '../../components/patientComponents/ConsultationCard';
 import ConsultationDetailsPage from '../../components/patientComponents/ConsultationDetail';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import '../../styles/patientDashboard/consultationPage.scss';
 
 interface Consultation {
@@ -40,6 +41,9 @@ const ConsultationsPage: React.FC = () => {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [openDetails, setOpenDetails] = useState(false);
   const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null);
+
+  // Determine screen size for conditional rendering
+  const isLargeScreen = useMediaQuery('(min-width:850px)');
 
   const filterConsultations = (tabIndex: number) => {
     const statusMap = ['Upcoming', 'Completed'];
@@ -96,9 +100,28 @@ const ConsultationsPage: React.FC = () => {
       </div>
 
       {selectedConsultation && (
-        <Dialog open={openDetails} onClose={handleCloseDetails} fullScreen>
-          <ConsultationDetailsPage consultation={selectedConsultation} onCancel={handleCloseDetails} />
-        </Dialog>
+        isLargeScreen ? (
+          <Drawer
+            anchor="right"
+            open={openDetails}
+            onClose={handleCloseDetails}
+            PaperProps={{
+              style: { width: 400 },
+            }}
+          >
+            <ConsultationDetailsPage consultation={selectedConsultation} onCancel={handleCloseDetails} />
+            <IconButton onClick={handleCloseDetails} style={{ position: 'absolute', top: 10, right: 10 }}>
+              <ExpandMoreIcon />
+            </IconButton>
+          </Drawer>
+        ) : (
+          <Dialog open={openDetails} onClose={handleCloseDetails} fullScreen>
+            <ConsultationDetailsPage consultation={selectedConsultation} onCancel={handleCloseDetails} />
+            <IconButton onClick={handleCloseDetails} style={{ position: 'absolute', top: 10, right: 10 }}>
+              <ExpandMoreIcon />
+            </IconButton>
+          </Dialog>
+        )
       )}
     </div>
   );

@@ -16,7 +16,6 @@ interface LocationMapProps {
 
 const LocationMap: React.FC<LocationMapProps> = ({ position }) => {
 
-  const mapboxAccessToken = 'pk.eyJ1IjoidHVjaWFuIiwiYSI6ImNsdzFjbzd2ZTBiZHMyamw4dHlrbDkwajcifQ.fI9gM7lC96wcijF6QCPfKw';
   const mapboxStyle = 'mapbox/streets-v11'; // You can change to any Mapbox style
 
   return (
@@ -28,8 +27,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ position }) => {
         scrollWheelZoom={false}
       >
         <TileLayer
-          url={`https://api.mapbox.com/styles/v1/${mapboxStyle}/tiles/256/{z}/{x}/{y}@2x?access_token=${mapboxAccessToken}`}
-          attribution='&copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> contributors'
+          url={`https://api.mapbox.com/styles/v1/${mapboxStyle}/tiles/256/{z}/{x}/{y}@2x?access_token=${import.meta.env.VITE_mapboxAccessToken}`}
 
         />
         <Marker position={position} icon={customIcon}>
