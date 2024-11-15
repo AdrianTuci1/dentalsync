@@ -16,7 +16,7 @@ import { startOfWeek, addWeeks, subWeeks } from 'date-fns';
 
 const Appointments: React.FC = () => {
   const YOUR_MEDIC_ID = useSelector((state: RootState) => state.auth.subaccountUser.name);
-  const { appointments, requestAppointments } = useWebSocket();  // No need for setCurrentWeek, handle current week in logic
+  const { appointments } = useWebSocket();  // No need for setCurrentWeek, handle current week in logic
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<Appointment | null>(null);
@@ -37,7 +37,6 @@ useEffect(() => {
 
   if (isDateInWeek(selectedDate, currentWeek)) {
     // Use WebSocket to request appointments for the current week
-    requestAppointments(isAllAppointments ? undefined : YOUR_MEDIC_ID);
     setFilteredAppointments([]);  // Reset filtered appointments when it's the current week
   } else {
     // Fetch appointments from the server for the selected week
@@ -46,7 +45,7 @@ useEffect(() => {
     const appointmentService = new AppointmentService(subaccountToken as string, database);
     console.log(startDate, endDate)
     
-    appointmentService.fetchWeekAppointments(startDate, endDate, isAllAppointments ? undefined : YOUR_MEDIC_ID)
+    appointmentService.fetchWeekAppointments(startDate, endDate )
       .then(fetchedAppointments => {
         setFilteredAppointments(fetchedAppointments);
       })
@@ -59,7 +58,7 @@ useEffect(() => {
 }, [selectedDate, isAllAppointments]);  // Remove currentWeek from the dependency array
 
 
-  
+  console.log(filteredAppointments)
 
   // Handler for selecting a date from WeekNavigator
   const handleSelectDate = (date: Date) => {

@@ -1,4 +1,4 @@
-import { Component } from '../clinic/types/componentType'; // Import the Component type
+import { Component } from '../../clinic/types/componentType'; // Import the Component type
 
 class ComponentService {
   private token: string;

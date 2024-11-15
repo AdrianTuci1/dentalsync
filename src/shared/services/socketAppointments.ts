@@ -1,60 +1,48 @@
-import { Appointment } from '../../clinic/types/appointmentEvent';
+import { Appointment } from "../../clinic/types/appointmentEvent";
 
-interface AppointmentRequest {
-  subdomain: string;  // Send the subdomain to the server
-  medicUser?: string | null;
-}
-
+// Define the type for appointment listeners
 type AppointmentListener = (appointment: Appointment) => void;
 
 class SocketAppointments {
-  private static instance: SocketAppointments;
+  private static instances: Map<string, SocketAppointments> = new Map();
   private socket: WebSocket;
   private isConnected: boolean;
-  private listeners: AppointmentListener[];
+  private listeners: AppointmentListener[] = [];
   private messageQueue: string[] = [];
-  private reconnectInterval: number | undefined;
-  private throttleTimeout: NodeJS.Timeout | null = null; // Throttle timeout reference
-  private pendingRequest: string | null = null; // To hold pending request if throttled
+  private throttledMessages: string[] = [];
+  private throttleTimeout: NodeJS.Timeout | null = null;
 
-  private constructor(socketUrl: string) {
+  private constructor(private socketUrl: string) {
     this.socket = new WebSocket(socketUrl);
     this.isConnected = false;
-    this.listeners = [];
-    this.reconnectInterval = undefined;
 
-    this.initWebSocket(socketUrl);
+    this.initWebSocket();
   }
 
   public static getInstance(socketUrl: string): SocketAppointments {
-    if (!SocketAppointments.instance) {
-      SocketAppointments.instance = new SocketAppointments(socketUrl);
+    if (!this.instances.has(socketUrl)) {
+      this.instances.set(socketUrl, new SocketAppointments(socketUrl));
     }
-    return SocketAppointments.instance;
+    return this.instances.get(socketUrl)!;
   }
 
-  private initWebSocket(socketUrl: string) {
+  private initWebSocket() {
     this.socket.onopen = () => {
       this.isConnected = true;
       console.log('Connected to WebSocket server');
       this.flushMessageQueue();
-
-      if (this.reconnectInterval) {
-        clearInterval(this.reconnectInterval);
-        this.reconnectInterval = undefined;
-      }
     };
 
     this.socket.onmessage = (event: MessageEvent) => {
-      const tinyAppointment: Appointment = JSON.parse(event.data);
-      console.log('Tiny Appointment received:', tinyAppointment);
-      this.listeners.forEach((listener) => listener(tinyAppointment));
+      const appointment: Appointment = JSON.parse(event.data);
+      console.log('Appointment received:', appointment);
+      this.listeners.forEach((listener) => listener(appointment));
     };
 
     this.socket.onclose = () => {
       console.log('WebSocket connection closed');
       this.isConnected = false;
-      this.attemptReconnection(socketUrl);
+      this.attemptReconnection();
     };
 
     this.socket.onerror = (error: Event) => {
@@ -62,48 +50,53 @@ class SocketAppointments {
     };
   }
 
-  private attemptReconnection(socketUrl: string) {
-    if (!this.isConnected) {
-      console.log('Attempting to reconnect to WebSocket...');
-      this.reconnectInterval = window.setInterval(() => {
-        if (!this.isConnected) {
-          this.socket = new WebSocket(socketUrl);
-          this.initWebSocket(socketUrl);
-        } else {
-          clearInterval(this.reconnectInterval);
-          this.reconnectInterval = undefined;
-        }
-      }, 15000); // Retry every 15 seconds
-    }
+  private attemptReconnection() {
+    let retryDelay = 1000;
+    const maxDelay = 60000;
+
+    const tryReconnect = () => {
+      if (!this.isConnected) {
+        console.log(`Reconnecting in ${retryDelay / 1000} seconds...`);
+        setTimeout(() => {
+          this.socket = new WebSocket(this.socketUrl);
+          this.initWebSocket();
+
+          if (!this.isConnected) {
+            retryDelay = Math.min(retryDelay * 2, maxDelay);
+            tryReconnect();
+          }
+        }, retryDelay);
+      }
+    };
+
+    tryReconnect();
   }
 
-  // Throttled requestAppointments method
-  requestAppointments(subdomain: string, medicUser: string | null = null) {
-    const requestPayload: AppointmentRequest = {
-      subdomain,  // Send subdomain to the server
-      medicUser,
-    };
-    const message = JSON.stringify(requestPayload);
+  public requestAppointments(subdomain: string, medicUser: string | null = null) {
+    const message = JSON.stringify({ subdomain, medicUser });
 
     if (this.isConnected) {
       if (this.throttleTimeout) {
-        // If we're within the throttle period, store the latest request
-        this.pendingRequest = message;
+        this.throttledMessages.push(message);
       } else {
-        // Send immediately and start throttling
         this.socket.send(message);
         this.throttleTimeout = setTimeout(() => {
-          // When throttle period ends, send pending request if available
-          if (this.pendingRequest) {
-            this.socket.send(this.pendingRequest);
-            this.pendingRequest = null;
+          while (this.throttledMessages.length > 0) {
+            const pendingMessage = this.throttledMessages.shift();
+            if (pendingMessage) this.socket.send(pendingMessage);
           }
           this.clearThrottleTimeout();
-        }, 5000); // Throttle period of 5 seconds
+        }, 5000);
       }
     } else {
-      console.error('WebSocket is not connected. Queuing message.');
       this.messageQueue.push(message);
+    }
+  }
+
+  private flushMessageQueue() {
+    while (this.isConnected && this.messageQueue.length > 0) {
+      const message = this.messageQueue.shift();
+      if (message) this.socket.send(message);
     }
   }
 
@@ -114,32 +107,26 @@ class SocketAppointments {
     }
   }
 
-  private flushMessageQueue() {
-    while (this.isConnected && this.messageQueue.length > 0) {
-      const message = this.messageQueue.shift();
-      if (message) {
-        this.socket.send(message);
-      }
-    }
-  }
-
-  addListener(callback: AppointmentListener) {
+  public addListener(callback: AppointmentListener) {
     this.listeners.push(callback);
   }
 
-  removeListener(callback: AppointmentListener) {
+  public removeListener(callback: AppointmentListener) {
     this.listeners = this.listeners.filter((listener) => listener !== callback);
   }
 
-  closeConnection() {
+  public closeConnection() {
     if (this.socket) {
       this.socket.close();
     }
   }
 
-  public getConnectionStatus(): boolean {
-    return this.isConnected;
+  public getConnectionStatus(): { isConnected: boolean; readyState: number } {
+    return {
+      isConnected: this.isConnected,
+      readyState: this.socket.readyState,
+    };
   }
 }
 
-export default SocketAppointments.getInstance('ws://localhost:3000/api/appointment-socket');
+export default SocketAppointments;

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import AppointmentCard from './../components/homeSection/AppointmentCard';
 import WeekAppointmentCard from './../components/homeSection/WeekAppointmentCard';
@@ -8,15 +8,11 @@ import { useWebSocket } from '../../shared/services/WebSocketContext';
 import { Appointment } from '../types/appointmentEvent';
 
 const HomePage: React.FC = () => {
-  const { appointments, requestAppointments } = useWebSocket(); // Use WebSocket for fetching appointments
+  const { appointments } = useWebSocket(); // Use WebSocket for fetching appointments
   const currentUser = useSelector((state: RootState) => state.auth.subaccountUser.name);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  // Fetch appointments for the current week using WebSocket when the component mounts
-  useEffect(() => {
-    requestAppointments(); // Fetch appointments for the current week
-  }, []); // Only run once on mount
 
   // Helper functions to filter appointments by today, tomorrow, and this week
   const isToday = (dateString: string) => {
