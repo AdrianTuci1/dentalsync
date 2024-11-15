@@ -13,6 +13,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Appointment } from '../../types/appointmentEvent';
 
 
+
 interface PatientDetailDrawerProps {
   open: boolean;
   onClose: () => void;

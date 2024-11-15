@@ -1,5 +1,5 @@
-import { Category } from "../components/drawers/addMedic/TreatmentAccordion";
-import { Treatment } from "../clinic/types/treatmentType";
+import { Category } from "../../clinic/components/drawers/addMedic/TreatmentAccordion";
+import { Treatment } from "../../clinic/types/treatmentType";
 
 class TreatmentService {
     private token: string;

@@ -11,6 +11,9 @@ class SocketAppointments {
   private messageQueue: string[] = [];
   private throttledMessages: string[] = [];
   private throttleTimeout: NodeJS.Timeout | null = null;
+  private reconnectionAttempts: number = 0;
+  private readonly maxReconnectionAttempts: number = 3;
+  private readonly reconnectionDelay: number = 10000; // 10 seconds
 
   private constructor(private socketUrl: string) {
     this.socket = new WebSocket(socketUrl);
@@ -30,6 +33,7 @@ class SocketAppointments {
     this.socket.onopen = () => {
       this.isConnected = true;
       console.log('Connected to WebSocket server');
+      this.reconnectionAttempts = 0; // Reset reconnection attempts on successful connection
       this.flushMessageQueue();
     };
 
@@ -42,7 +46,12 @@ class SocketAppointments {
     this.socket.onclose = () => {
       console.log('WebSocket connection closed');
       this.isConnected = false;
-      this.attemptReconnection();
+
+      if (this.reconnectionAttempts < this.maxReconnectionAttempts) {
+        this.attemptReconnection();
+      } else {
+        console.warn('Max reconnection attempts reached. No further retries.');
+      }
     };
 
     this.socket.onerror = (error: Event) => {
@@ -51,25 +60,18 @@ class SocketAppointments {
   }
 
   private attemptReconnection() {
-    let retryDelay = 1000;
-    const maxDelay = 60000;
+    this.reconnectionAttempts++;
+    console.log(
+      `Reconnection attempt ${this.reconnectionAttempts}/${this.maxReconnectionAttempts}`
+    );
 
-    const tryReconnect = () => {
-      if (!this.isConnected) {
-        console.log(`Reconnecting in ${retryDelay / 1000} seconds...`);
-        setTimeout(() => {
-          this.socket = new WebSocket(this.socketUrl);
-          this.initWebSocket();
-
-          if (!this.isConnected) {
-            retryDelay = Math.min(retryDelay * 2, maxDelay);
-            tryReconnect();
-          }
-        }, retryDelay);
+    setTimeout(() => {
+      if (!this.isConnected && this.reconnectionAttempts <= this.maxReconnectionAttempts) {
+        console.log(`Attempting to reconnect (#${this.reconnectionAttempts})...`);
+        this.socket = new WebSocket(this.socketUrl);
+        this.initWebSocket();
       }
-    };
-
-    tryReconnect();
+    }, this.reconnectionDelay);
   }
 
   public requestAppointments(subdomain: string, medicUser: string | null = null) {

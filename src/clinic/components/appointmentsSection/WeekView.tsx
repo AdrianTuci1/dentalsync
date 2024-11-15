@@ -5,37 +5,35 @@ import AppointmentCard from './AppointmentCard';
 
 interface WeekViewProps {
   selectedWeek: Date[];
-  appointments: Appointment[];
+  appointments?: Appointment[]; // Make appointments optional
   onAppointmentClick: (appointment: Appointment) => void;
   onPatientClick: (appointment: Appointment) => void;
 }
 
 const WeekView: React.FC<WeekViewProps> = ({
   selectedWeek,
-  appointments,
+  appointments = [], // Default to empty array if undefined
   onAppointmentClick,
   onPatientClick,
 }) => {
-  
-
   return (
     <Box
       sx={{
         width: '100%',
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: 0, // No spacing between the columns
+        gap: 0,
       }}
     >
       {selectedWeek.map((day) => {
         const dayAppointments = appointments.filter((appointment) => {
-          const appointmentDate = new Date(appointment.date); // Ensure appointment.date is a Date object
-          return appointmentDate.toDateString() === day.toDateString(); // Compare dates
+          const appointmentDate = new Date(appointment.date);
+          return appointmentDate.toDateString() === day.toDateString();
         });
 
         return (
           <Box
-            key={day.toISOString()} // Use day.toISOString() as the unique key for each day
+            key={day.toISOString()}
             sx={{
               border: '1px solid #ccc',
               backgroundColor: '#fafafa',
@@ -60,7 +58,7 @@ const WeekView: React.FC<WeekViewProps> = ({
               {dayAppointments.length > 0 ? (
                 dayAppointments.map((appointment) => (
                   <AppointmentCard
-                    key={appointment.appointmentId} // Ensure appointmentId exists in Appointment type
+                    key={appointment.appointmentId}
                     appointment={appointment}
                     onAppointmentClick={onAppointmentClick}
                     onPatientClick={onPatientClick}

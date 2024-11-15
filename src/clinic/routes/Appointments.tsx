@@ -6,17 +6,17 @@ import AppointmentDrawer from './../components/drawers/appointment/AppointmentDr
 import PatientDetailDrawer from './../components/appointmentsSection/PatientDetailDrawer';
 import { Appointment } from '../types/appointmentEvent';
 import { Box } from '@mui/material';
-import { calculateCurrentWeek, isDateInWeek } from '../../shared/utils/calculateCurrentWeek'; // Utility function for week logic
+import { calculateCurrentWeek } from '../../shared/utils/calculateCurrentWeek'; // Utility function for week logic
 import AppointmentService from '../../shared/services/fetchAppointments';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../shared/services/store';
 import { getSubdomain } from '../../shared/utils/getSubdomains';
 import { useWebSocket } from '../../shared/services/WebSocketContext';
-import { startOfWeek, addWeeks, subWeeks } from 'date-fns';
+import { addWeeks, subWeeks, isSameWeek, isSameDay } from 'date-fns';
 
 const Appointments: React.FC = () => {
-  const YOUR_MEDIC_ID = useSelector((state: RootState) => state.auth.subaccountUser.name);
-  const { appointments } = useWebSocket();  // No need for setCurrentWeek, handle current week in logic
+  const currentUser = useSelector((state: RootState) => state.auth.subaccountUser);
+  const { appointments = [] } = useWebSocket(); // Ensure appointments is an array
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<Appointment | null>(null);
@@ -26,39 +26,90 @@ const Appointments: React.FC = () => {
   const subaccountToken = useSelector((state: RootState) => state.auth.subaccountToken);
   const database = getSubdomain() + '_db';
 
-  const [currentWeek, setCurrentWeek] = useState<Date[]>([]);  // Keep track of the current week locally
+  const [currentWeek, setCurrentWeek] = useState<Date[]>([]); // Keep track of the current week locally
   const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
+  const [displayedAppointments, setDisplayedAppointments] = useState<Appointment[]>([]);
 
-  // Calculate current week
+  // Function to determine if the selected week is the current week
+  const isSelectedWeekCurrentWeek = (selectedDate: Date): boolean => {
+    const today = new Date();
+    return isSameWeek(selectedDate, today, { weekStartsOn: 1 });
+  };
 
-// Handle appointment requests based on current week
-useEffect(() => {
-  const weekDates = calculateCurrentWeek(selectedDate);
+  // Handle appointment requests based on selected week
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      const weekDates = calculateCurrentWeek(selectedDate);
+      setCurrentWeek(weekDates);
 
-  if (isDateInWeek(selectedDate, currentWeek)) {
-    // Use WebSocket to request appointments for the current week
-    setFilteredAppointments([]);  // Reset filtered appointments when it's the current week
-  } else {
-    // Fetch appointments from the server for the selected week
-    const startDate = weekDates[0].toISOString().split('T')[0];
-    const endDate = weekDates[6].toISOString().split('T')[0];
-    const appointmentService = new AppointmentService(subaccountToken as string, database);
-    console.log(startDate, endDate)
-    
-    appointmentService.fetchWeekAppointments(startDate, endDate )
-      .then(fetchedAppointments => {
-        setFilteredAppointments(fetchedAppointments);
-      })
-      .catch(error => {
-        console.error('Error fetching appointments:', error);
+      const isCurrentWeek = isSelectedWeekCurrentWeek(selectedDate);
+
+      if (isCurrentWeek) {
+        setFilteredAppointments([]);
+      } else {
+        const startDate = weekDates[0].toISOString().split('T')[0];
+        const endDate = weekDates[6].toISOString().split('T')[0];
+
+        if (subaccountToken && database) {
+          const appointmentService = new AppointmentService(subaccountToken, database);
+
+          try {
+            const fetchedAppointments = await appointmentService.fetchWeekAppointments(
+              startDate,
+              endDate
+            );
+
+            // Extract the appointments array from the fetched data
+            const appointmentsArray = fetchedAppointments.appointments || [];
+
+            setFilteredAppointments(
+              Array.isArray(appointmentsArray) ? appointmentsArray : []
+            );
+          } catch (error) {
+            console.error('Error fetching appointments:', error);
+            setFilteredAppointments([]); // Set to empty array on error
+          }
+        } else {
+          console.error('Missing subaccount token or database');
+          setFilteredAppointments([]); // Set to empty array if missing tokens
+        }
+      }
+    };
+
+    fetchAppointments();
+  }, [selectedDate, subaccountToken, database]);
+
+
+  useEffect(() => {
+    const isCurrentWeek = isSelectedWeekCurrentWeek(selectedDate);
+    const allAppointments = isCurrentWeek ? appointments : filteredAppointments;
+
+   // console.log('--- Updating displayedAppointments ---');
+   // console.log('Selected Date:', selectedDate);
+   // console.log('Is Current Week:', isCurrentWeek);
+   // console.log('Appointments from WebSocket:', appointments);
+   // console.log('Filtered Appointments from Server:', filteredAppointments);
+   // console.log('All Appointments Used:', allAppointments);
+
+    if (isAllAppointments) {
+      setDisplayedAppointments(allAppointments);
+    } else {
+      const filtered = allAppointments.filter((appointment) => {
+        if (appointment.medicUser) {
+          return appointment.medicUser === currentUser.name;
+        }
+        return false;
       });
-  }
+      setDisplayedAppointments(filtered);
+    }
+  }, [
+    appointments,
+    filteredAppointments,
+    isAllAppointments,
+    currentUser,
+    selectedDate,
+  ]);
 
-  setCurrentWeek(weekDates);  // Update current week based on selected date
-}, [selectedDate, isAllAppointments]);  // Remove currentWeek from the dependency array
-
-
-  console.log(filteredAppointments)
 
   // Handler for selecting a date from WeekNavigator
   const handleSelectDate = (date: Date) => {
@@ -66,7 +117,7 @@ useEffect(() => {
   };
 
   const handleAddAppointment = () => {
-    setSelectedAppointment(null);  // Reset selected appointment
+    setSelectedAppointment(null); // Reset selected appointment
     setIsAddAppointmentDrawerOpen(true);
   };
 
@@ -79,25 +130,26 @@ useEffect(() => {
     setIsAllAppointments((prev) => !prev);
   };
 
-// Function to move to the previous week
-const handlePreviousWeek = () => {
-  const startOfCurrentWeek = startOfWeek(selectedDate, { weekStartsOn: 1 }); // Monday is the first day
-  const previousWeek = subWeeks(startOfCurrentWeek, 1); // Move to the previous week
-  setSelectedDate(previousWeek);
-};
+  // Function to move to the previous week
+  const handlePreviousWeek = () => {
+    const previousWeek = subWeeks(selectedDate, 1);
+    setSelectedDate(previousWeek);
+  };
 
-// Function to move to the next week
-const handleNextWeek = () => {
-  const startOfCurrentWeek = startOfWeek(selectedDate, { weekStartsOn: 1 }); // Monday is the first day
-  const nextWeek = addWeeks(startOfCurrentWeek, 1); // Move to the next week
-  setSelectedDate(nextWeek);
-};
+  // Function to move to the next week
+  const handleNextWeek = () => {
+    const nextWeek = addWeeks(selectedDate, 1);
+    setSelectedDate(nextWeek);
+  };
 
   // Function to get appointments count for a given date
   const getAppointmentsCount = (date: Date): number => {
-    return appointments.filter(
-      (appointment) =>
-        new Date(appointment.date).toDateString() === date.toDateString()
+    if (!Array.isArray(displayedAppointments)) {
+      console.error('displayedAppointments is not an array');
+      return 0;
+    }
+    return displayedAppointments.filter((appointment) =>
+      isSameDay(new Date(appointment.date), date)
     ).length;
   };
 
@@ -108,7 +160,9 @@ const handleNextWeek = () => {
       }
 
       const appointmentService = new AppointmentService(subaccountToken, database);
-      const appointmentDetails = await appointmentService.fetchAppointment(appointment.appointmentId);
+      const appointmentDetails = await appointmentService.fetchAppointment(
+        appointment.appointmentId
+      );
 
       setSelectedAppointment(appointmentDetails);
       setIsAddAppointmentDrawerOpen(true);
@@ -126,44 +180,37 @@ const handleNextWeek = () => {
     setSelectedAppointment(null);
   };
 
-    // Handle saving an appointment (create or update)
-    const handleSaveAppointment = async (
-      appointmentId: string | null, // Null if it's a new appointment
-      appointmentData: Appointment // Appointment type
-    ): Promise<Appointment> => {
-      try {
-        // Get subaccountToken from Redux store and database from subdomain
-        const subaccountToken = useSelector((state: RootState) => state.auth.subaccountToken);
-        const database = getSubdomain() + '_db';
-  
-        if (!subaccountToken || !database) {
-          throw new Error('Missing subaccount token or database');
-        }
-  
-        const appointmentService = new AppointmentService(subaccountToken, database);
-  
-        let savedAppointment: Appointment;
-  
-        if (appointmentId) {
-          // Editing an existing appointment
-          savedAppointment = await appointmentService.editAppointment(appointmentId, appointmentData);
-          console.log('Appointment updated:', savedAppointment);
-        } else {
-          // Creating a new appointment
-          savedAppointment = await appointmentService.createAppointment(appointmentData);
-          console.log('Appointment created:', savedAppointment);
-        }
-  
-        return savedAppointment; // Return the created/updated appointment
-      } catch (error) {
-        console.error('Error saving appointment:', error);
-        throw error;
+  // Handle saving an appointment (create or update)
+  const handleSaveAppointment = async (
+    appointmentId: string | null,
+    appointmentData: Appointment
+  ): Promise<Appointment> => {
+    try {
+      if (!subaccountToken || !database) {
+        throw new Error('Missing subaccount token or database');
       }
-    };
 
-    
-    
-  
+      const appointmentService = new AppointmentService(subaccountToken, database);
+
+      let savedAppointment: Appointment;
+
+      if (appointmentId) {
+        savedAppointment = await appointmentService.editAppointment(
+          appointmentId,
+          appointmentData
+        );
+        console.log('Appointment updated:', savedAppointment);
+      } else {
+        savedAppointment = await appointmentService.createAppointment(appointmentData);
+        console.log('Appointment created:', savedAppointment);
+      }
+
+      return savedAppointment;
+    } catch (error) {
+      console.error('Error saving appointment:', error);
+      throw error;
+    }
+  };
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -189,7 +236,7 @@ const handleNextWeek = () => {
 
       <WeekView
         selectedWeek={currentWeek}
-        appointments={filteredAppointments.length > 0 ? filteredAppointments : appointments}
+        appointments={displayedAppointments}
         onAppointmentClick={handleAppointmentClick}
         onPatientClick={handlePatientClick}
       />
