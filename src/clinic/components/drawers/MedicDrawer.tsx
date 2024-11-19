@@ -15,23 +15,21 @@ import PermissionsStep from './addMedic/PermissionsStep';
 import InfoTab from './addMedic/StaffInfoStep';
 import TreatmentAccordion from './addMedic/TreatmentAccordion';
 import MedicService from '../../../shared/services/medicService';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { closeDrawer } from '../../../shared/services/drawerSlice';
 
 import {
   MedicInfo,
   ApiMedicData,
   ApiWorkingDayHour,
-  ApiPermission,
-  DayOff,
 } from '../../types/Medic';
 
-interface MedicDrawerProps {
-  open: boolean;
-  onClose: () => void;
-  medicId?: string | null;
-}
+const MedicDrawer: React.FC = () => {
+  const dispatch = useDispatch();
 
-const MedicDrawer: React.FC<MedicDrawerProps> = ({ open, onClose, medicId }) => {
+  const { drawerData, isOpen } = useSelector((state: any) => state.drawer);
+  const medicId = drawerData?.medicId || null;
+
   const [activeTab, setActiveTab] = useState(0);
   const [medicInfo, setMedicInfo] = useState<MedicInfo>({
     id: undefined,
@@ -55,13 +53,12 @@ const MedicDrawer: React.FC<MedicDrawerProps> = ({ open, onClose, medicId }) => 
   const token = useSelector((state: any) => state.auth.subaccountToken);
   const medicService = new MedicService(token, 'demo_db');
 
+  // Fetch or reset medic details on medicId change
   useEffect(() => {
     const fetchMedic = async () => {
       if (medicId) {
         try {
           const data: ApiMedicData = await medicService.viewMedic(medicId);
-
-          // Map data into medicInfo
           setMedicInfo({
             id: data.id.toString(),
             info: {
@@ -84,14 +81,13 @@ const MedicDrawer: React.FC<MedicDrawerProps> = ({ open, onClose, medicId }) => 
               {}
             ),
             daysOff: data.medicProfile.daysOff || [],
-            permissions: data.permissions || [], // Assign directly as an array
-
+            permissions: data.permissions || [],
           });
         } catch (error) {
           console.error('Error fetching medic:', error);
         }
       } else {
-        // Reset to initial state for adding a new medic
+        // Reset form for new medic
         setMedicInfo({
           id: undefined,
           info: {
@@ -119,49 +115,12 @@ const MedicDrawer: React.FC<MedicDrawerProps> = ({ open, onClose, medicId }) => 
     setActiveTab(newValue);
   };
 
-  const handleInfoChange = (field: string, value: string | File | null) => {
+  const handleChange = (field: string, value: any) => {
     setMedicInfo((prevInfo) => ({
       ...prevInfo,
-      info: {
-        ...prevInfo.info,
-        [field]: value,
-      },
+      [field]: value,
     }));
   };
-
-  const handleServicesChange = (updatedServices: string[]) => {
-    setMedicInfo((prevInfo) => ({
-      ...prevInfo,
-      assignedServices: {
-        assignedTreatments: updatedServices,
-      },
-    }));
-  };
-
-  const handleWorkingHoursChange = (day: string, hours: string) => {
-    setMedicInfo((prevInfo) => ({
-      ...prevInfo,
-      workingHours: {
-        ...prevInfo.workingHours,
-        [day]: hours,
-      },
-    }));
-  };
-
-  const handleDaysOffChange = (updatedDaysOff: DayOff[]) => {
-    setMedicInfo((prevInfo) => ({
-      ...prevInfo,
-      daysOff: updatedDaysOff,
-    }));
-  };
-
-  const handlePermissionChange = (updatedPermissions: ApiPermission[]) => {
-    setMedicInfo((prevInfo) => ({
-      ...prevInfo,
-      permissions: updatedPermissions,
-    }));
-  };
-  
 
   const handleSubmit = async () => {
     try {
@@ -169,9 +128,8 @@ const MedicDrawer: React.FC<MedicDrawerProps> = ({ open, onClose, medicId }) => 
         await medicService.updateMedic(medicInfo.id, medicInfo);
       } else {
         await medicService.createMedic(medicInfo);
-        console.log(medicInfo)
       }
-      onClose();
+      dispatch(closeDrawer());
     } catch (error) {
       console.error('Error saving medic:', error);
     }
@@ -182,31 +140,36 @@ const MedicDrawer: React.FC<MedicDrawerProps> = ({ open, onClose, medicId }) => 
   const getTabContent = (tabIndex: number) => {
     switch (tabIndex) {
       case 0:
-        return <InfoTab info={medicInfo.info} onInfoChange={handleInfoChange} />;
+        return <InfoTab info={medicInfo.info} onInfoChange={(field, value) => handleChange('info', { ...medicInfo.info, [field]: value })} />;
       case 1:
         return (
           <TreatmentAccordion
             assignedTreatments={medicInfo.assignedServices.assignedTreatments}
-            onServiceChange={handleServicesChange}
+            onServiceChange={(updatedServices) => handleChange('assignedServices', { assignedTreatments: updatedServices })}
           />
         );
       case 2:
-        return <WorkingHoursStep workingHours={medicInfo.workingHours} onWorkingHoursChange={handleWorkingHoursChange} />;
+        return (
+          <WorkingHoursStep
+            workingHours={medicInfo.workingHours}
+            onWorkingHoursChange={(day, hours) => handleChange('workingHours', { ...medicInfo.workingHours, [day]: hours })}
+          />
+        );
       case 3:
-        return <DaysOffStep daysOff={medicInfo.daysOff} onDaysOffChange={handleDaysOffChange} />;
+        return <DaysOffStep daysOff={medicInfo.daysOff} onDaysOffChange={(updatedDaysOff) => handleChange('daysOff', updatedDaysOff)} />;
       case 4:
-        return <PermissionsStep permissions={medicInfo.permissions} onPermissionsChange={handlePermissionChange} />;
+        return <PermissionsStep permissions={medicInfo.permissions} onPermissionsChange={(updatedPermissions) => handleChange('permissions', updatedPermissions)} />;
       default:
         return null;
     }
   };
 
   return (
-    <Drawer anchor="right" open={open} onClose={onClose}>
+    <Drawer anchor="right" open={isOpen} onClose={() => dispatch(closeDrawer())}>
       <Box sx={{ width: 400 }}>
         <Box sx={{ p: 2, display: 'flex', alignItems: 'center' }}>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>{medicId ? 'Edit Medic' : 'Add Medic'}</Typography>
-          <IconButton edge="end" onClick={onClose}>
+          <IconButton edge="end" onClick={() => dispatch(closeDrawer())}>
             <CloseIcon />
           </IconButton>
         </Box>

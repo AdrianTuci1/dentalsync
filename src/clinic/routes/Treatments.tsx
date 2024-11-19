@@ -14,22 +14,20 @@ import {
   Typography,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import TreatmentDrawer from './../components/drawers/TreatmentDrawer'; // Import the drawer component
-import TreatmentService from '../../shared/services/treatmentService'; // Import the service to interact with API
-import { Treatment } from '../types/treatmentType'; // Use the defined Treatment type
-import { useSelector } from 'react-redux';
-import generateInitials from '../../shared/utils/generateInitials'; // Import your generateInitials function
+import { useDispatch, useSelector } from 'react-redux';
+import { openDrawer } from '../../shared/services/drawerSlice';
+import TreatmentService from '../../shared/services/treatmentService';
+import { Treatment } from '../types/treatmentType';
+import generateInitials from '../../shared/utils/generateInitials';
 
 export const Treatments: React.FC = () => {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Control drawer visibility
-  const [selectedTreatmentId, setSelectedTreatmentId] = useState<string | null>(null); // Selected treatment ID for view/edit
-  const [treatments, setTreatments] = useState<Treatment[]>([]); // Fetched treatments from the server
+  const [treatments, setTreatments] = useState<Treatment[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const isSmallScreen = useMediaQuery('(max-width:800px)'); // Check screen size
-
+  const isSmallScreen = useMediaQuery('(max-width:800px)');
   const token = useSelector((state: any) => state.auth.subaccountToken);
+  const dispatch = useDispatch();
 
-  const treatmentService = new TreatmentService(token, 'demo_db'); // Initialize TreatmentService
+  const treatmentService = new TreatmentService(token, 'demo_db');
 
   // Fetch treatments from server
   useEffect(() => {
@@ -49,20 +47,18 @@ export const Treatments: React.FC = () => {
     setSearchTerm(event.target.value);
   };
 
-  const toggleDrawer = () => {
-    setIsDrawerOpen((prev) => !prev);
-    setSelectedTreatmentId(null); // Reset selected treatment ID when drawer is toggled
+  const handleAddNew = () => {
+    dispatch(openDrawer({ type: 'Treatment', data: { treatmentId: null } }));
   };
 
   const handleEdit = (treatmentId: string) => {
-    setSelectedTreatmentId(treatmentId); // Set the selected treatment ID
-    setIsDrawerOpen(true); // Open the drawer
+    dispatch(openDrawer({ type: 'Treatment', data: { treatmentId } }));
   };
 
   const handleDelete = async (treatmentId: string) => {
     try {
       await treatmentService.deleteTreatment(treatmentId);
-      setTreatments((prev) => prev.filter((t) => t.id !== treatmentId)); // Remove deleted treatment from the list
+      setTreatments((prev) => prev.filter((t) => t.id !== treatmentId));
     } catch (error) {
       console.error('Error deleting treatment:', error);
     }
@@ -82,7 +78,7 @@ export const Treatments: React.FC = () => {
             style={{ marginLeft: '20px' }}
           />
           <Box display="flex" gap="8px">
-            <Button startIcon={<AddIcon />} variant="outlined" onClick={toggleDrawer}>
+            <Button startIcon={<AddIcon />} variant="outlined" onClick={handleAddNew}>
               Add New
             </Button>
           </Box>
@@ -94,7 +90,7 @@ export const Treatments: React.FC = () => {
                 <TableCell>Treatment</TableCell>
                 <TableCell>Price</TableCell>
                 <TableCell>Estimate Duration</TableCell>
-                <TableCell>Category</TableCell> {/* Category instead of Type of Visit */}
+                <TableCell>Category</TableCell>
                 <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -111,7 +107,7 @@ export const Treatments: React.FC = () => {
                       <Box
                         width={30}
                         height={30}
-                        bgcolor={treatment.color} // Apply treatment color
+                        bgcolor={treatment.color}
                         display="flex"
                         justifyContent="center"
                         alignItems="center"
@@ -145,13 +141,6 @@ export const Treatments: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* Drawer component for add/edit treatment */}
-      <TreatmentDrawer
-        isOpen={isDrawerOpen}
-        toggleDrawer={toggleDrawer}
-        treatmentId={selectedTreatmentId} // Pass selected treatment ID for editing
-      />
     </>
   );
 };

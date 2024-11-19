@@ -8,11 +8,12 @@ import Medics from './routes/Medics';
 import Treatments from './routes/Treatments';
 import ChatComponent from './routes/Chat';
 import { WebSocketProvider } from '../shared/services/WebSocketContext';
+import GlobalDrawer from './components/drawers/GlobalDrawer';
 
 // Lazy load content components
 const HomePage = lazy(() => import('./routes/HomePage'));
 const Appointments = lazy(() => import('./routes/Appointments'));
-const Patients = lazy(() => import('./routes/Requests'));
+const Patients = lazy(() => import('./routes/Patients'));
 
 function Dashboard() {
   // State to track the active tab
@@ -61,6 +62,7 @@ function Dashboard() {
             </WebSocketProvider>
           </div>
         </div>
+        <GlobalDrawer />
       </div>
     </>
   );

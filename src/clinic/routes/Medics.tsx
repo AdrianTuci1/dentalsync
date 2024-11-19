@@ -15,19 +15,18 @@ import {
 } from '@mui/material';
 import { blue, green, orange } from '@mui/material/colors';
 import MedicService from '../../shared/services/medicService';
-import { useSelector } from 'react-redux';
-import MedicDrawer from './../components/drawers/MedicDrawer';
+import { useDispatch, useSelector } from 'react-redux';
+import { openDrawer } from '../../shared/services/drawerSlice';
 import { MedicsListItem } from '../types/Medic';
-
 
 const Medics: React.FC = () => {
   const [medics, setMedics] = useState<MedicsListItem[]>([]);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedMedicId, setSelectedMedicId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const isSmallScreen = useMediaQuery('(max-width:800px)');
   const token = useSelector((state: any) => state.auth.subaccountToken);
+  const dispatch = useDispatch();
 
+  // Fetch medics from API
   useEffect(() => {
     const medicService = new MedicService(token, 'demo_db');
     const fetchMedics = async () => {
@@ -51,43 +50,78 @@ const Medics: React.FC = () => {
     fetchMedics();
   }, [token]);
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
-
-  const toggleDrawer = (open: boolean, medicId: string | null = null) => {
-    setDrawerOpen(open);
-    setSelectedMedicId(medicId);
-  };
-
-  const filteredMedics = medics.filter(medic =>
+  // Filtered medics based on search
+  const filteredMedics = medics.filter((medic) =>
     medic.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     medic.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
     medic.contact.includes(searchTerm)
   );
 
+  // Dispatch openDrawer action for adding or editing a medic
+  const handleOpenDrawer = (medicId: string | null) => {
+    dispatch(
+      openDrawer({
+        type: 'Medic',
+        data: { medicId },
+      })
+    );
+  };
+
   return (
     <>
       <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%' }}>
-        <div className="padding-box" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: 'calc(100vh - 60px)' }}>
-          <div className="box" style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '10px', flexDirection: 'column' }}>
-            <div className="action-component" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px', width: '100%', boxSizing: 'border-box' }}>
+        <div
+          className="padding-box"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: 'calc(100vh - 60px)',
+          }}
+        >
+          <div
+            className="box"
+            style={{
+              display: 'flex',
+              width: '100%',
+              height: '100%',
+              borderRadius: '10px',
+              flexDirection: 'column',
+            }}
+          >
+            {/* Action Section */}
+            <div
+              className="action-component"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '10px',
+                width: '100%',
+                boxSizing: 'border-box',
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <TextField
                   label="Search"
                   variant="outlined"
                   size="small"
                   value={searchTerm}
-                  onChange={handleSearchChange}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   style={{ marginLeft: '20px' }}
                 />
               </div>
-              <Button variant="outlined" color="primary" onClick={() => toggleDrawer(true)}>
+              <Button variant="outlined" color="primary" onClick={() => handleOpenDrawer(null)}>
                 Add New
               </Button>
             </div>
 
-            <TableContainer component={Paper} style={{ height: 'calc(100vh - 60px)', overflowY: 'scroll' }}>
+            {/* Medics Table */}
+            <TableContainer
+              component={Paper}
+              style={{ height: 'calc(100vh - 60px)', overflowY: 'scroll' }}
+            >
               <Table stickyHeader aria-label="medics table">
                 {!isSmallScreen && (
                   <TableHead>
@@ -101,7 +135,11 @@ const Medics: React.FC = () => {
                 )}
                 <TableBody>
                   {filteredMedics.map((medic, index) => (
-                    <TableRow key={index} onClick={() => toggleDrawer(true, medic.id)} style={{ cursor: 'pointer' }}>
+                    <TableRow
+                      key={index}
+                      onClick={() => handleOpenDrawer(medic.id)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <TableCell>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                           <Avatar style={{ marginRight: 8 }}>{medic.name[0]}</Avatar>
@@ -119,7 +157,7 @@ const Medics: React.FC = () => {
                           </TableCell>
                           <TableCell>
                             {medic.workingDays
-                              .filter(day => day !== '')
+                              .filter((day) => day !== '')
                               .map((day, idx) => (
                                 <Chip
                                   key={idx}
@@ -135,7 +173,8 @@ const Medics: React.FC = () => {
                             <Chip
                               label={medic.type}
                               style={{
-                                backgroundColor: medic.type === 'FULL-TIME' ? green[100] : orange[100],
+                                backgroundColor:
+                                  medic.type === 'FULL-TIME' ? green[100] : orange[100],
                               }}
                             />
                           </TableCell>
@@ -149,8 +188,6 @@ const Medics: React.FC = () => {
           </div>
         </div>
       </div>
-
-      <MedicDrawer open={drawerOpen} onClose={() => toggleDrawer(false)} medicId={selectedMedicId} />
     </>
   );
 };

@@ -8,21 +8,17 @@ import {
   Button,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { Component } from '../../types/componentType'; // Import the Component type
+import { useDispatch, useSelector } from 'react-redux';
+import { closeDrawer } from '../../../shared/services/drawerSlice';
+import { Component } from '../../types/componentType';
 
-interface AddStockDrawerProps {
-  open: boolean;
-  onClose: () => void;
-  onSave: (newStock: Component) => void;
-  stock?: Component | null; // Optional, for editing existing stock
-}
+const StockDrawer: React.FC = () => {
+  const dispatch = useDispatch();
 
-const AddStockDrawer: React.FC<AddStockDrawerProps> = ({
-  open,
-  onClose,
-  onSave,
-  stock,
-}) => {
+  // Access drawerData from Redux
+  const { drawerData } = useSelector((state: any) => state.drawer);
+  const stock = drawerData?.stock || null; // Get stock from drawerData
+
   const [newStock, setNewStock] = useState<Partial<Component>>({
     componentName: '',
     unitPrice: 0,
@@ -30,6 +26,7 @@ const AddStockDrawer: React.FC<AddStockDrawerProps> = ({
     quantity: 0,
   });
 
+  // Initialize or reset newStock when the stock changes
   useEffect(() => {
     if (stock) {
       setNewStock(stock);
@@ -52,31 +49,29 @@ const AddStockDrawer: React.FC<AddStockDrawerProps> = ({
   };
 
   const handleSave = () => {
-    // Default values for undefined fields
     const savedStock: Component = {
-      id: newStock.id || '', // Ensure the id exists or handle it appropriately elsewhere
+      id: newStock.id || '', // Ensure the id exists or handle it elsewhere
       componentName: newStock.componentName || '',
       unitPrice: newStock.unitPrice || 0,
       vendor: newStock.vendor || '',
       quantity: newStock.quantity || 0,
-      createdAt: newStock.createdAt || new Date().toISOString(), // Default current time if missing
+      createdAt: newStock.createdAt || new Date().toISOString(),
       updatedAt: newStock.updatedAt || new Date().toISOString(),
     };
 
-    onSave(savedStock);
-    onClose();
-  };
+    // Save logic can go here or trigger an action
+    console.log('Saved Stock:', savedStock);
 
-  const handleClose = () => {
-    onClose();
+    // Close the drawer after saving
+    dispatch(closeDrawer());
   };
 
   return (
-    <Drawer anchor="right" open={open} onClose={handleClose}>
-      <Box sx={{ width: 350, padding: 2 }}>
+    <Drawer anchor="right" open={true} onClose={() => dispatch(closeDrawer())}>
+      <Box sx={{ width: 400, padding: 2 }}>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Typography variant="h6">{stock ? 'Edit Stock' : 'Add New Stock'}</Typography>
-          <IconButton onClick={handleClose}>
+          <IconButton onClick={() => dispatch(closeDrawer())}>
             <CloseIcon />
           </IconButton>
         </Box>
@@ -115,7 +110,7 @@ const AddStockDrawer: React.FC<AddStockDrawerProps> = ({
           margin="normal"
         />
         <Box display="flex" justifyContent="flex-end" marginTop={2}>
-          <Button onClick={handleClose} style={{ marginRight: 8 }}>
+          <Button onClick={() => dispatch(closeDrawer())} style={{ marginRight: 8 }}>
             Cancel
           </Button>
           <Button
@@ -132,4 +127,4 @@ const AddStockDrawer: React.FC<AddStockDrawerProps> = ({
   );
 };
 
-export default AddStockDrawer;
+export default StockDrawer;

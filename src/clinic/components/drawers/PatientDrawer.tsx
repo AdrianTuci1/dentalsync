@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Drawer,
   Box,
@@ -15,40 +15,39 @@ import GalleryTab from './patient/GalleryTab';
 import AppointmentsTab from './patient/AppointmentsTab';
 import DeleteTab from './patient/DeleteTab';
 import PatientService from '../../../shared/services/patientService';
+import { closeDrawer } from '../../../shared/services/drawerSlice';
 
-interface PatientDrawerProps {
-  patientId: string | null;
-  isOpen: boolean;
-  onClose: () => void;
-  onSave?: (updatedPatient: any) => void;
-}
+const PatientDrawer: React.FC = () => {
+  const dispatch = useDispatch();
 
-const PatientDrawer: React.FC<PatientDrawerProps> = ({ patientId, isOpen, onClose, onSave }) => {
+  // Access drawer data from Redux
+  const { drawerData } = useSelector((state: any) => state.drawer);
+  const patientId = drawerData?.patientId || null;
+
   const [activeTab, setActiveTab] = useState(0);
   const [patientData, setPatientData] = useState<any>({});
   const [loading, setLoading] = useState<boolean>(false);
 
-  const token = useSelector((state: any) => state.auth.subaccountToken); // Access the token from Redux
+  const token = useSelector((state: any) => state.auth.subaccountToken);
 
   const patientService = new PatientService(token, 'demo_db');
 
-  // Reset patient data when drawer is opened for adding a new patient
+  // Reset patient data when opening for a new patient
   useEffect(() => {
-    if (isOpen && !patientId) {
-      setPatientData({}); // Reset fields to empty for new patient
-      setActiveTab(0); // Reset to the first tab
+    if (!patientId) {
+      setPatientData({});
+      setActiveTab(0);
     }
-  }, [isOpen, patientId]);
+  }, [patientId]);
 
-  // Fetch patient data when drawer opens and patientId is provided
+  // Fetch patient data when opening for an existing patient
   useEffect(() => {
     const fetchPatientData = async () => {
-      if (patientId && isOpen && token) {
+      if (patientId && token) {
         setLoading(true);
         try {
           const data = await patientService.getPatient(patientId);
           setPatientData(data);
-          console.log(data);
         } catch (error) {
           console.error('Failed to fetch patient data:', error);
         } finally {
@@ -58,38 +57,49 @@ const PatientDrawer: React.FC<PatientDrawerProps> = ({ patientId, isOpen, onClos
     };
 
     fetchPatientData();
-  }, [patientId, isOpen, token]);
+  }, [patientId, token]);
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
 
   const handleInputChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement | { value: unknown }>) => {
-    setPatientData({ ...patientData, [field]: event.target.value });
+    setPatientData((prevData: any) => ({ ...prevData, [field]: event.target.value }));
   };
 
-  const handleSave = () => {
-    if (onSave) {
-      onSave(patientData);
+  const handleClose = () => {
+    dispatch(closeDrawer());
+  };
+
+  const handleSave = async () => {
+    try {
+      if (patientId) {
+        await patientService.updatePatient(patientId, patientData);
+      } else {
+        await patientService.createPatient(patientData);
+      }
+      dispatch(closeDrawer());
+    } catch (error) {
+      console.error('Failed to save patient data:', error);
     }
-    onClose();
   };
 
   const tabs = ['Details', 'Dental History', 'Gallery', 'Appointments', 'Delete'];
 
   return (
-    <Drawer anchor="right" open={isOpen} onClose={onClose}>
+    <Drawer anchor="right" open={true} onClose={handleClose}>
       <Box sx={{ width: 400 }}>
+        {/* Header */}
         <Box sx={{ p: 2, display: 'flex', alignItems: 'center' }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold', flexGrow: 1 }}>
             {patientData.name || 'Add Patient'}
           </Typography>
-          <IconButton edge="end" onClick={onClose} aria-label="close">
+          <IconButton edge="end" onClick={handleClose} aria-label="close">
             <CloseIcon />
           </IconButton>
         </Box>
 
-        {/* Tabs Navigation */}
+        {/* Tabs */}
         <Tabs value={activeTab} onChange={handleTabChange} variant="fullWidth">
           {tabs.map((tab, index) => (
             <Tab label={tab} key={index} />

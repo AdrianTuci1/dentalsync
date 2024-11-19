@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Drawer, Box, Tabs, Tab } from '@mui/material';
+import { useSelector, useDispatch } from 'react-redux';
+import { closeDrawer } from '../../../../shared/services/drawerSlice';
 import InitialAppointmentTab from './tabs/InitialAppointmentTab';
 import DetailsTab from './tabs/DetailsTab';
 import TreatmentsTab from './tabs/TreatmentsTab';
@@ -7,19 +9,13 @@ import PriceTab from './tabs/PriceTab';
 import DeleteTab from './tabs/DeleteTab';
 import { Appointment } from '../../../types/appointmentEvent';
 
-interface AppointmentDrawerProps {
-  open: boolean;
-  onClose: () => void;
-  onSave: (appointmentId: string | null, appointmentData: Appointment) => Promise<Appointment>;
-  appointment?: Appointment; // Optional for editing existing appointments
-}
+const AppointmentDrawer: React.FC = () => {
+  const dispatch = useDispatch();
 
-const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
-  open,
-  onClose,
-  onSave,
-  appointment,
-}) => {
+  // Access appointment data from Redux
+  const { drawerData } = useSelector((state: any) => state.drawer);
+  const appointment: Appointment | null = drawerData?.appointment || null;
+
   // Default state for a new appointment
   const initialAppointmentDetails: Appointment = {
     appointmentId: '',
@@ -38,7 +34,7 @@ const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
 
   const [appointmentDetails, setAppointmentDetails] = useState<Appointment>(initialAppointmentDetails);
   const [isNewAppointment, setIsNewAppointment] = useState<boolean>(!appointment); // New appointment flag
-  const [activeTab, setActiveTab] = useState<number>(0); // Control which tab is active
+  const [activeTab, setActiveTab] = useState<number>(0); // Control active tab
 
   // Set appointment details whenever a new appointment is passed in
   useEffect(() => {
@@ -62,24 +58,46 @@ const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
   // Save the initial appointment (for new appointments only)
   const handleSaveInitial = async () => {
     try {
-      const newAppointment = await onSave(null, appointmentDetails); // Save the new appointment
+      // Replace this with your actual save logic
+      console.log('Saving new appointment:', appointmentDetails);
       setIsNewAppointment(false); // Switch to edit mode
-      setAppointmentDetails(newAppointment); // Update the state with the saved appointment
-      setActiveTab(0); // Go to the first tab after saving the initial details
+      setActiveTab(0); // Go to the first tab after saving initial details
     } catch (error) {
       console.error('Error creating new appointment:', error);
     }
   };
 
+  // Save existing appointment
+  const handleSave = async () => {
+    try {
+      // Replace this with your actual save logic
+      console.log('Updating appointment:', appointmentDetails);
+      dispatch(closeDrawer()); // Close the drawer after saving
+    } catch (error) {
+      console.error('Error saving appointment:', error);
+    }
+  };
+
+  // Delete appointment
+  const handleDelete = async () => {
+    try {
+      // Replace this with your actual delete logic
+      console.log('Deleting appointment:', appointmentDetails.appointmentId);
+      dispatch(closeDrawer()); // Close the drawer after deleting
+    } catch (error) {
+      console.error('Error deleting appointment:', error);
+    }
+  };
+
   return (
-    <Drawer anchor="right" open={open} onClose={onClose} sx={{ width: '400px' }}>
-      <Box sx={{ width: '100%', padding: 2, justifyContent:'center', height:'100%' }}>
+    <Drawer anchor="right" open={true} onClose={() => dispatch(closeDrawer())} sx={{ width: '400px' }}>
+      <Box sx={{ width: '100%', padding: 2, justifyContent: 'center', height: '100%' }}>
         {isNewAppointment ? (
           <InitialAppointmentTab
             appointmentDetails={appointmentDetails}
             onInputChange={handleInputChange}
             onSave={handleSaveInitial}
-            onClose={onClose}
+            onClose={() => dispatch(closeDrawer())}
           />
         ) : (
           <>
@@ -112,9 +130,16 @@ const AppointmentDrawer: React.FC<AppointmentDrawerProps> = ({
                 />
               )}
               {activeTab === 3 && (
-                <DeleteTab onDelete={() => onSave(appointmentDetails.appointmentId, appointmentDetails)} />
+                <DeleteTab onDelete={handleDelete} />
               )}
             </Box>
+
+            {/* Save Button */}
+            {activeTab !== 3 && (
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
+                <button onClick={handleSave}>Save</button>
+              </Box>
+            )}
           </>
         )}
       </Box>
