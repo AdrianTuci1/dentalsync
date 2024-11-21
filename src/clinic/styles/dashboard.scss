@@ -1,24 +1,27 @@
-@import './variables';
-
-.dashboard-page{
+.dashboard-page {
     display: flex;
-    width: 100%;
-}
-
-.frame{
-    display: flex;
-    width: 60px;
-}
-
-.dashboard-content{
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-}
-
-.content-wrapper{
-    display: flex;
-    height: calc(100vh - 60px);
-    width: 100%;
-    overflow: scroll;
-}
+  
+    .dashboard-content {
+      flex-grow: 1;
+      transition: margin-left 0.3s;
+  
+      &.full-width {
+        margin-left: 0; // Sidebar is hidden
+      }
+  
+      &.with-sidebar-collapsed {
+        margin-left: 60px; // Sidebar is collapsed
+      }
+  
+      &.with-sidebar-expanded {
+        margin-left: 60px; // Sidebar floats over content
+      }
+  
+      .content-wrapper {
+        padding: 20px;
+        height: calc(100vh - 60px);
+        overflow-y: auto;
+      }
+    }
+  }
+  

@@ -1,27 +1,24 @@
-
-import '../styles/navigation/navbar.scss'
-import UserCard from './UserCard';
+import "../styles/navigation/navbar.scss";
+import UserCard from "./UserCard";
 
 interface NavBarProps {
   activeTab: string;
 }
 
 const NavBar: React.FC<NavBarProps> = ({ activeTab }) => {
-
   return (
-    <div className="navigation">
-      <div className="active-tab">
+    <div className="navbar">
+      <div className="navbar-start">
+        <img src="/logoclinic.png" alt="Clinic Logo" className="navbar-logo" />
+      </div>
+      <div className="navbar-center">
         <h2>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h2>
       </div>
-      <div className="nav-end">
-      <div className="user-info">
-        <div className="user-display">
-            <UserCard />
-        </div>
-      </div>
+      <div className="navbar-end">
+        <UserCard />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default NavBar
+export default NavBar;

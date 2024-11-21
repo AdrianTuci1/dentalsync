@@ -1,65 +1,86 @@
-import { useState, lazy } from 'react';
-import SideBar from './components/SideBar';
-import NavBar from './components/NavBar';
-import './styles/dashboard.scss';
-import Stocks from './routes/Stocks';
-import Settings from './routes/Settings';
-import Medics from './routes/Medics';
-import Treatments from './routes/Treatments';
-import ChatComponent from './routes/Chat';
-import { WebSocketProvider } from '../shared/services/WebSocketContext';
-import GlobalDrawer from './components/drawers/GlobalDrawer';
+import { useState, useEffect, lazy } from "react";
+import SideBar from "./components/SideBar";
+import NavBar from "./components/NavBar";
+import "./styles/dashboard.scss";
+import Stocks from "./routes/Stocks";
+import Settings from "./routes/Settings";
+import Medics from "./routes/Medics";
+import Treatments from "./routes/Treatments";
+import ChatComponent from "./routes/Chat";
+import { WebSocketProvider } from "../shared/services/WebSocketContext";
+import GlobalDrawer from "./components/drawers/GlobalDrawer";
 
 // Lazy load content components
-const HomePage = lazy(() => import('./routes/HomePage'));
-const Appointments = lazy(() => import('./routes/Appointments'));
-const Patients = lazy(() => import('./routes/Patients'));
+const HomePage = lazy(() => import("./routes/HomePage"));
+const Appointments = lazy(() => import("./routes/Appointments"));
+const Patients = lazy(() => import("./routes/Patients"));
 
 function Dashboard() {
-  // State to track the active tab
-  const [activeTab, setActiveTab] = useState<string>('home');
+  const [activeTab, setActiveTab] = useState<string>("home");
+  const [isSidebarVisible, setIsSidebarVisible] = useState<boolean>(window.innerWidth >= 768);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const isMobile = window.innerWidth < 768;
 
-  // Function to render content based on the active tab
   const renderContent = () => {
     switch (activeTab) {
-      case 'home':
+      case "home":
         return <HomePage />;
-      case 'patients':
-        return <Patients/>;
-      case 'appointments':
+      case "patients":
+        return <Patients />;
+      case "appointments":
         return <Appointments />;
-      case 'medics':
+      case "medics":
         return <Medics />;
-      case 'treatments':
+      case "treatments":
         return <Treatments />;
-      case 'stocks':
+      case "stocks":
         return <Stocks />;
-      case 'chat':
+      case "chat":
         return <ChatComponent />;
-      case 'settings':
+      case "settings":
         return <Settings />;
       default:
         return <HomePage />;
     }
   };
 
+  const handleResize = () => {
+    if (window.innerWidth < 768) {
+      setIsSidebarVisible(false); // Hide sidebar on small screens
+      setIsSidebarOpen(false); // Reset to collapsed state
+    } else {
+      setIsSidebarVisible(true); // Show sidebar on larger screens
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <>
       <div className="dashboard-page">
-        {/* Vertical sidebar */}
-        <div className="frame">
-          <SideBar setActiveTab={setActiveTab} />
-        </div>
-
-        {/* Right column - navbar & other content */}
-        <div className="dashboard-content">
-          <NavBar activeTab={activeTab}/>
-
-          {/* Content */}
+      <SideBar
+        setActiveTab={setActiveTab}
+        isSidebarVisible={isSidebarVisible}
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+        isMobile={isMobile}
+        setIsSidebarVisible={setIsSidebarVisible}
+      />
+          <div
+            className={`dashboard-content ${
+              !isSidebarVisible
+                ? "full-width"
+                : isSidebarOpen
+                ? "with-sidebar-expanded"
+                : "with-sidebar-collapsed"
+            }`}
+          >
+          <NavBar activeTab={activeTab} />
           <div className="content-wrapper">
-            <WebSocketProvider>
-                {renderContent()}
-            </WebSocketProvider>
+            <WebSocketProvider>{renderContent()}</WebSocketProvider>
           </div>
         </div>
         <GlobalDrawer />
@@ -69,3 +90,5 @@ function Dashboard() {
 }
 
 export default Dashboard;
+
+
