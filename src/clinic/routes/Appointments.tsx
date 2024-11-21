@@ -28,6 +28,7 @@ const Appointments: React.FC = () => {
   const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
   const [displayedAppointments, setDisplayedAppointments] = useState<Appointment[]>([]);
 
+
   // Fetch appointments for the selected week
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -141,7 +142,7 @@ const Appointments: React.FC = () => {
   };
 
   const handlePatientClick = (appointment: Appointment) => {
-    dispatch(openDrawer({ type: 'Patient', data: { patientId: appointment.patientUser } }));
+    dispatch(openDrawer({ type: 'Patient', data: { patientId: appointment.patientId } }));
   };
 
   return (

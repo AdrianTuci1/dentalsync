@@ -11,6 +11,7 @@ export interface Appointment {
   status: 'done' | 'upcoming' | 'missed' | 'notpaid';  // Appointment status
   color?: string;
   medicUser: string;        // ID of the medic attending the appointment
+  patientId?: string;
   patientUser: string;      // ID of the patient for the appointment
   createdAt: string;        // Timestamp when the appointment was created
   updatedAt: string;        // Timestamp when the appointment was last updated

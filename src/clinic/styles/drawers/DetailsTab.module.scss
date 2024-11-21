@@ -1,16 +1,24 @@
-.initial-tab {
+.details-tab {
   display: flex;
-  width: 400px;
   flex-direction: column;
   gap: 15px;
-  padding: 20px;
+  max-width: 400px;
+  margin: 0 auto;
   border-radius: 8px;
+  position: relative;
+
+  label {
+    font-weight: bold;
+    color: #333;
+  }
 
   .input-wrapper {
     position: relative;
   }
 
-  input {
+  input[type="text"],
+  input[type="date"],
+  input[type="time"] {
     width: 100%;
     padding: 8px 12px;
     border: 1px solid #ccc;
@@ -46,6 +54,36 @@
       &:hover {
         background-color: #f0f0f0;
       }
+    }
+  }
+
+  .chip {
+    width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 16px;
+    font-size: 14px;
+
+    button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 16px;
+      margin-left: 8px;
+      cursor: pointer;
+    }
+  }
+
+  .checkbox-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    label {
+      margin-right: 10px;
     }
   }
 }

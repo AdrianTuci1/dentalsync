@@ -38,6 +38,11 @@ class SearchService {
   async searchPatients(query: string) {
     return await this.request(`${BASE_URL}/patients`, 'GET', query);
   }
+
+  // Search Treartments by query (name)
+  async searchTreatments(query: string) {
+    return await this.request(`${BASE_URL}/treatments`, 'GET', query);
+  }
 }
 
 export default SearchService;

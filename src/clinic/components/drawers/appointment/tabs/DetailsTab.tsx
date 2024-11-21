@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import SearchService from "../../../../../shared/services/searchService";
 import { useSelector } from "react-redux";
 import { Appointment } from "../../../../types/appointmentEvent";
+import Switch from "@mui/material/Switch"; // MUI Switch
+import styles from "../../../../styles/drawers/DetailsTab.module.scss";
 
 interface DetailsTabProps {
   appointmentDetails: Appointment;
@@ -10,32 +12,54 @@ interface DetailsTabProps {
 
 const DetailsTab: React.FC<DetailsTabProps> = ({
   appointmentDetails,
-  onInputChange
+  onInputChange,
 }) => {
   const token = useSelector((state: any) => state.auth.subaccountToken); // Fetch token from state
   const database = "demo_db"; // Hardcoded database
 
   const [medicOptions, setMedicOptions] = useState<string[]>([]);
   const [patientOptions, setPatientOptions] = useState<string[]>([]);
+  const [treatmentOptions, setTreatmentOptions] = useState<string[]>([]);
+  const [activeInput, setActiveInput] = useState<string | null>(null); // Track active input
   const [searchService] = useState(() => new SearchService(token, database));
 
+  const dropdownRef = useRef<HTMLUListElement>(null);
+
+  const fetchMedics = (query: string) => {
+    searchService
+      .searchMedics(query)
+      .then((res) => setMedicOptions(res.map((medic: any) => medic.name)))
+      .catch((err) => console.error("Error fetching medics:", err));
+  };
+
+  const fetchPatients = (query: string) => {
+    searchService
+      .searchPatients(query)
+      .then((res) => setPatientOptions(res.map((patient: any) => patient.name)))
+      .catch((err) => console.error("Error fetching patients:", err));
+  };
+
+  const fetchTreatments = (query: string) => {
+    searchService
+      .searchTreatments(query)
+      .then((res) => setTreatmentOptions(res.map((treatment: any) => treatment.name)))
+      .catch((err) => console.error("Error fetching treatments:", err));
+  };
+
+  // Close dropdown when clicking outside
   useEffect(() => {
-    // Fetch medics and patients data for autocomplete
-    const fetchData = async () => {
-      try {
-        const medics = await searchService.searchMedics(appointmentDetails.medicUser);
-        const patients = await searchService.searchPatients(appointmentDetails.patientUser);
-        setMedicOptions(medics.map((medic: any) => medic.name));
-        setPatientOptions(patients.map((patient: any) => patient.name));
-      } catch (error) {
-        console.error("Error fetching medics or patients:", error);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setActiveInput(null);
       }
     };
-    fetchData();
-  }, [appointmentDetails.medicUser, appointmentDetails.patientUser, searchService]);
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxWidth: "400px", margin: "0 auto" }}>
+    <div className={styles["details-tab"]}>
       <label>Date</label>
       <input
         type="date"
@@ -51,44 +75,109 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
       />
 
       <label>Medic User</label>
-      <input
-        type="text"
-        list="medicOptions"
-        value={appointmentDetails.medicUser}
-        onChange={(e) => onInputChange("medicUser", e.target.value)}
-      />
-      <datalist id="medicOptions">
-        {medicOptions.map((medic, index) => (
-          <option key={index} value={medic} />
-        ))}
-      </datalist>
+      <div className={styles["input-wrapper"]}>
+        <input
+          type="text"
+          value={appointmentDetails.medicUser}
+          placeholder="Search Medic"
+          onFocus={() => {
+            setActiveInput("medic");
+            fetchMedics("");
+          }}
+          onChange={(e) => {
+            onInputChange("medicUser", e.target.value);
+            fetchMedics(e.target.value);
+          }}
+        />
+        {activeInput === "medic" && medicOptions.length > 0 && (
+          <ul ref={dropdownRef} className={styles.dropdown}>
+            {medicOptions.map((medic, index) => (
+              <li
+                key={index}
+                onClick={() => {
+                  onInputChange("medicUser", medic);
+                  setActiveInput(null);
+                }}
+              >
+                {medic}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       <label>Patient User</label>
-      <input
-        type="text"
-        list="patientOptions"
-        value={appointmentDetails.patientUser}
-        onChange={(e) => onInputChange("patientUser", e.target.value)}
-      />
-      <datalist id="patientOptions">
-        {patientOptions.map((patient, index) => (
-          <option key={index} value={patient} />
-        ))}
-      </datalist>
+      <div className={styles["input-wrapper"]}>
+        <input
+          type="text"
+          value={appointmentDetails.patientUser}
+          placeholder="Search Patient"
+          onFocus={() => {
+            setActiveInput("patient");
+            fetchPatients("");
+          }}
+          onChange={(e) => {
+            onInputChange("patientUser", e.target.value);
+            fetchPatients(e.target.value);
+          }}
+        />
+        {activeInput === "patient" && patientOptions.length > 0 && (
+          <ul ref={dropdownRef} className={styles.dropdown}>
+            {patientOptions.map((patient, index) => (
+              <li
+                key={index}
+                onClick={() => {
+                  onInputChange("patientUser", patient);
+                  setActiveInput(null);
+                }}
+              >
+                {patient}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       <label>Initial Treatment</label>
-      <input
-        type="text"
-        value={appointmentDetails.initialTreatment}
-        onChange={(e) => onInputChange("initialTreatment", e.target.value)}
-      />
+      <div className={styles["input-wrapper"]}>
+        <input
+          type="text"
+          value={appointmentDetails.initialTreatment}
+          placeholder="Search Treatment"
+          onFocus={() => {
+            setActiveInput("treatment");
+            fetchTreatments("");
+          }}
+          onChange={(e) => {
+            onInputChange("initialTreatment", e.target.value);
+            fetchTreatments(e.target.value);
+          }}
+        />
+        {activeInput === "treatment" && treatmentOptions.length > 0 && (
+          <ul ref={dropdownRef} className={styles.dropdown}>
+            {treatmentOptions.map((treatment, index) => (
+              <li
+                key={index}
+                onClick={() => {
+                  onInputChange("initialTreatment", treatment);
+                  setActiveInput(null);
+                }}
+              >
+                {treatment}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
-      <label>Is Done</label>
-      <input
-        type="checkbox"
-        checked={appointmentDetails.isDone}
-        onChange={(e) => onInputChange("isDone", e.target.checked)}
-      />
+      <div className={styles["checkbox-container"]}>
+        <label>Is Done</label>
+        <Switch
+          checked={appointmentDetails.isDone}
+          onChange={(e) => onInputChange("isDone", e.target.checked)}
+          color="primary"
+        />
+      </div>
     </div>
   );
 };
