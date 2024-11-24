@@ -1,10 +1,17 @@
 // DentalHistoryTab.tsx
 import React from 'react';
-import { Typography, Box } from '@mui/material';
+import { Box } from '@mui/material';
+import TeethChart from '../../teeth/TeethChart';
+import Accordion from '../../teeth/Accordion';
 
 const DentalHistoryTab: React.FC = () => (
-  <Box sx={{ p: 2 }}>
-    <Typography variant="body1">Dental history content goes here.</Typography>
+  <Box sx={{ p: 1 }}>
+      <Accordion title="Permanent Teeth">
+        <TeethChart teethType="permanent" />
+      </Accordion>
+      <Accordion title="Deciduous Teeth">
+        <TeethChart teethType="deciduous" />
+      </Accordion>
   </Box>
 );
 

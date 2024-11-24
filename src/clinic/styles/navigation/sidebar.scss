@@ -62,9 +62,10 @@
     }
 
     .btn-img {
-      width: 40px;
-      height: 40px;
-      margin-left: 4px;
+      display: flex;
+      width: 35px;
+      height: 35px;
+      margin-left: 7px;
     }
 
     .btn-label {
@@ -97,6 +98,11 @@
 
 @media(max-width: 768px){
   .chevron-toggle{
-  top: 70px;
+  top: 10px;
+  border: none;
+
+  &:hover{
+    scale: 1.1;
+  }
   }
 }

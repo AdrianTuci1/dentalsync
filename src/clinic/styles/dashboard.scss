@@ -10,17 +10,29 @@
       }
   
       &.with-sidebar-collapsed {
-        margin-left: 60px; // Sidebar is collapsed
+        margin-left: 70px; // Sidebar is collapsed
       }
+
   
       &.with-sidebar-expanded {
-        margin-left: 60px; // Sidebar floats over content
+        margin-left: 70px; // Sidebar floats over content
       }
+
   
       .content-wrapper {
-        padding: 20px;
+        margin-top: 60px;
         height: calc(100vh - 60px);
         overflow-y: auto;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-content{
+        transition: none;
+
+        &.with-sidebar-expanded {
+          margin-left: 0px; // Sidebar floats over content
+        }
       }
     }
   }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import ReactDOM from "react-dom";
 import "../styles/navigation/sidebar.scss";
+import MenuIcon from '@mui/icons-material/Menu';
 
 // Define the type for a button action
 type ButtonAction = {
@@ -117,15 +118,15 @@ function SideBar({
         onClick={toggleSidebar}
         style={{
           left: isMobile
-            ? (!isSidebarVisible ? "15px" : "auto")
+            ? (!isSidebarVisible ? "13px" : "13px")
             : isSidebarVisible
             ? isSidebarOpen
               ? "240px"
               : "50px"
             : "10px",
-          right: isMobile && isSidebarVisible ? "10px" : "auto",
         }}
       >
+        {!isMobile ? (
         <img
           src="/angle-small-right.png"
           alt="Toggle"
@@ -133,6 +134,9 @@ function SideBar({
             transform: isSidebarOpen ? "rotate(180deg)" : "rotate(0deg)",
           }}
         />
+      ): (
+        <MenuIcon />
+      )}
       </div>
     </>
   );

@@ -18,6 +18,13 @@
         min-width: 70px;
         height: 100%;
         border-right: 1px solid lightgray;
+
+        @media (max-width: 768px){
+          img{
+            display: none;
+          }
+        }
+    
     }
 
     .navbar-center{

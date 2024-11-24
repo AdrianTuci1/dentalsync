@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Typography, Box, CircularProgress, Button } from '@mui/material';
-import AppointmentService from '../../../../shared/services/fetchAppointments'; // Assuming the path to the service is correct
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect } from "react";
+import { Box, CircularProgress, Button, Typography } from "@mui/material";
+import AppointmentService from "../../../../shared/services/fetchAppointments"; // Assuming the path to the service is correct
+import { useSelector } from "react-redux";
+import SmallAppointmentCard from "../../SmallAppointmentCard";
 
 interface Appointment {
   appointmentId: string;
@@ -12,6 +13,7 @@ interface Appointment {
     name: string;
   };
   initialTreatment: string | null;
+  color: string; // Color received from the API response
 }
 
 interface AppointmentsTabProps {
@@ -26,12 +28,16 @@ const AppointmentsTab: React.FC<AppointmentsTabProps> = ({ patientId }) => {
   const [offset, setOffset] = useState<number>(0); // Pagination offset
   const [hasMore, setHasMore] = useState<boolean>(true); // Track if more appointments are available to load
   const token = useSelector((state: any) => state.auth.subaccountToken); // Access the token from Redux
-  const appointmentService = new AppointmentService(token, 'demo_db'); // Using 'demo_db' as database
+  const appointmentService = new AppointmentService(token, "demo_db"); // Using 'demo_db' as database
 
   const fetchAppointments = async (loadMore: boolean = false) => {
     setLoading(true);
     try {
-      const response = await appointmentService.fetchPatientAppointments(patientId, LIMIT, offset);
+      const response = await appointmentService.fetchPatientAppointments(
+        patientId,
+        LIMIT,
+        offset
+      );
       if (response.appointments.length < LIMIT) {
         setHasMore(false); // No more appointments if returned list is less than limit
       }
@@ -40,7 +46,7 @@ const AppointmentsTab: React.FC<AppointmentsTabProps> = ({ patientId }) => {
         loadMore ? [...prevAppointments, ...response.appointments] : response.appointments
       );
     } catch (error) {
-      console.error('Error fetching patient appointments:', error);
+      console.error("Error fetching patient appointments:", error);
     } finally {
       setLoading(false);
     }
@@ -62,27 +68,28 @@ const AppointmentsTab: React.FC<AppointmentsTabProps> = ({ patientId }) => {
       {loading && offset === 0 ? (
         <CircularProgress />
       ) : appointments.length > 0 ? (
-        <ul>
+        <Box>
           {appointments.map((appointment) => (
-            <li key={appointment.appointmentId}>
-              <Typography variant="body1">
-                <strong>Date:</strong> {appointment.date} at {appointment.time}
-              </Typography>
-              <Typography variant="body2">
-                <strong>Treatment:</strong> {appointment.initialTreatment || 'No treatment specified'}
-              </Typography>
-              <Typography variant="body2">
-                <strong>Medic:</strong> {appointment.medicUser.name}
-              </Typography>
-            </li>
+            <SmallAppointmentCard
+              key={appointment.appointmentId}
+              role="patient" // Assuming the role is "patient" for this tab
+              data={{
+                date: appointment.date,
+                time: appointment.time,
+                initialTreatment: appointment.initialTreatment || "No Treatment",
+                medicUser: appointment.medicUser.name,
+                patientUser: "N/A", // For this tab, patient details are not displayed
+                color: appointment.color, // Use color from the API response
+              }}
+            />
           ))}
-        </ul>
+        </Box>
       ) : (
         <Typography>No appointments found for this patient.</Typography>
       )}
 
       {hasMore && (
-        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
           {loading ? (
             <CircularProgress />
           ) : (
