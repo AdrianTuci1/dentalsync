@@ -13,6 +13,7 @@ import {
   useMediaQuery,
   TextField,
 } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import { blue, green, orange } from '@mui/material/colors';
 import MedicService from '../../shared/services/medicService';
 import { useDispatch, useSelector } from 'react-redux';
@@ -112,7 +113,7 @@ const Medics: React.FC = () => {
                   style={{ marginLeft: '20px' }}
                 />
               </div>
-              <Button variant="outlined" color="primary" onClick={() => handleOpenDrawer(null)}>
+              <Button startIcon={<AddIcon />} variant="outlined" color="primary" onClick={() => handleOpenDrawer(null)}>
                 Add New
               </Button>
             </div>

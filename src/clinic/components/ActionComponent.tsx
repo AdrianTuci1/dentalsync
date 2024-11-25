@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button, TextField } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 
 interface ActionComponentProps {
     toggleDrawer: (open: boolean) => void;
@@ -36,7 +37,7 @@ const ActionComponent: React.FC<ActionComponentProps> = ({ toggleDrawer }) => {
                 />
             </div>
 
-            <Button variant="outlined" color="primary" onClick={() => toggleDrawer(true)}>
+            <Button startIcon={<AddIcon />} variant="outlined" color="primary" onClick={() => toggleDrawer(true)}>
                 Add New
             </Button>
         </div>

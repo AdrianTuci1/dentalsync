@@ -51,17 +51,8 @@ export const Treatments: React.FC = () => {
     dispatch(openDrawer({ type: 'Treatment', data: { treatmentId: null } }));
   };
 
-  const handleEdit = (treatmentId: string) => {
+  const handleRowClick = (treatmentId: string) => {
     dispatch(openDrawer({ type: 'Treatment', data: { treatmentId } }));
-  };
-
-  const handleDelete = async (treatmentId: string) => {
-    try {
-      await treatmentService.deleteTreatment(treatmentId);
-      setTreatments((prev) => prev.filter((t) => t.id !== treatmentId));
-    } catch (error) {
-      console.error('Error deleting treatment:', error);
-    }
   };
 
   return (
@@ -91,7 +82,6 @@ export const Treatments: React.FC = () => {
                 <TableCell>Price</TableCell>
                 <TableCell>Estimate Duration</TableCell>
                 <TableCell>Category</TableCell>
-                <TableCell>Actions</TableCell>
               </TableRow>
             </TableHead>
           )}
@@ -101,7 +91,12 @@ export const Treatments: React.FC = () => {
                 treatment.name.toLowerCase().includes(searchTerm.toLowerCase())
               )
               .map((treatment) => (
-                <TableRow key={treatment.id}>
+                <TableRow
+                  key={treatment.id}
+                  hover
+                  onClick={() => handleRowClick(treatment.id)}
+                  style={{ cursor: 'pointer' }}
+                >
                   <TableCell>
                     <Box display="flex" alignItems="center">
                       <Box
@@ -126,14 +121,6 @@ export const Treatments: React.FC = () => {
                     <>
                       <TableCell>{treatment.duration}</TableCell>
                       <TableCell>{treatment.category}</TableCell>
-                      <TableCell>
-                        <Button variant="text" onClick={() => handleEdit(treatment.id)}>
-                          Edit
-                        </Button>
-                        <Button variant="text" color="error" onClick={() => handleDelete(treatment.id)}>
-                          Delete
-                        </Button>
-                      </TableCell>
                     </>
                   )}
                 </TableRow>

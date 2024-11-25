@@ -55,25 +55,34 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
           {status.toUpperCase()}
         </Typography>
 
+        <div style={{height:'2px', backgroundColor:'lightgray', width:'100%', marginBottom:'3px'}}></div>
+
         {/* Treatment Name with Initials */}
         <Box display="flex" alignItems="center" marginBottom={1}>
           <Box
-            width={30}
-            height={30}
+            minWidth={30}
+            minHeight={30}
             bgcolor={color} // Apply treatment color
             display="flex"
             justifyContent="center"
             alignItems="center"
-            marginRight={2}
+            marginRight={1}
             style={{ borderRadius: '4px' }}
           >
             <Typography variant="body2" color="white">
               {generateInitials(initialTreatment as string)}
             </Typography>
           </Box>
-          <Typography variant="subtitle1" fontWeight="bold">
+          <Box
+          display="flex"
+          height={45}
+          alignItems="center"
+          justifyContent="center"
+          >
+          <Typography variant="subtitle1" fontWeight="bold" lineHeight={1.1}>
             {initialTreatment || 'No Treatment'}
           </Typography>
+          </Box>
         </Box>
 
         {/* Time */}
@@ -94,7 +103,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
           }}
         >
           <Avatar
-            src={`/path-to-patient-images/${patientUser}.png`} // Replace with actual logic for patient image
+            src={`/requests.png`} // Replace with actual logic for patient image
             alt={patientName}
             sx={{ width: 24, height: 24, marginRight: 1 }}
           />
@@ -108,9 +117,21 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
         </Box>
 
         {/* Medic Info */}
-        <Typography variant="body2" color="textSecondary" sx={{ marginTop: 1 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            marginTop: 1,
+          }}>
+        <Avatar
+            src={`/medics.png`} // Replace with actual logic for patient image
+            alt={patientName}
+            sx={{ width: 25, height: 25, marginRight: 1 }}
+          />
+        <Typography variant="body2" color="textSecondary" sx={{ marginTop: 0 }}>
           {medicName}
         </Typography>
+        </Box>
       </CardContent>
     </Card>
   );
