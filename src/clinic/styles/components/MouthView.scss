@@ -1,0 +1,28 @@
+.mouth-view {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    background-color: #f9f9f9;
+  
+    svg {
+      max-width: 100%;
+      height: auto;
+  
+      path {
+        transition: transform 0.2s ease-in-out, fill 0.2s ease-in-out;
+  
+        &:hover {
+          transform: scale(1.2);
+          fill: #ffd700; // Highlight on hover
+        }
+      }
+  
+      text {
+        font-family: Arial, sans-serif;
+        font-weight: bold;
+      }
+    }
+  }
+  
