@@ -9,6 +9,9 @@ import PriceTab from './tabs/PriceTab';
 import DeleteTab from './tabs/DeleteTab';
 import { Appointment } from '../../../types/appointmentEvent';
 
+
+// trebuie trimis medicId pentru a putea modifica requestul
+
 const AppointmentDrawer: React.FC = () => {
   const dispatch = useDispatch();
 
@@ -30,86 +33,61 @@ const AppointmentDrawer: React.FC = () => {
     initialTreatment: '',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
+    treatments: [], // Default empty treatments array
   };
 
   const [appointmentDetails, setAppointmentDetails] = useState<Appointment>(initialAppointmentDetails);
-  const [isNewAppointment, setIsNewAppointment] = useState<boolean>(!appointment); // New appointment flag
-  const [activeTab, setActiveTab] = useState<number>(0); // Control active tab
+  const [isNewAppointment, setIsNewAppointment] = useState<boolean>(!appointment);
+  const [activeTab, setActiveTab] = useState<number>(0);
 
   // Set appointment details whenever a new appointment is passed in
   useEffect(() => {
     if (appointment) {
       setAppointmentDetails(appointment);
-      setIsNewAppointment(false); // Editing existing appointment
+      setIsNewAppointment(false);
     } else {
-      setAppointmentDetails(initialAppointmentDetails); // Reset for new appointment
-      setIsNewAppointment(true); // New appointment mode
+      setAppointmentDetails(initialAppointmentDetails);
+      setIsNewAppointment(true);
     }
   }, [appointment]);
 
   // Handle input changes for appointment details
-  const handleInputChange = (field: keyof Appointment, value: any) => {
+  const handleInputChange = (field: string, value: any) => {
     setAppointmentDetails((prevDetails) => ({
       ...prevDetails,
-      [field]: value,
+      [field as keyof Appointment]: value, // Type assertion here
     }));
   };
 
-  // Save the initial appointment (for new appointments only)
-  const handleSaveInitial = async () => {
-    try {
-      // Replace this with your actual save logic
-      console.log('Saving new appointment:', appointmentDetails);
-      setIsNewAppointment(false); // Switch to edit mode
-      setActiveTab(0); // Go to the first tab after saving initial details
-    } catch (error) {
-      console.error('Error creating new appointment:', error);
-    }
-  };
-
-  // Save existing appointment
+  // Save logic (stub for now)
   const handleSave = async () => {
     try {
-      // Replace this with your actual save logic
-      console.log('Updating appointment:', appointmentDetails);
-      dispatch(closeDrawer()); // Close the drawer after saving
+      console.log('Saving appointment:', appointmentDetails);
+      dispatch(closeDrawer());
     } catch (error) {
       console.error('Error saving appointment:', error);
     }
   };
 
-  // Delete appointment
-  const handleDelete = async () => {
-    try {
-      // Replace this with your actual delete logic
-      console.log('Deleting appointment:', appointmentDetails.appointmentId);
-      dispatch(closeDrawer()); // Close the drawer after deleting
-    } catch (error) {
-      console.error('Error deleting appointment:', error);
-    }
-  };
-
   return (
-    <Drawer anchor="right" open={true} onClose={() => dispatch(closeDrawer())} sx={{ width: '400px' }}>
+    <Drawer anchor="right" open={true} onClose={() => dispatch(closeDrawer())}>
       <Box sx={{ width: '100%', padding: 2, justifyContent: 'center', height: '100%' }}>
         {isNewAppointment ? (
           <InitialAppointmentTab
             appointmentDetails={appointmentDetails}
             onInputChange={handleInputChange}
-            onSave={handleSaveInitial}
+            onSave={() => console.log('Save new appointment')}
             onClose={() => dispatch(closeDrawer())}
           />
         ) : (
           <>
-            {/* Tab Navigation */}
             <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)}>
-              <Tab label="Details" />
-              <Tab label="Treatments" />
-              <Tab label="Price" />
-              <Tab label="Delete" />
+              <Tab label="Details" icon={<img src="/search-file.png" alt="Details" style={{ width: 24 }} />}/>
+              <Tab label="Treatments" icon={<img src="/treatments.png" alt="Treatments" style={{ width: 24 }} />}/>
+              <Tab label="Price" icon={<img src="/payments.png" alt="Price" style={{ width: 24 }} />}/>
+              <Tab label="Delete" icon={<img src="/delete.png" alt="Delete" style={{ width: 24 }} />}/>
             </Tabs>
 
-            {/* Tab Content */}
             <Box sx={{ padding: 2 }}>
               {activeTab === 0 && (
                 <DetailsTab
@@ -119,7 +97,7 @@ const AppointmentDrawer: React.FC = () => {
               )}
               {activeTab === 1 && (
                 <TreatmentsTab
-                  appointmentId={appointmentDetails.appointmentId}
+                  treatments={appointmentDetails.treatments || []}
                   onInputChange={handleInputChange}
                 />
               )}
@@ -129,17 +107,12 @@ const AppointmentDrawer: React.FC = () => {
                   onInputChange={handleInputChange}
                 />
               )}
-              {activeTab === 3 && (
-                <DeleteTab onDelete={handleDelete} />
-              )}
+              {activeTab === 3 && <DeleteTab onDelete={() => console.log('Delete appointment')} />}
             </Box>
 
-            {/* Save Button */}
-            {activeTab !== 3 && (
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
-                <button onClick={handleSave}>Save</button>
-              </Box>
-            )}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
+              <button onClick={handleSave}>Save</button>
+            </Box>
           </>
         )}
       </Box>

@@ -1,0 +1,62 @@
+.accordion {
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.accordion-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.accordion-header h4 {
+    margin: 0;
+}
+
+.remove-button {
+    background: none;
+    border: none;
+    color: red;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.accordion-content label {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.accordion-content span {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.treatments-tab {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.treatment-list {
+    margin-bottom: 20px;
+}
+
+.add-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.add-button:hover {
+    background-color: #0056b3;
+}

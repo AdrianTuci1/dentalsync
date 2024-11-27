@@ -53,9 +53,9 @@ const UserDrawer: React.FC<UserDrawerProps> = ({ open, onClose }) => {
   const [selectedMenu, setSelectedMenu] = useState("today");
 
   const menuItems = [
-    { key: "today", label: "Today" },
-    { key: "upcoming", label: "Upcoming" },
-    { key: "actions", label: "Actions" },
+    { key: "today", label: "Today", img:'/sync.png' },
+    { key: "upcoming", label: "Upcoming", img:'/tomorrow.png' },
+    { key: "actions", label: "Actions", img:'/settings.png' },
   ];
 
   const handleLogOut = () => {
@@ -124,12 +124,9 @@ const UserDrawer: React.FC<UserDrawerProps> = ({ open, onClose }) => {
               className={styles.menuItem}
               onClick={() => setSelectedMenu(item.key)}
             >
-              <div
-                className={styles.menuIcon}
-                style={{
-                  backgroundColor:
-                    selectedMenu === item.key ? "black" : "lightgray",
-                }}
+              <img
+              src={item.img}
+              className={styles.menuIcon}
               />
               {selectedMenu === item.key && (
                 <p className={styles.menuText}>{item.label}</p>

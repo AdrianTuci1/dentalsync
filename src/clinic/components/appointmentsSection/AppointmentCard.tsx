@@ -3,6 +3,7 @@ import { Card, CardContent, Typography, Box, Avatar, Link } from '@mui/material'
 import { Appointment } from '../../types/appointmentEvent';
 import generateInitials from '../../../shared/utils/generateInitials'; // Import the generateInitials function
 
+
 interface AppointmentCardProps {
   appointment: Appointment;
   onAppointmentClick: (appointment: Appointment) => void;
@@ -87,7 +88,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
 
         {/* Time */}
         <Typography variant="body2" color="textSecondary">
-          {startHour} - {endHour}
+           {startHour} - {endHour}
         </Typography>
 
         {/* Patient Info */}

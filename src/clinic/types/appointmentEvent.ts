@@ -1,3 +1,13 @@
+export interface AppointmentTreatment {
+  treatmentId: string;
+  treatmentName: string;
+  color?: string;
+  units: number;
+  involvedTeeth: string[];
+  prescription: string;
+  details: string;
+}
+
 // Define the Appointment type
 export interface Appointment {
   appointmentId: string;    // ID of the appointment (e.g., 'AP0001')
@@ -16,6 +26,7 @@ export interface Appointment {
   createdAt: string;        // Timestamp when the appointment was created
   updatedAt: string;        // Timestamp when the appointment was last updated
   initialTreatment?: string;  // Optional initial treatment associated with the appointment
+  treatments?: AppointmentTreatment[];
 }
 
 // Define the Treatment type used in the Appointment

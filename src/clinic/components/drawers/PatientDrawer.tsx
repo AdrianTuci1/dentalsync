@@ -84,7 +84,14 @@ const PatientDrawer: React.FC = () => {
     }
   };
 
-  const tabs = ['Details', 'Dental History', 'Gallery', 'Appointments', 'Delete'];
+  const tabs = [
+    { label: 'Details', icon: <img src="/search-file.png" alt="Details" style={{ width: 24 }} /> },
+    { label: 'Dental History', icon: <img src="/dental-record.png" alt="History" style={{ width: 24 }} /> },
+    { label: 'Galery', icon: <img src="/galery.png" alt="Gallery" style={{ width: 24 }} /> },
+    { label: 'Appointments', icon: <img src="/rescheduling.png" alt="Appointments" style={{ width: 24 }} /> },
+    { label: 'Delete', icon: <img src="/delete.png" alt="Delete" style={{ width: 24 }} /> },
+  ];
+  
 
   return (
     <Drawer anchor="right" open={true} onClose={handleClose}>
@@ -102,7 +109,7 @@ const PatientDrawer: React.FC = () => {
         {/* Tabs */}
         <Tabs value={activeTab} onChange={handleTabChange} variant="fullWidth">
           {tabs.map((tab, index) => (
-            <Tab label={tab} key={index} />
+            <Tab key={index} icon={tab.icon} />
           ))}
         </Tabs>
 
@@ -115,7 +122,7 @@ const PatientDrawer: React.FC = () => {
               {activeTab === 0 && (
                 <DetailsTab patientData={patientData} onInputChange={handleInputChange} onSave={handleSave} />
               )}
-              {activeTab === 1 && <DentalHistoryTab />}
+              {activeTab === 1 && <DentalHistoryTab patientId={'1'} />}
               {activeTab === 2 && <GalleryTab />}
               {activeTab === 3 && <AppointmentsTab patientId={patientData.id} />}
               {activeTab === 4 && <DeleteTab />}
