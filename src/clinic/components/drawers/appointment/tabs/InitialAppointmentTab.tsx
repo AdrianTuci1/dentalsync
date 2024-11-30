@@ -17,39 +17,95 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
   onSave,
   onClose,
 }) => {
-  const token = useSelector((state: any) => state.auth.subaccountToken); // Fetch token from state
-  const database = "demo_db"; // Hardcoded database
+  const token = useSelector((state: any) => state.auth.subaccountToken);
+  const database = "demo_db";
 
-  const [medicOptions, setMedicOptions] = useState<string[]>([]);
+  const [medicOptions, setMedicOptions] = useState<any[]>([]);
   const [patientOptions, setPatientOptions] = useState<string[]>([]);
-  const [treatmentOptions, setTreatmentOptions] = useState<string[]>([]);
-  const [activeInput, setActiveInput] = useState<string | null>(null); // Track active input
-  const [searchService] = useState(() => new SearchService(token, database)); // Initialize service
+  const [treatmentOptions, setTreatmentOptions] = useState<any[] | null>(null);
+  const [availabilityMessage, setAvailabilityMessage] = useState<string | null>(null);
+  const [activeInput, setActiveInput] = useState<string | null>(null);
+  const [searchService] = useState(() => new SearchService(token, database));
 
   const dropdownRef = useRef<HTMLUListElement>(null);
 
   const fetchMedics = (query: string) => {
+    const { date, time, initialTreatment } = appointmentDetails;
+
+    if (!date || !time || !initialTreatment) {
+      setAvailabilityMessage("Please select date, time, and treatment first.");
+      return;
+    }
+
+    const selectedTreatment = treatmentOptions?.find(
+      (treatment) => treatment.name === initialTreatment
+    );
+
+    const duration = selectedTreatment?.duration;
+
+    if (!duration) {
+      setAvailabilityMessage("Please select a valid treatment with a duration.");
+      return;
+    }
+
     searchService
-      .searchMedics(query)
-      .then((res) => setMedicOptions(res.map((medic: any) => medic.name)))
-      .catch((err) => console.error("Error fetching medics:", err));
+      .searchMedics(query, date, time, duration)
+      .then((res) => {
+        setMedicOptions(res.medics ?? []);
+        setAvailabilityMessage(null); // Reset availability message during search
+      })
+      .catch((err) => {
+        console.error("Error fetching medics:", err);
+        setAvailabilityMessage("Error fetching medic availability.");
+      });
+  };
+
+  const fetchAvailability = (medicId: number) => {
+    const { date, time, initialTreatment } = appointmentDetails;
+
+    if (!date || !time || !initialTreatment) {
+      setAvailabilityMessage("Please select date, time, and treatment first.");
+      return;
+    }
+
+    const selectedTreatment = treatmentOptions?.find(
+      (treatment) => treatment.name === initialTreatment
+    );
+
+    const duration = selectedTreatment?.duration;
+
+    if (!duration) {
+      setAvailabilityMessage("Please select a valid treatment with a duration.");
+      return;
+    }
+
+    console.log(medicId)
+
+    searchService
+    .searchMedics("", date, time, duration, medicId) // Include medicId to check availability
+    .then((res) => {
+      setAvailabilityMessage(res.message || "No availability information.");
+    })
+    .catch((err) => {
+      console.error("Error checking medic availability:", err);
+      setAvailabilityMessage("Error checking medic availability.");
+    });
   };
 
   const fetchPatients = (query: string) => {
     searchService
       .searchPatients(query)
-      .then((res) => setPatientOptions(res.map((patient: any) => patient.name)))
+      .then((res) => setPatientOptions(res.map((patient: any) => patient.name) ?? []))
       .catch((err) => console.error("Error fetching patients:", err));
   };
 
   const fetchTreatments = (query: string) => {
     searchService
       .searchTreatments(query)
-      .then((res) => setTreatmentOptions(res.map((treatment: any) => treatment.name)))
+      .then((res) => setTreatmentOptions(res ?? []))
       .catch((err) => console.error("Error fetching treatments:", err));
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -63,6 +119,7 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
 
   return (
     <div className={styles["initial-tab"]}>
+      {/* Patient Input */}
       <div>
         <label>Patient User</label>
         <div className={styles["input-wrapper"]}>
@@ -97,6 +154,7 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
         </div>
       </div>
 
+      {/* Date Input */}
       <div>
         <label>Date</label>
         <input
@@ -106,6 +164,7 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
         />
       </div>
 
+      {/* Time Input */}
       <div>
         <label>Time</label>
         <input
@@ -115,6 +174,7 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
         />
       </div>
 
+      {/* Treatment Input */}
       <div>
         <label>Initial Treatment</label>
         <div className={styles["input-wrapper"]}>
@@ -131,17 +191,17 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
               fetchTreatments(e.target.value);
             }}
           />
-          {activeInput === "treatment" && treatmentOptions.length > 0 && (
+          {activeInput === "treatment" && treatmentOptions && treatmentOptions.length > 0 && (
             <ul ref={dropdownRef} className={styles.dropdown}>
               {treatmentOptions.map((treatment, index) => (
                 <li
                   key={index}
                   onClick={() => {
-                    onInputChange("initialTreatment", treatment);
+                    onInputChange("initialTreatment", treatment.name);
                     setActiveInput(null);
                   }}
                 >
-                  {treatment}
+                  {treatment.name}
                 </li>
               ))}
             </ul>
@@ -149,8 +209,10 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
         </div>
       </div>
 
+      {/* Medic Input */}
       <div>
         <label>Medic User</label>
+        {availabilityMessage && <p className={styles["availability-message"]}>{availabilityMessage}</p>}
         <div className={styles["input-wrapper"]}>
           <input
             type="text"
@@ -171,11 +233,12 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
                 <li
                   key={index}
                   onClick={() => {
-                    onInputChange("medicUser", medic);
+                    onInputChange("medicUser", medic.name);
                     setActiveInput(null);
+                    fetchAvailability(medic.id); // Fetch availability after selecting a medic
                   }}
                 >
-                  {medic}
+                  {medic.name}
                 </li>
               ))}
             </ul>
@@ -183,6 +246,7 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
         </div>
       </div>
 
+      {/* Save/Cancel Buttons */}
       <div>
         <button onClick={onSave}>Save</button>
         <button onClick={onClose}>Cancel</button>

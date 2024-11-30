@@ -9,39 +9,56 @@ class SearchService {
     this.database = database;
   }
 
-  private async request(url: string, method: string, query: string) {
+  // Generalized request handler
+  private async request(
+    endpoint: string,
+    method: string,
+    params: Record<string, string | number | null> = {}
+  ) {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.subaccountToken}`,  // Add the subaccount token
-      'x-clinic-db': this.database,  // Add the database name with _db suffix
+      'Authorization': `Bearer ${this.subaccountToken}`, // Add the subaccount token
+      'x-clinic-db': this.database, // Add the database name
     };
+
+    // Build the query string from params
+    const queryString = Object.entries(params)
+      .filter(([, value]) => value !== null && value !== undefined) // Remove null/undefined
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value as string)}`)
+      .join('&');
 
     const options: RequestInit = {
       method,
       headers,
     };
 
-    const response = await fetch(`${url}?query=${encodeURIComponent(query)}`, options);
+    // Send the request
+    const response = await fetch(`${endpoint}?${queryString}`, options);
+
     if (!response.ok) {
-      throw new Error('Failed to process the request');
+      const error = await response.json();
+      throw new Error(error.message || 'Failed to process the request');
     }
 
     return response.json();
   }
 
-  // Search Medics by query (name or email)
-  async searchMedics(query: string) {
-    return await this.request(`${BASE_URL}/medics`, 'GET', query);
+  // Search Medics by query, date, time, and duration
+  async searchMedics(query: string, date: string | null = null, time: string | null = null, duration: number | null = null, medicId: number | null = null) {
+    const params = { query, date, time, duration, medicId };
+    return await this.request(`${BASE_URL}/medics`, 'GET', params);
   }
 
   // Search Patients by query (name or email)
   async searchPatients(query: string) {
-    return await this.request(`${BASE_URL}/patients`, 'GET', query);
+    const params = { query };
+    return await this.request(`${BASE_URL}/patients`, 'GET', params);
   }
 
-  // Search Treartments by query (name)
+  // Search Treatments by query (name)
   async searchTreatments(query: string) {
-    return await this.request(`${BASE_URL}/treatments`, 'GET', query);
+    const params = { query };
+    return await this.request(`${BASE_URL}/treatments`, 'GET', params);
   }
 }
 
