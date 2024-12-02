@@ -20,11 +20,13 @@ export interface Appointment {
   isPaid: boolean;          // Whether the appointment is paid
   status: 'done' | 'upcoming' | 'missed' | 'notpaid';  // Appointment status
   color?: string;
+  medicId?: number;
   medicUser: string;        // ID of the medic attending the appointment
-  patientId?: string;
+  patientId?: number;
   patientUser: string;      // ID of the patient for the appointment
   createdAt: string;        // Timestamp when the appointment was created
   updatedAt: string;        // Timestamp when the appointment was last updated
+  treatmentId?: string;
   initialTreatment?: string;  // Optional initial treatment associated with the appointment
   treatments?: AppointmentTreatment[];
 }

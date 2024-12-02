@@ -21,7 +21,7 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
   const database = "demo_db";
 
   const [medicOptions, setMedicOptions] = useState<any[]>([]);
-  const [patientOptions, setPatientOptions] = useState<string[]>([]);
+  const [patientOptions, setPatientOptions] = useState<{ name: string; id: number }[]>([]);
   const [treatmentOptions, setTreatmentOptions] = useState<any[] | null>(null);
   const [availabilityMessage, setAvailabilityMessage] = useState<string | null>(null);
   const [activeInput, setActiveInput] = useState<string | null>(null);
@@ -73,6 +73,7 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
     );
 
     const duration = selectedTreatment?.duration;
+    const treatmentId = selectedTreatment?.id;
 
     if (!duration) {
       setAvailabilityMessage("Please select a valid treatment with a duration.");
@@ -80,7 +81,8 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
     }
 
     console.log(medicId)
-
+    console.log(treatmentId)
+    
     searchService
     .searchMedics("", date, time, duration, medicId) // Include medicId to check availability
     .then((res) => {
@@ -95,9 +97,17 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
   const fetchPatients = (query: string) => {
     searchService
       .searchPatients(query)
-      .then((res) => setPatientOptions(res.map((patient: any) => patient.name) ?? []))
+      .then((res) => {
+        // Ensure the result is an array of objects with `name` and `id`
+        const formattedPatients = res.map((patient: any) => ({
+          name: patient.name,
+          id: patient.id,
+        }));
+        setPatientOptions(formattedPatients);
+      })
       .catch((err) => console.error("Error fetching patients:", err));
   };
+  
 
   const fetchTreatments = (query: string) => {
     searchService
@@ -142,11 +152,12 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
                 <li
                   key={index}
                   onClick={() => {
-                    onInputChange("patientUser", patient);
+                    onInputChange("patientUser", patient.name); // Send name
+                    onInputChange("patientId", patient.id); // Send ID
                     setActiveInput(null);
                   }}
                 >
-                  {patient}
+                  {patient.name}
                 </li>
               ))}
             </ul>
@@ -198,6 +209,7 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
                   key={index}
                   onClick={() => {
                     onInputChange("initialTreatment", treatment.name);
+                    onInputChange("treatmentId", treatment.id)
                     setActiveInput(null);
                   }}
                 >
@@ -234,6 +246,7 @@ const InitialAppointmentTab: React.FC<InitialAppointmentTabProps> = ({
                   key={index}
                   onClick={() => {
                     onInputChange("medicUser", medic.name);
+                    onInputChange("medicId", medic.id);
                     setActiveInput(null);
                     fetchAvailability(medic.id); // Fetch availability after selecting a medic
                   }}

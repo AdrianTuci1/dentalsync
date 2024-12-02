@@ -8,9 +8,9 @@ import TreatmentsTab from './tabs/TreatmentsTab';
 import PriceTab from './tabs/PriceTab';
 import DeleteTab from './tabs/DeleteTab';
 import { Appointment } from '../../../types/appointmentEvent';
+import AppointmentService from '../../../../shared/services/fetchAppointments';
 
 
-// trebuie trimis medicId pentru a putea modifica requestul
 
 const AppointmentDrawer: React.FC = () => {
   const dispatch = useDispatch();
@@ -18,6 +18,11 @@ const AppointmentDrawer: React.FC = () => {
   // Access appointment data from Redux
   const { drawerData } = useSelector((state: any) => state.drawer);
   const appointment: Appointment | null = drawerData?.appointment || null;
+
+  const token = useSelector((state: any) => state.auth.subaccountToken); // Fetch token from Redux or any other state management
+  const database = "demo_db"; // Replace with your actual database name
+
+  const appointmentService = new AppointmentService(token, database);
 
   // Default state for a new appointment
   const initialAppointmentDetails: Appointment = {
@@ -28,8 +33,11 @@ const AppointmentDrawer: React.FC = () => {
     price: 0,
     isPaid: false,
     status: 'upcoming',
+    medicId: undefined,
     medicUser: '',
+    patientId: undefined,
     patientUser: '',
+    treatmentId: undefined,
     initialTreatment: '',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
@@ -59,15 +67,37 @@ const AppointmentDrawer: React.FC = () => {
     }));
   };
 
-  // Save logic (stub for now)
-  const handleSave = async () => {
+  const handleAppointment = async (appointmentData: any) => {
     try {
-      console.log('Saving appointment:', appointmentDetails);
-      dispatch(closeDrawer());
+      console.log("Appointment Data:", appointmentData);
+  
+      const { appointmentId, ...data } = appointmentData; // Separate appointmentId from the rest of the data
+      const result = appointmentId
+        ? await appointmentService.editAppointment(appointmentId, data) // If appointmentId exists, edit
+        : await appointmentService.createAppointment(data); // Otherwise, save
+  
+      console.log(
+        appointmentId
+          ? "Appointment successfully updated:"
+          : "Appointment successfully created:",
+        result
+      );
+  
+      closeDrawer()
+      // Add success logic here, e.g., refreshing UI or navigating
     } catch (error) {
-      console.error('Error saving appointment:', error);
+      console.error(
+        appointmentData.appointmentId
+          ? "Error updating appointment:"
+          : "Error creating appointment:",
+        error
+      );
+  
+      // Add error-handling logic, e.g., show toast notifications
     }
   };
+  
+  
 
   return (
     <Drawer anchor="right" open={true} onClose={() => dispatch(closeDrawer())}>
@@ -76,7 +106,7 @@ const AppointmentDrawer: React.FC = () => {
           <InitialAppointmentTab
             appointmentDetails={appointmentDetails}
             onInputChange={handleInputChange}
-            onSave={() => console.log('Save new appointment')}
+            onSave={() => handleAppointment(appointmentDetails)}
             onClose={() => dispatch(closeDrawer())}
           />
         ) : (
@@ -111,7 +141,7 @@ const AppointmentDrawer: React.FC = () => {
             </Box>
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', marginTop: 2 }}>
-              <button onClick={handleSave}>Save</button>
+              <button onClick={() => handleAppointment(appointmentDetails)}>Save</button>
             </Box>
           </>
         )}

@@ -85,10 +85,10 @@ const PatientDrawer: React.FC = () => {
   };
 
   const tabs = [
-    { label: 'Details', icon: <img src="/search-file.png" alt="Details" style={{ width: 24 }} /> },
+    { label: 'Details', icon: <img src="/info.png" alt="Details" style={{ width: 24 }} /> },
     { label: 'Dental History', icon: <img src="/dental-record.png" alt="History" style={{ width: 24 }} /> },
     { label: 'Galery', icon: <img src="/galery.png" alt="Gallery" style={{ width: 24 }} /> },
-    { label: 'Appointments', icon: <img src="/rescheduling.png" alt="Appointments" style={{ width: 24 }} /> },
+    { label: 'Appointments', icon: <img src="/appointments.png" alt="Appointments" style={{ width: 24 }} /> },
     { label: 'Delete', icon: <img src="/delete.png" alt="Delete" style={{ width: 24 }} /> },
   ];
   
@@ -107,9 +107,9 @@ const PatientDrawer: React.FC = () => {
         </Box>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onChange={handleTabChange} variant="fullWidth">
+        <Tabs value={activeTab} onChange={handleTabChange} >
           {tabs.map((tab, index) => (
-            <Tab key={index} icon={tab.icon} />
+            <Tab key={index} icon={tab.icon}/>
           ))}
         </Tabs>
 

@@ -17,9 +17,9 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
   const token = useSelector((state: any) => state.auth.subaccountToken); // Fetch token from state
   const database = "demo_db"; // Hardcoded database
 
-  const [medicOptions, setMedicOptions] = useState<string[]>([]);
-  const [patientOptions, setPatientOptions] = useState<string[]>([]);
-  const [treatmentOptions, setTreatmentOptions] = useState<string[]>([]);
+  const [medicOptions, setMedicOptions] = useState<{ name: string; id: number }[]>([]);
+  const [patientOptions, setPatientOptions] = useState<{ name: string; id: number }[]>([]);
+  const [treatmentOptions, setTreatmentOptions] = useState<{ name: string; id: number }[]>([]);
   const [activeInput, setActiveInput] = useState<string | null>(null); // Track active input
   const [searchService] = useState(() => new SearchService(token, database));
 
@@ -27,22 +27,37 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
 
   const fetchMedics = (query: string) => {
     searchService
-      .searchMedics(query)
-      .then((res) => setMedicOptions(res.map((medic: any) => medic.name)))
-      .catch((err) => console.error("Error fetching medics:", err));
+    .searchMedics(query)
+    .then((res) => {
+      const formattedMedics = res.medics.map((medic: any) => ({
+        name: medic.name,
+        id: medic.id,
+      }));
+      setMedicOptions(formattedMedics);
+    })
+    .catch((err) => console.error("Error fetching medics:", err));  
   };
 
   const fetchPatients = (query: string) => {
     searchService
       .searchPatients(query)
-      .then((res) => setPatientOptions(res.map((patient: any) => patient.name)))
+      .then((res) => {
+        const formattedPatients = res.map((patient: any) => ({ name: patient.name, id: patient.id }));
+        setPatientOptions(formattedPatients);
+      })
       .catch((err) => console.error("Error fetching patients:", err));
   };
 
   const fetchTreatments = (query: string) => {
     searchService
       .searchTreatments(query)
-      .then((res) => setTreatmentOptions(res.map((treatment: any) => treatment.name)))
+      .then((res) => {
+        const formattedTreatments = res.map((treatment: any) => ({
+          name: treatment.name,
+          id: treatment.id,
+        }));
+        setTreatmentOptions(formattedTreatments);
+      })
       .catch((err) => console.error("Error fetching treatments:", err));
   };
 
@@ -74,6 +89,7 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
         onChange={(e) => onInputChange("time", e.target.value)}
       />
 
+      {/* Medic Input */}
       <label>Medic User</label>
       <div className={styles["input-wrapper"]}>
         <input
@@ -95,17 +111,19 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
               <li
                 key={index}
                 onClick={() => {
-                  onInputChange("medicUser", medic);
+                  onInputChange("medicUser", medic.name);
+                  onInputChange("medicId", medic.id); // Send ID to parent
                   setActiveInput(null);
                 }}
               >
-                {medic}
+                {medic.name}
               </li>
             ))}
           </ul>
         )}
       </div>
 
+      {/* Patient Input */}
       <label>Patient User</label>
       <div className={styles["input-wrapper"]}>
         <input
@@ -127,17 +145,19 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
               <li
                 key={index}
                 onClick={() => {
-                  onInputChange("patientUser", patient);
+                  onInputChange("patientUser", patient.name);
+                  onInputChange("patientId", patient.id); // Send ID to parent
                   setActiveInput(null);
                 }}
               >
-                {patient}
+                {patient.name}
               </li>
             ))}
           </ul>
         )}
       </div>
 
+      {/* Treatment Input */}
       <label>Initial Treatment</label>
       <div className={styles["input-wrapper"]}>
         <input
@@ -159,11 +179,12 @@ const DetailsTab: React.FC<DetailsTabProps> = ({
               <li
                 key={index}
                 onClick={() => {
-                  onInputChange("initialTreatment", treatment);
+                  onInputChange("initialTreatment", treatment.name);
+                  onInputChange("treatmentId", treatment.id); // Send ID to parent
                   setActiveInput(null);
                 }}
               >
-                {treatment}
+                {treatment.name}
               </li>
             ))}
           </ul>

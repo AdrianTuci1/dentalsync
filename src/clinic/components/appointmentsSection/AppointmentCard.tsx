@@ -104,7 +104,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
           }}
         >
           <Avatar
-            src={`/requests.png`} // Replace with actual logic for patient image
+            src={`/patient.png`} // Replace with actual logic for patient image
             alt={patientName}
             sx={{ width: 24, height: 24, marginRight: 1 }}
           />
@@ -125,9 +125,9 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
             marginTop: 1,
           }}>
         <Avatar
-            src={`/medics.png`} // Replace with actual logic for patient image
+            src={`/medics-sm.png`} // Replace with actual logic for patient image
             alt={patientName}
-            sx={{ width: 25, height: 25, marginRight: 1 }}
+            sx={{ width: 25, height: 25, marginRight: 1, borderRadius:0 }}
           />
         <Typography variant="body2" color="textSecondary" sx={{ marginTop: 0 }}>
           {medicName}
