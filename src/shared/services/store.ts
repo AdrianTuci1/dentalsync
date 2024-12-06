@@ -1,13 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './authSlice'; // Adjust path as necessary
-import appointmentReducer from './appointmentSlice';
-import drawerReducer from './drawerSlice'
+import requestReducer from './requestSlice';
+import drawerReducer from './drawerSlice';
+import appointmentsReducer from  './appointmentsSlice'
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
-    appointment: appointmentReducer,
+    request: requestReducer,
     drawer: drawerReducer,
+    appointments: appointmentsReducer,
   },
 });
 

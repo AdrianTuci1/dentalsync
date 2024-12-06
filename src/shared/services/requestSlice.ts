@@ -1,8 +1,8 @@
 // src/services/appointmentSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
-const appointmentSlice = createSlice({
-    name: 'appointment',
+const requestSlice = createSlice({
+    name: 'request',
     initialState: { openAppointment: false },
     reducers: {
         openRequestAppointment: (state) => {
@@ -14,5 +14,5 @@ const appointmentSlice = createSlice({
     },
 });
 
-export const { openRequestAppointment, closeRequestAppointment } = appointmentSlice.actions;
-export default appointmentSlice.reducer;
+export const { openRequestAppointment, closeRequestAppointment } = requestSlice.actions;
+export default requestSlice.reducer;

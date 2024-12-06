@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
+import SearchService from '../../../../shared/services/searchService';
 import { AppointmentTreatment } from '../../../types/appointmentEvent';
+import '../../../styles/components/TreatmentsTab.scss';
 
 type TreatmentAccordionProps = {
   treatment: AppointmentTreatment;
@@ -7,32 +10,114 @@ type TreatmentAccordionProps = {
   onRemove: (treatmentId: string) => void;
 };
 
+const TreatmentAccordion: React.FC<TreatmentAccordionProps> = ({
+  treatment,
+  onEdit,
+  onRemove,
+}) => {
+  const token = useSelector((state: any) => state.auth.subaccountToken);
+  const database = "demo_db";
+  const [searchService] = useState(() => new SearchService(token, database));
 
-const TreatmentAccordion: React.FC<TreatmentAccordionProps> = ({ treatment, onEdit, onRemove }) => {
-    const handleFieldChange = (field: keyof AppointmentTreatment, value: string | number | string[]) => {
-      onEdit({ ...treatment, [field]: value });
-    };
+  const [isOpen, setIsOpen] = useState(false);
+  const [availableTreatments, setAvailableTreatments] = useState<{ treatmentName: string; treatmentId: string }[]>([]);
+  const [searchQuery, setSearchQuery] = useState(treatment.treatmentName || '');
+  const [isFocused, setIsFocused] = useState(false);
+  const dropdownRef = useRef<HTMLUListElement>(null);
+
+  const handleFieldChange = (field: keyof AppointmentTreatment, value: any) => {
+    const updatedTreatment = { ...treatment, [field]: value };
+    console.log("After handleFieldChange:", updatedTreatment);
+    onEdit(updatedTreatment);
+  };
+
+  const fetchTreatments = async (query: string) => {
+    try {
+      const res = await searchService.searchTreatments(query);
+      const formattedTreatments = res.map((t: any) => ({
+        treatmentName: t.name,
+        treatmentId: String(t.id),
+      }));
+      setAvailableTreatments(formattedTreatments);
+    } catch (error) {
+      console.error("Error fetching treatments:", error);
+    }
+  };
   
-    return (
-      <div className="accordion">
-        <div className="accordion-header">
-          <h4>{treatment.treatmentName || 'New Treatment'}</h4>
+  const handleTreatmentSelect = (treatmentId: string, treatmentName: string) => {
+    // Update both treatmentId and treatmentName together
+    const updatedTreatment = {
+      ...treatment,
+      treatmentId,
+      treatmentName
+    };
+    console.log('Handle treatment select:', treatmentName, treatmentId);
+    onEdit(updatedTreatment);
+
+    setSearchQuery(treatmentName);
+    setIsFocused(false);
+  };
+
+  const handleInputFocus = () => {
+    setIsFocused(true);
+    if (searchQuery) fetchTreatments(searchQuery);
+  };
+
+  const handleClickOutside = (e: MouseEvent) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      setIsFocused(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className={`accordion ${isOpen ? 'open' : ''}`}>
+      <div className="accordion-header" onClick={() => setIsOpen(!isOpen)}>
+        <h4>{treatment.treatmentName || 'New Treatment'}</h4>
+        <div className="accordion-controls">
           <button
             className="remove-button"
-            onClick={() => onRemove(treatment.treatmentId)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove(treatment.treatmentId);
+            }}
             title="Remove Treatment"
           >
             ✖
           </button>
         </div>
+      </div>
+
+      {isOpen && (
         <div className="accordion-content">
           <label>
-            <span>Treatment Name:</span>
+            <span>Search and Select Treatment:</span>
             <input
               type="text"
-              value={treatment.treatmentName}
-              onChange={(e) => handleFieldChange('treatmentName', e.target.value)}
+              placeholder="Search treatments"
+              value={searchQuery}
+              onFocus={handleInputFocus}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                fetchTreatments(e.target.value);
+              }}
             />
+            {isFocused && availableTreatments.length > 0 && (
+              <ul className="treatment-options" ref={dropdownRef}>
+                {availableTreatments.map((t) => (
+                  <li
+                    key={t.treatmentId}
+                    onClick={() => handleTreatmentSelect(t.treatmentId, t.treatmentName)}
+                  >
+                    {t.treatmentName}
+                  </li>
+                ))}
+              </ul>
+            )}
           </label>
           <label>
             <span>Units:</span>
@@ -46,7 +131,7 @@ const TreatmentAccordion: React.FC<TreatmentAccordionProps> = ({ treatment, onEd
             <span>Involved Teeth (comma-separated):</span>
             <input
               type="text"
-              value={(treatment.involvedTeeth || []).join(', ')} // Default to an empty array
+              value={(treatment.involvedTeeth || []).join(', ')}
               onChange={(e) =>
                 handleFieldChange(
                   'involvedTeeth',
@@ -58,20 +143,21 @@ const TreatmentAccordion: React.FC<TreatmentAccordionProps> = ({ treatment, onEd
           <label>
             <span>Prescription:</span>
             <textarea
-              value={treatment.prescription || ''} // Default to an empty string
+              value={treatment.prescription || ''}
               onChange={(e) => handleFieldChange('prescription', e.target.value)}
             ></textarea>
           </label>
           <label>
             <span>Details:</span>
             <textarea
-              value={treatment.details || ''} // Default to an empty string
+              value={treatment.details || ''}
               onChange={(e) => handleFieldChange('details', e.target.value)}
             ></textarea>
           </label>
         </div>
-      </div>
-    );
-  };
-  
-  export default TreatmentAccordion;
+      )}
+    </div>
+  );
+};
+
+export default TreatmentAccordion;

@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Dialog, Drawer, useMediaQuery } from '@mui/material';
 import RequestAppointment from '../request/RequestAppointment';
 import { useSelector, useDispatch } from 'react-redux';
-import { closeRequestAppointment, openRequestAppointment } from '../../../shared/services/appointmentSlice';
+import { closeRequestAppointment, openRequestAppointment } from '../../../shared/services/requestSlice';
 import '../../styles/requestButton.scss';
 import { RootState } from '../../../shared/services/store';
 

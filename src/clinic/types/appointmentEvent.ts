@@ -1,4 +1,5 @@
 export interface AppointmentTreatment {
+  localId?: string;
   treatmentId: string;
   treatmentName: string;
   color?: string;
@@ -15,10 +16,10 @@ export interface Appointment {
   time: string;             // Time of the appointment (HH:MM)
   startHour?: string;
   endHour?: string;
-  isDone: boolean;          // Whether the appointment is completed
-  price: number;            // Price of the appointment
+  isDone?: boolean;          // Whether the appointment is completed
+  price?: number;            // Price of the appointment
   isPaid: boolean;          // Whether the appointment is paid
-  status: 'done' | 'upcoming' | 'missed' | 'notpaid';  // Appointment status
+  status?: 'done' | 'upcoming' | 'missed' | 'notpaid';  // Appointment status
   color?: string;
   medicId?: number;
   medicUser: string;        // ID of the medic attending the appointment

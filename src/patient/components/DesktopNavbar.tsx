@@ -4,7 +4,7 @@ import '../styles/Navbar.scss';
 import { Typography } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { logout } from '../../shared/services/authSlice';
-import { openRequestAppointment } from '../../shared/services/appointmentSlice';
+import { openRequestAppointment } from '../../shared/services/requestSlice';
 
 interface DesktopNavbarProps {
   onSelect: (section: string) => void;

@@ -12,8 +12,8 @@ class AppointmentService {
   private async request(url: string, method: string, body?: any) {
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${this.subaccountToken}`,  // Add the subaccount token
-      'x-clinic-db': this.database,  // Add the database name with _db suffix
+      'Authorization': `Bearer ${this.subaccountToken}`, // Add the subaccount token
+      'x-clinic-db': this.database, // Add the database name with _db suffix
     };
 
     const options: RequestInit = {
@@ -27,7 +27,7 @@ class AppointmentService {
 
     const response = await fetch(url, options);
     if (!response.ok) {
-      throw new Error('Failed to process the request');
+      throw new Error(`Failed to process the request: ${response.status} - ${response.statusText}`);
     }
 
     return response.json();
@@ -40,6 +40,7 @@ class AppointmentService {
 
   // Create a New Appointment
   async createAppointment(appointmentData: any) {
+    console.log('sent')
     return await this.request(`${BASE_URL}`, 'POST', appointmentData);
   }
 
@@ -50,7 +51,7 @@ class AppointmentService {
 
   // Edit an Existing Appointment by ID
   async editAppointment(appointmentId: string, updatedData: any) {
-    return await this.request(`${BASE_URL}/${appointmentId}`, 'PUT', updatedData);
+    return await this.request(`${BASE_URL}/${appointmentId}`, 'PATCH', updatedData);
   }
 
   // Fetch appointments for a specific patient by patientId
@@ -60,18 +61,19 @@ class AppointmentService {
 
   // Fetch appointments for a medic (or all if no medicId is passed)
   async fetchMedicAppointments(medicId?: string) {
-    const url = medicId 
+    const url = medicId
       ? `${BASE_URL}/medic/${medicId}`
       : `${BASE_URL}/medic`; // No medicId provided, fetch all appointments
     return await this.request(url, 'GET');
   }
 
-    // Fetch appointments for a specific week, optionally filtered by medicId
-    async fetchWeekAppointments(startDate: string, endDate: string ) {
-      const url = `${BASE_URL}/week`;
-      const body = { startDate, endDate };
-      return await this.request(url, 'POST', body);
-    }
+  // Fetch appointments for a specific week, optionally filtered by medicId
+  async fetchWeekAppointments(startDate: string, endDate: string) {
+    const url = `${BASE_URL}/week`;
+    const body = { startDate, endDate };
+    return await this.request(url, 'POST', body);
+  }
+
 }
 
 export default AppointmentService;
