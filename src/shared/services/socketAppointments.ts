@@ -1,27 +1,25 @@
-import { Appointment } from "../../clinic/types/appointmentEvent";
-
-// Define the type for appointment listeners
-type AppointmentListener = (appointment: Appointment) => void;
+type MessageListener = (message: any) => void;
 
 class SocketAppointments {
   private static instances: Map<string, SocketAppointments> = new Map();
-  private socket: WebSocket;
-  private isConnected: boolean;
-  private listeners: AppointmentListener[] = [];
+  private socket: WebSocket | null = null;
+  private isConnected: boolean = false;
+  private listeners: MessageListener[] = [];
   private messageQueue: string[] = [];
   private throttledMessages: string[] = [];
   private throttleTimeout: NodeJS.Timeout | null = null;
   private reconnectionAttempts: number = 0;
   private readonly maxReconnectionAttempts: number = 3;
   private readonly reconnectionDelay: number = 10000; // 10 seconds
+  private connectionPromise: Promise<void> | null = null;
 
   private constructor(private socketUrl: string) {
-    this.socket = new WebSocket(socketUrl);
-    this.isConnected = false;
-
     this.initWebSocket();
   }
 
+  /**
+   * Singleton instance for the WebSocket
+   */
   public static getInstance(socketUrl: string): SocketAppointments {
     if (!this.instances.has(socketUrl)) {
       this.instances.set(socketUrl, new SocketAppointments(socketUrl));
@@ -29,77 +27,122 @@ class SocketAppointments {
     return this.instances.get(socketUrl)!;
   }
 
-  private initWebSocket() {
-    this.socket.onopen = () => {
-      this.isConnected = true;
-      console.log('Connected to WebSocket server');
-      this.reconnectionAttempts = 0; // Reset reconnection attempts on successful connection
-      this.flushMessageQueue();
-    };
+  /**
+   * Initialize the WebSocket connection and set up event handlers
+   */
+  private initWebSocket(): Promise<void> {
+    if (this.socket && (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING)) {
+      console.log("WebSocket is already connecting or connected.");
+      return Promise.resolve();
+    }
 
-    this.socket.onmessage = (event: MessageEvent) => {
-      const appointment: Appointment = JSON.parse(event.data);
-      console.log('Appointment received:', appointment);
-      this.listeners.forEach((listener) => listener(appointment));
-    };
+    this.socket = new WebSocket(this.socketUrl);
 
-    this.socket.onclose = () => {
-      console.log('WebSocket connection closed');
-      this.isConnected = false;
+    this.connectionPromise = new Promise((resolve, reject) => {
+      this.socket!.onopen = () => {
+        this.isConnected = true;
+        console.log("WebSocket connected:", this.socketUrl);
+        this.reconnectionAttempts = 0;
+        this.flushMessageQueue();
+        resolve();
+      };
 
-      if (this.reconnectionAttempts < this.maxReconnectionAttempts) {
-        this.attemptReconnection();
-      } else {
-        console.warn('Max reconnection attempts reached. No further retries.');
-      }
-    };
+      this.socket!.onmessage = this.handleMessage.bind(this);
+      this.socket!.onclose = this.handleClose.bind(this);
+      this.socket!.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        this.isConnected = false;
+        reject(error);
+      };
+    });
 
-    this.socket.onerror = (error: Event) => {
-      console.error('WebSocket error:', error);
-    };
+    return this.connectionPromise;
   }
 
-  private attemptReconnection() {
-    this.reconnectionAttempts++;
-    console.log(
-      `Reconnection attempt ${this.reconnectionAttempts}/${this.maxReconnectionAttempts}`
-    );
+  private handleMessage(event: MessageEvent) {
+    try {
+      const message = JSON.parse(event.data);
+      console.log("WebSocket message received:", message);
+      this.listeners.forEach((listener) => listener(message));
+    } catch (error) {
+      console.error("Failed to parse WebSocket message:", error, event.data);
+    }
+  }
 
+  private handleClose() {
+    this.isConnected = false;
+    console.log("WebSocket disconnected. Attempting to reconnect...");
+    this.attemptReconnection();
+  }
+
+  /**
+   * Attempt to reconnect the WebSocket
+   */
+  private attemptReconnection() {
+    if (this.socket?.readyState === WebSocket.CONNECTING || this.socket?.readyState === WebSocket.OPEN) {
+      console.log("WebSocket is already connecting or connected. Skipping reconnection.");
+      return;
+    }
+
+    if (this.reconnectionAttempts >= this.maxReconnectionAttempts) {
+      console.warn("Max reconnection attempts reached. Stopping reconnection.");
+      return;
+    }
+
+    this.reconnectionAttempts++;
     setTimeout(() => {
-      if (!this.isConnected && this.reconnectionAttempts <= this.maxReconnectionAttempts) {
-        console.log(`Attempting to reconnect (#${this.reconnectionAttempts})...`);
-        this.socket = new WebSocket(this.socketUrl);
-        this.initWebSocket();
-      }
+      console.log(`Reconnecting to WebSocket (#${this.reconnectionAttempts})...`);
+      this.initWebSocket();
     }, this.reconnectionDelay);
   }
 
-  public requestAppointments(subdomain: string, medicUser: string | null = null) {
-    const message = JSON.stringify({ subdomain, medicUser });
+  /**
+   * Request appointments from the server
+   */
+  public async requestAppointments(params?: { medicId?: string; startDate?: string; endDate?: string }) {
+    const message = JSON.stringify(params || {}); // Convert params to JSON or send an empty object if undefined
 
-    if (this.isConnected) {
-      if (this.throttleTimeout) {
-        this.throttledMessages.push(message);
+    try {
+      await this.initWebSocket(); // Ensure the WebSocket connection is established
+      console.log("Requesting appointments with params:", params);
+
+      if (this.isConnected) {
+        if (this.throttleTimeout) {
+          this.throttledMessages.push(message);
+        } else {
+          this.socket!.send(message);
+          this.setupThrottling();
+        }
       } else {
-        this.socket.send(message);
-        this.throttleTimeout = setTimeout(() => {
-          while (this.throttledMessages.length > 0) {
-            const pendingMessage = this.throttledMessages.shift();
-            if (pendingMessage) this.socket.send(pendingMessage);
-          }
-          this.clearThrottleTimeout();
-        }, 5000);
+        console.warn("WebSocket not connected. Queuing message.");
+        this.messageQueue.push(message);
       }
-    } else {
-      this.messageQueue.push(message);
+    } catch (error) {
+      console.error("Error sending WebSocket message:", error);
     }
   }
 
+  /**
+   * Process queued messages
+   */
   private flushMessageQueue() {
     while (this.isConnected && this.messageQueue.length > 0) {
       const message = this.messageQueue.shift();
-      if (message) this.socket.send(message);
+      if (message) this.socket!.send(message);
     }
+  }
+
+  /**
+   * Setup throttling for message sending
+   */
+  private setupThrottling() {
+    this.throttleTimeout = setTimeout(() => {
+      while (this.throttledMessages.length > 0) {
+        const message = this.throttledMessages.shift();
+        if (message) this.socket!.send(message);
+      }
+      this.clearThrottleTimeout();
+    }, 5000);
   }
 
   private clearThrottleTimeout() {
@@ -109,24 +152,36 @@ class SocketAppointments {
     }
   }
 
-  public addListener(callback: AppointmentListener) {
+  /**
+   * Add a listener for incoming WebSocket messages
+   */
+  public addListener(callback: MessageListener) {
     this.listeners.push(callback);
   }
 
-  public removeListener(callback: AppointmentListener) {
+  /**
+   * Remove a listener for incoming WebSocket messages
+   */
+  public removeListener(callback: MessageListener) {
     this.listeners = this.listeners.filter((listener) => listener !== callback);
   }
 
+  /**
+   * Close the WebSocket connection
+   */
   public closeConnection() {
     if (this.socket) {
       this.socket.close();
     }
   }
 
+  /**
+   * Get the current WebSocket connection status
+   */
   public getConnectionStatus(): { isConnected: boolean; readyState: number } {
     return {
       isConnected: this.isConnected,
-      readyState: this.socket.readyState,
+      readyState: this.socket?.readyState || WebSocket.CLOSED,
     };
   }
 }

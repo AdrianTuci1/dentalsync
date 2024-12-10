@@ -19,7 +19,7 @@ export interface Appointment {
   isDone?: boolean;          // Whether the appointment is completed
   price?: number;            // Price of the appointment
   isPaid: boolean;          // Whether the appointment is paid
-  status?: 'done' | 'upcoming' | 'missed' | 'notpaid';  // Appointment status
+  status: 'done' | 'upcoming' | 'missed' | 'notpaid';  // Appointment status
   color?: string;
   medicId?: number;
   medicUser: string;        // ID of the medic attending the appointment

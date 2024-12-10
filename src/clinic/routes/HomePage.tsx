@@ -3,16 +3,16 @@ import { Box, Typography, useMediaQuery, useTheme } from '@mui/material';
 import AppointmentCard from './../components/homeSection/AppointmentCard';
 import WeekAppointmentCard from './../components/homeSection/WeekAppointmentCard';
 import { useSelector } from 'react-redux';
-import { RootState } from '../../shared/services/store';
 import { useWebSocket } from '../../shared/services/WebSocketContext';
 import { Appointment } from '../types/appointmentEvent';
 
 const HomePage: React.FC = () => {
-  const { appointments } = useWebSocket(); // Use WebSocket for fetching appointments
-  const currentUser = useSelector((state: RootState) => state.auth.subaccountUser.name);
+  const { appointments, fetchAppointments } = useWebSocket(); // Use WebSocket for fetching appointments
+  const currentUser = useSelector((state: any) => state.auth.subaccountUser.name);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
+  fetchAppointments()
 
   // Helper functions to filter appointments by today, tomorrow, and this week
   const isToday = (dateString: string) => {

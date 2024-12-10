@@ -1,12 +1,12 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import SocketAppointments from './socketAppointments';
 import { Appointment } from '../../clinic/types/appointmentEvent';
-import { getSubdomain } from '../utils/getSubdomains'; // Utility to get subdomain
+import { getSubdomain } from '../utils/getSubdomains';
 
 interface WebSocketContextProps {
   appointments: Appointment[];
   error: string | null;
-  filterAppointmentsByMedic: (medicId: string) => Appointment[]; // Method to filter locally
+  fetchAppointments: (params?: { medicId?: string; startDate?: string; endDate?: string }) => void;
 }
 
 const WebSocketContext = createContext<WebSocketContextProps | undefined>(undefined);
@@ -22,45 +22,68 @@ export const useWebSocket = () => {
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const subdomain = getSubdomain(); // Get the subdomain directly
+  const socketInstance = useRef(
+    SocketAppointments.getInstance(`ws://localhost:3000/api/appointment-socket?subdomain=${subdomain}`)
+  );
 
-  const subdomain = getSubdomain(); // Get subdomain once in the provider
 
-  const initializeWebSocket = () => {
-    const socketInstance = SocketAppointments.getInstance('ws://localhost:3000/api/appointment-socket');
+  const updateAppointments = useCallback((message: any) => {
+    switch (message.type) {
+      case 'viewAppointments':
+        setAppointments((prev) => {
+          // Only update state if data has changed to prevent unnecessary renders
+          const isDifferent = JSON.stringify(prev) !== JSON.stringify(message.data);
+          return isDifferent ? message.data : prev;
+        });
+        break;
 
-    const handleAppointment = (appointment: Appointment) => {
-      setAppointments((prevAppointments) => {
-        const exists = prevAppointments.some((a) => a.appointmentId === appointment.appointmentId);
-        return exists ? prevAppointments : [...prevAppointments, appointment];
-      });
-    };
+      case 'updateAppointment':
+        setAppointments((prev) =>
+          prev.map((appointment) =>
+            appointment.appointmentId === message.data.appointmentId ? message.data : appointment
+          )
+        );
+        break;
 
-    socketInstance.addListener(handleAppointment);
+      case 'deleteAppointment':
+        setAppointments((prev) =>
+          prev.filter((appointment) => appointment.appointmentId !== message.data.appointmentId)
+        );
+        break;
 
-    try {
-      // Fetch initial appointments with the subdomain
-      socketInstance.requestAppointments(subdomain);
-    } catch (err) {
-      setError((err as Error).message || 'An error occurred while requesting appointments.');
+      default:
+        console.warn('Unhandled WebSocket message type:', message.type);
     }
-
-    return () => {
-      socketInstance.removeListener(handleAppointment);
-      socketInstance.closeConnection();
-    };
-  };
-
-  useEffect(() => {
-    initializeWebSocket();
   }, []);
 
-  // Filter appointments by medicId locally
-  const filterAppointmentsByMedic = (medicId: string) => {
-    return appointments.filter((appointment) => appointment.medicUser === medicId);
-  };
+  useEffect(() => {
+    const socket = socketInstance.current;
+
+    socket.addListener(updateAppointments);
+
+    return () => {
+      socket.removeListener(updateAppointments);
+      socket.closeConnection();
+    };
+  }, [updateAppointments]);
+
+  const fetchAppointments = useCallback(
+    async (params?: { medicId?: string; startDate?: string; endDate?: string }) => {
+      try {
+        console.log("Fetching appointments with params:", params); // Debugging
+        await socketInstance.current.requestAppointments(params);
+      } catch (err) {
+        console.error("Error requesting appointments:", err);
+        setError((err as Error).message || "An error occurred while requesting appointments.");
+      }
+    },
+    [] // Dependencies remain empty since `socketInstance` is a ref
+  );
+  
 
   return (
-    <WebSocketContext.Provider value={{ appointments, error, filterAppointmentsByMedic }}>
+    <WebSocketContext.Provider value={{ appointments, error, fetchAppointments }}>
       {children}
     </WebSocketContext.Provider>
   );

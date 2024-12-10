@@ -71,7 +71,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
             style={{ borderRadius: '4px' }}
           >
             <Typography variant="body2" color="white">
-              {generateInitials(initialTreatment as string)}
+              {generateInitials(initialTreatment as string || '')}
             </Typography>
           </Box>
           <Box
@@ -104,7 +104,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
           }}
         >
           <Avatar
-            src={`/patient.png`} // Replace with actual logic for patient image
+            src={`/requests.png`} // Replace with actual logic for patient image
             alt={patientName}
             sx={{ width: 24, height: 24, marginRight: 1 }}
           />
@@ -125,8 +125,8 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({
             marginTop: 1,
           }}>
         <Avatar
-            src={`/medics-sm.png`} // Replace with actual logic for patient image
-            alt={patientName}
+            src={`/medics.png`} // Replace with actual logic for patient image
+            alt={medicName}
             sx={{ width: 25, height: 25, marginRight: 1, borderRadius:0 }}
           />
         <Typography variant="body2" color="textSecondary" sx={{ marginTop: 0 }}>
