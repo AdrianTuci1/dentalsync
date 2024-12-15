@@ -7,12 +7,12 @@ import { useWebSocket } from '../../shared/services/WebSocketContext';
 import { Appointment } from '../types/appointmentEvent';
 
 const HomePage: React.FC = () => {
-  const { appointments, fetchAppointments } = useWebSocket(); // Use WebSocket for fetching appointments
+  const { appointments } = useWebSocket(); // Use WebSocket for fetching appointments
   const currentUser = useSelector((state: any) => state.auth.subaccountUser.name);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  fetchAppointments()
+
 
   // Helper functions to filter appointments by today, tomorrow, and this week
   const isToday = (dateString: string) => {

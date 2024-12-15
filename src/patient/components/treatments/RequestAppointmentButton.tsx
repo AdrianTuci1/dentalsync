@@ -8,7 +8,7 @@ import { RootState } from '../../../shared/services/store';
 
 const RequestAppointmentButton: React.FC = () => {
     const dispatch = useDispatch();
-    const openAppointment = useSelector((state: RootState) => state.appointment.openAppointment);
+    const openAppointment = useSelector((state: RootState) => state.request.openAppointment);
 
     const isLargeScreen = useMediaQuery('(min-width:850px)');
 

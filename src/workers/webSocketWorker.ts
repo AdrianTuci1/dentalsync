@@ -1,68 +1,70 @@
 /// <reference lib="webworker" />
 
-import { WorkerRequest, WorkerResponse } from "../clinic/types/worker";
-
+import { WorkerResponse } from "../clinic/types/worker";
 
 let websocket: WebSocket | null = null;
+let messageQueue: string[] = []; // Queue messages until WebSocket is open
 
-// Correctly type the event as MessageEvent
-self.onmessage = (event: MessageEvent<WorkerRequest>) => {
-    const { action, payload } = event.data;
+self.onmessage = (event: MessageEvent) => {
+  const { action, payload } = event.data;
 
-    try {
-        switch (action) {
-            case 'connect':
-                if (websocket) {
-                    throw new Error('WebSocket is already connected.');
-                }
-                websocket = new WebSocket(payload.url);
-                websocket.onopen = () => {
-                    const response: WorkerResponse = { type: 'open' };
-                    self.postMessage(response);
-                };
-                websocket.onmessage = (messageEvent) => {
-                    const response: WorkerResponse = {
-                        type: 'message',
-                        data: messageEvent.data,
-                    };
-                    self.postMessage(response);
-                };
-                websocket.onerror = (_: Event) => {
-                    const response: WorkerResponse = {
-                        type: 'error',
-                        error: 'WebSocket error occurred', // Generic error message
-                    };
-                    self.postMessage(response);
-                };                
-                websocket.onclose = () => {
-                    const response: WorkerResponse = { type: 'close' };
-                    self.postMessage(response);
-                    websocket = null;
-                };
-                break;
+  switch (action) {
+    case "connect":
+      if (websocket) {
+        console.warn("WebSocket is already connected.");
+        return;
+      }
 
-            case 'send':
-                if (!websocket || websocket.readyState !== WebSocket.OPEN) {
-                    throw new Error('WebSocket is not connected.');
-                }
-                websocket.send(JSON.stringify(payload.message));
-                break;
+      websocket = new WebSocket(payload.url);
 
-            case 'disconnect':
-                if (websocket) {
-                    websocket.close();
-                    websocket = null;
-                }
-                break;
+      websocket.onopen = () => {
+        console.log("WebSocket connected:", payload.url);
+        postMessage({ type: "open" } as WorkerResponse);
 
-            default:
-                throw new Error(`Unknown action: ${action}`);
+        // Flush the message queue
+        messageQueue.forEach((msg) => websocket?.send(msg));
+        messageQueue = [];
+      };
+
+      websocket.onmessage = (event: MessageEvent) => {
+        try {
+          const message = JSON.parse(event.data);
+          postMessage({ type: "message", payload: message } as WorkerResponse);
+        } catch (error) {
+          console.error("Invalid WebSocket message received:", event.data, error);
         }
-    } catch (error) {
-        const response: WorkerResponse = {
-            type: 'error',
-            error: (error as Error).message,
-        };
-        self.postMessage(response);
-    }
+      };
+
+      websocket.onclose = () => {
+        console.warn("WebSocket closed.");
+        postMessage({ type: "close" } as WorkerResponse);
+        websocket = null;
+      };
+
+      websocket.onerror = () => {
+        console.error("WebSocket error.");
+        postMessage({ type: "error", payload: "WebSocket encountered an error." } as WorkerResponse);
+      };
+      break;
+
+    case "send":
+      const message = JSON.stringify(payload.message || {});
+      if (websocket && websocket.readyState === WebSocket.OPEN) {
+        websocket.send(message);
+      } else {
+        console.warn("WebSocket is not connected. Queuing message.");
+        messageQueue.push(message); // Queue the message until the connection is open
+      }
+      break;
+
+    case "disconnect":
+      if (websocket) {
+        websocket.close();
+        websocket = null;
+      }
+      break;
+
+    default:
+      console.error("Unknown action:", action);
+  }
 };

@@ -37,12 +37,15 @@ const Appointments: React.FC = () => {
     }
   }, [selectedDate, fetchAppointments]);
 
-  const displayedAppointments = appointments.filter((appointment) => {
-    if (isAllAppointments) {
-      return true;
-    }
-    return appointment.medicId === currentUser.id; // Filter by current user's medicId if needed
-  });
+  const displayedAppointments = Array.isArray(appointments)
+  ? appointments.filter((appointment) => {
+      if (isAllAppointments) {
+        return true;
+      }
+      return appointment.medicId === currentUser.id; // Filter by current user's medicId if needed
+    })
+  : []; // Fallback to an empty array if appointments is not an array
+
 
   const handlePreviousWeek = () => setSelectedDate((prev) => subWeeks(prev, 1));
   const handleNextWeek = () => setSelectedDate((prev) => addWeeks(prev, 1));
