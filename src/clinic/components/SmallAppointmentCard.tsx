@@ -1,5 +1,8 @@
 import React from "react";
 import "../styles/components/SmallAppointmentCard.scss";
+import { openDrawer } from "../../shared/services/drawerSlice";
+import { Appointment } from "../types/appointmentEvent";
+import { useDispatch } from "react-redux";
 
 interface AppointmentData {
   date: string;
@@ -21,6 +24,8 @@ const SmallAppointmentCard: React.FC<SmallAppointmentCardProps> = ({
 }) => {
   const { date, time, initialTreatment, medicUser, patientUser, color } = data;
 
+
+  const dispatch = useDispatch()
   // Format date to 'Mon, Nov 24'
   const formatDate = (date: string) => {
     const options: Intl.DateTimeFormatOptions = { weekday: "short", month: "short", day: "numeric" };
@@ -36,8 +41,12 @@ const SmallAppointmentCard: React.FC<SmallAppointmentCardProps> = ({
 
   const displayName = role === "medic" ? patientUser : medicUser;
 
+  const handleAppointmentClick = (appointment: Appointment) => {
+    dispatch(openDrawer({ type: 'Appointment', data: { appointment: appointment } }));
+  };
+
   return (
-    <div className="appointment-card">
+    <div className="appointment-card" onClick={() => handleAppointmentClick}>
       <div className="card-header">
         <span className="date">{formatDate(date)}</span>
         <span className="time">{time}</span>

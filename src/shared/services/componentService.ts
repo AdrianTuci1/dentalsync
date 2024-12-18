@@ -36,21 +36,26 @@ class ComponentService {
     return data;
   }
 
-  // Get all components
-  async getAllComponents(): Promise<Component[]> {
-    const response = await fetch(`${this.baseUrl}/api/components`, {
-      method: 'GET',
-      headers: this.getHeaders(),
-    });
+    // Fetch components with optional search and pagination
+    async getAllComponents(name: string = '', offset: number = 0): Promise<{ components: Component[]; offset: number }> {
+      const query = new URLSearchParams({
+        name,
+        offset: offset.toString(), // Convert offset to string for query params
+      }).toString();
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch components');
+      const response = await fetch(`${this.baseUrl}/api/components?${query}`, {
+        method: 'GET',
+        headers: this.getHeaders(),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch components');
+      }
+
+      const data = await response.json();
+      return { components: data.components, offset: data.offset };
     }
 
-    const data = await response.json();
-    // Ensure you return the array of components from the response
-    return Array.isArray(data) ? data : data.components;  // Handle both array and object response
-  }
 
   // Update a component by ID
   async updateComponent(

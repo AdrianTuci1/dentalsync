@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
-import { Button, TextField } from '@mui/material';
+import { Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import SearchInput from './SearchInput';
 
 interface ActionComponentProps {
     toggleDrawer: (open: boolean) => void;
+    onSearch: (searchTerm: string) => void; // New callback for search
 }
 
-const ActionComponent: React.FC<ActionComponentProps> = ({ toggleDrawer }) => {
+const ActionComponent: React.FC<ActionComponentProps> = ({ toggleDrawer, onSearch }) => {
     const [searchTerm, setSearchTerm] = useState<string>('');
 
+    // Handle changes in the search field
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(event.target.value);
+        const value = event.target.value;
+        setSearchTerm(value);
+        onSearch(value); // Emit search term to parent
     };
 
     return (
@@ -25,19 +30,19 @@ const ActionComponent: React.FC<ActionComponentProps> = ({ toggleDrawer }) => {
             }}
         >
             <div style={{ display: 'flex', alignItems: 'center' }}>
-
                 {/* Search Box */}
-                <TextField
-                    label="Search"
-                    variant="outlined"
-                    size="small"
+                <SearchInput
                     value={searchTerm}
                     onChange={handleSearchChange}
-                    style={{ marginLeft: '20px' }}
-                />
+                  />
             </div>
 
-            <Button startIcon={<AddIcon />} variant="outlined" color="primary" onClick={() => toggleDrawer(true)}>
+            <Button
+                startIcon={<AddIcon />}
+                variant="outlined"
+                color="primary"
+                onClick={() => toggleDrawer(true)}
+            >
                 Add New
             </Button>
         </div>

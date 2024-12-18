@@ -3,16 +3,20 @@ import {
   Drawer,
   IconButton,
   Divider,
-  Typography,
   Box,
   Avatar,
   CircularProgress,
+  TextField,
+  Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import EditNoteIcon from "@mui/icons-material/EditNote";
+import EventIcon from "@mui/icons-material/Upcoming";
+import SettingsIcon from "@mui/icons-material/Settings";
 import { logout, switchAccount } from "../../shared/services/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import AppointmentService from "../../shared/services/fetchAppointments";
-import SmallAppointmentCard from "./SmallAppointmentCard"; // Import SmallAppointmentCard
+import SmallAppointmentCard from "./SmallAppointmentCard";
 import styles from "../styles/drawers/UserDrawer.module.scss";
 
 interface UserDrawerProps {
@@ -24,11 +28,12 @@ const UserDrawer: React.FC<UserDrawerProps> = ({ open, onClose }) => {
   const dispatch = useDispatch();
   const profile = useSelector((state: any) => state.auth.subaccountUser);
   const token = useSelector((state: any) => state.auth.subaccountToken);
-  const database = "demo_db"; // Modify accordingly if needed
+  const database = "demo_db";
 
-  const [todaysAppointments, setTodaysAppointments] = useState<any[]>([]);
-  const [upcomingAppointments, setUpcomingAppointments] = useState<any[]>([]);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [personalNotes, setPersonalNotes] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [selectedMenu, setSelectedMenu] = useState<"notes" | "upcoming" | "actions">("notes");
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -36,8 +41,7 @@ const UserDrawer: React.FC<UserDrawerProps> = ({ open, onClose }) => {
       try {
         const appointmentService = new AppointmentService(token, database);
         const data = await appointmentService.fetchMedicAppointments(profile.id);
-        setTodaysAppointments(data.today || []);
-        setUpcomingAppointments(data.upcoming || []);
+        setAppointments(data.appointments); // Combine today's and upcoming appointments
       } catch (error) {
         console.error("Error fetching appointments:", error);
       } finally {
@@ -50,14 +54,6 @@ const UserDrawer: React.FC<UserDrawerProps> = ({ open, onClose }) => {
     }
   }, [open, profile, token]);
 
-  const [selectedMenu, setSelectedMenu] = useState("today");
-
-  const menuItems = [
-    { key: "today", label: "Today", img:'/sync.png' },
-    { key: "upcoming", label: "Upcoming", img:'/tomorrow.png' },
-    { key: "actions", label: "Actions", img:'/settings.png' },
-  ];
-
   const handleLogOut = () => {
     dispatch(logout());
   };
@@ -66,87 +62,104 @@ const UserDrawer: React.FC<UserDrawerProps> = ({ open, onClose }) => {
     dispatch(switchAccount());
   };
 
-
-  const renderAppointments = (appointments: any[]) => (
-    <Box sx={{ p: 2 }}>
-      {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
-          <CircularProgress />
-        </Box>
-      ) : appointments.length > 0 ? (
-        appointments.map((appointment) => (
-          <SmallAppointmentCard
-            key={appointment.appointmentId}
-            role="medic"
-            data={{
-              date: appointment.date,
-              time: appointment.time,
-              initialTreatment: appointment.initialTreatment || "No Treatment",
-              medicUser: appointment.medicUser,
-              patientUser: appointment.patientUser.name,
-              color: appointment.color,
-            }}
-          />
-        ))
-      ) : (
-        <Typography variant="body2">No appointments found.</Typography>
-      )}
-    </Box>
-  );
+  const menuItems = [
+    { key: "notes",  icon: <EditNoteIcon fontSize="medium" /> },
+    { key: "upcoming", icon: <EventIcon fontSize="medium" /> },
+    { key: "actions",  icon: <SettingsIcon fontSize="medium" /> },
+  ];
 
   return (
     <Drawer anchor="right" open={open} onClose={onClose}>
       <div className={styles.drawerContainer}>
+        {/* Header */}
         <div className={styles.drawerHeader}>
-          {profile && (
-            <div className={styles.drawerUserInfo}>
-              <Avatar
-                src={profile.avatar || "/avatar.png"}
-                alt="User Avatar"
-                sx={{ width: 40, height: 40 }}
-              />
-              <div className={styles.usrInfo}>
-                <p className={styles.drawerName}>{profile.name}</p>
-                <p className={styles.drawerRole}>{profile.role}</p>
-              </div>
+          <div className={styles.drawerUserInfo}>
+            <Avatar
+              src={profile.avatar || "/avatar.png"}
+              alt="User Avatar"
+              sx={{ width: 40, height: 40 }}
+            />
+            <div className={styles.usrInfo}>
+              <p className={styles.drawerName}>{profile.name}</p>
+              <p className={styles.drawerRole}>{profile.role}</p>
             </div>
-          )}
+          </div>
           <IconButton onClick={onClose} className={styles.closeButton}>
             <CloseIcon />
           </IconButton>
         </div>
 
         <Divider />
+
+        {/* Menu Row */}
         <div className={styles.menuRow}>
           {menuItems.map((item) => (
             <div
               key={item.key}
-              className={styles.menuItem}
-              onClick={() => setSelectedMenu(item.key)}
+              className={`${styles.menuItem} ${
+                selectedMenu === item.key ? styles.activeMenuItem : ""
+              }`}
+              onClick={() => setSelectedMenu(item.key as "upcoming" | "notes" | "actions")}
             >
-              <img
-              src={item.img}
-              className={styles.menuIcon}
-              />
-              {selectedMenu === item.key && (
-                <p className={styles.menuText}>{item.label}</p>
-              )}
+              {item.icon}
             </div>
           ))}
         </div>
 
-        {selectedMenu === "today" && renderAppointments(todaysAppointments)}
-        {selectedMenu === "upcoming" && renderAppointments(upcomingAppointments)}
+        {/* Content Based on Menu */}
+        {selectedMenu === "upcoming" && (
+          <Box sx={{ p: 2 }}>
+            {loading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", mt: 2 }}>
+                <CircularProgress />
+              </Box>
+            ) : appointments.length > 0 ? (
+              appointments.map((appointment) => (
+                <SmallAppointmentCard
+                  key={appointment.appointmentId}
+                  role="medic"
+                  data={{
+                    date: appointment.date,
+                    time: appointment.time,
+                    initialTreatment: appointment.initialTreatment || "No Treatment",
+                    medicUser: appointment.medicUser,
+                    patientUser: appointment.patientUser.name,
+                    color: appointment.color,
+                  }}
+                />
+              ))
+            ) : (
+              <Typography>No upcoming appointments.</Typography>
+            )}
+          </Box>
+        )}
+
+        {selectedMenu === "notes" && (
+          <Box sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Personal Notes
+            </Typography>
+            <TextField
+              multiline
+              rows={8}
+              fullWidth
+              placeholder="Write your notes here..."
+              value={personalNotes}
+              onChange={(e) => setPersonalNotes(e.target.value)}
+              variant="outlined"
+            />
+          </Box>
+        )}
 
         {selectedMenu === "actions" && (
-          <div className={styles.actionsSection}>
+          <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 2 }}>
             <button className={styles.actionButton} onClick={handleLogOut}>
               Logout
             </button>
             <button className={styles.actionButton} onClick={handleSwitchAccount}>
               Switch Account
             </button>
-          </div>
+          </Box>
         )}
       </div>
     </Drawer>

@@ -11,7 +11,6 @@ import {
   Chip,
   Button,
   useMediaQuery,
-  TextField,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { blue, green, orange } from '@mui/material/colors';
@@ -19,6 +18,7 @@ import MedicService from '../../shared/services/medicService';
 import { useDispatch, useSelector } from 'react-redux';
 import { openDrawer } from '../../shared/services/drawerSlice';
 import { MedicsListItem } from '../types/Medic';
+import SearchInput from '../components/SearchInput';
 
 const Medics: React.FC = () => {
   const [medics, setMedics] = useState<MedicsListItem[]>([]);
@@ -104,14 +104,10 @@ const Medics: React.FC = () => {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center' }}>
-                <TextField
-                  label="Search"
-                  variant="outlined"
-                  size="small"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  style={{ marginLeft: '20px' }}
-                />
+                <SearchInput
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
               </div>
               <Button startIcon={<AddIcon />} variant="outlined" color="primary" onClick={() => handleOpenDrawer(null)}>
                 Add New

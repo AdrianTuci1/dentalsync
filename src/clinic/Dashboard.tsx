@@ -6,7 +6,6 @@ import Stocks from "./routes/Stocks";
 import Settings from "./routes/Settings";
 import Medics from "./routes/Medics";
 import Treatments from "./routes/Treatments";
-import ChatComponent from "./routes/Chat";
 import { WebSocketProvider } from "../shared/services/WebSocketContext";
 import GlobalDrawer from "./components/drawers/GlobalDrawer";
 
@@ -35,8 +34,6 @@ function Dashboard() {
         return <Treatments />;
       case "stocks":
         return <Stocks />;
-      case "chat":
-        return <ChatComponent />;
       case "settings":
         return <Settings />;
       default:

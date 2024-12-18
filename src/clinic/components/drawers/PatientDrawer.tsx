@@ -4,8 +4,6 @@ import {
   Drawer,
   Box,
   Typography,
-  Tabs,
-  Tab,
   IconButton,
 } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
@@ -16,6 +14,7 @@ import AppointmentsTab from './patient/AppointmentsTab';
 import DeleteTab from './patient/DeleteTab';
 import PatientService from '../../../shared/services/patientService';
 import { closeDrawer } from '../../../shared/services/drawerSlice';
+import styles from '../../styles/drawers/PatientDrawer.module.scss'; // Import CSS module for styling
 
 const PatientDrawer: React.FC = () => {
   const dispatch = useDispatch();
@@ -59,8 +58,8 @@ const PatientDrawer: React.FC = () => {
     fetchPatientData();
   }, [patientId, token]);
 
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
+  const handleTabChange = (index: number) => {
+    setActiveTab(index);
   };
 
   const handleInputChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement | { value: unknown }>) => {
@@ -85,20 +84,19 @@ const PatientDrawer: React.FC = () => {
   };
 
   const tabs = [
-    { label: 'Details', icon: <img src="/info.png" alt="Details" style={{ width: 24 }} /> },
-    { label: 'Dental History', icon: <img src="/dental-record.png" alt="History" style={{ width: 24 }} /> },
-    { label: 'Galery', icon: <img src="/galery.png" alt="Gallery" style={{ width: 24 }} /> },
-    { label: 'Appointments', icon: <img src="/appointments.png" alt="Appointments" style={{ width: 24 }} /> },
-    { label: 'Delete', icon: <img src="/delete.png" alt="Delete" style={{ width: 24 }} /> },
+    { label: 'Details', icon: <img src="/info.png" alt="Details" /> },
+    { label: 'Dental History', icon: <img src="/dental-record.png" alt="History" /> },
+    { label: 'Gallery', icon: <img src="/galery.png" alt="Gallery" /> },
+    { label: 'Appointments', icon: <img src="/appointments.png" alt="Appointments" /> },
+    { label: 'Delete', icon: <img src="/delete.png" alt="Delete" /> },
   ];
-  
 
   return (
     <Drawer anchor="right" open={true} onClose={handleClose}>
-      <Box sx={{ width: 400 }}>
+      <Box className={styles.drawerContainer}>
         {/* Header */}
-        <Box sx={{ p: 2, display: 'flex', alignItems: 'center' }}>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', flexGrow: 1 }}>
+        <Box className={styles.header}>
+          <Typography variant="subtitle1" className={styles.title}>
             {patientData.name || 'Add Patient'}
           </Typography>
           <IconButton edge="end" onClick={handleClose} aria-label="close">
@@ -107,14 +105,22 @@ const PatientDrawer: React.FC = () => {
         </Box>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onChange={handleTabChange} >
+        <Box className={styles.tabRow}>
           {tabs.map((tab, index) => (
-            <Tab key={index} icon={tab.icon}/>
+            <div
+              key={index}
+              className={`${styles.tabItem} ${
+                activeTab === index ? styles.activeTabItem : ''
+              }`}
+              onClick={() => handleTabChange(index)}
+            >
+              {tab.icon}
+            </div>
           ))}
-        </Tabs>
+        </Box>
 
         {/* Tab Content */}
-        <Box sx={{ p: 2 }}>
+        <Box className={styles.tabContent}>
           {loading ? (
             <Typography>Loading...</Typography>
           ) : (

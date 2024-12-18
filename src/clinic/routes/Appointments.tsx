@@ -11,6 +11,9 @@ import { openDrawer } from '../../shared/services/drawerSlice';
 import { addWeeks, subWeeks, isSameWeek, isSameDay } from 'date-fns';
 import { useWebSocket } from '../../shared/services/WebSocketContext'; // Use the WebSocket context
 
+// fix the WeekNavigator
+// fix the fetchAppointments(ln40) - startDate is off by a day
+
 
 const Appointments: React.FC = () => {
   const { appointments, fetchAppointments } = useWebSocket();

@@ -3,6 +3,8 @@ import { Box, Typography, Avatar, Paper } from '@mui/material';
 import { Appointment } from '../../types/appointmentEvent'; // Adjust import path
 import { format, isToday, isTomorrow, parseISO } from 'date-fns';
 import generateInitials from '../../../shared/utils/generateInitials';
+import { openDrawer } from '../../../shared/services/drawerSlice';
+import { useDispatch } from 'react-redux';
 
 interface AppointmentCardProps {
   appointment: Appointment;
@@ -15,6 +17,12 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment }) => {
     ? 'Tomorrow'
     : '';
 
+    const dispatch = useDispatch();
+
+    const onAppointmentClick = (appointment: Appointment) => {
+      dispatch(openDrawer({ type: 'Appointment', data: { appointment: appointment } }));
+    };
+
   return (
     <Paper
       sx={{
@@ -24,6 +32,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment }) => {
         width: '100%',
         boxShadow: 'none',
       }}
+      onClick={() => onAppointmentClick(appointment)}
     >
       {/* Time Slot */}
       <Typography variant="caption" color="textSecondary" sx={{ backgroundColor: '#d0d0d0', padding: '2px', display: 'block', width: '100%', textAlign: 'center' }}>

@@ -17,19 +17,26 @@ class PatientService {
       };
     }
     
-    // Fetch all patients
-    async getPatients() {
+    // Fetch patients with optional search and offset
+    async getPatients(name = '', offset = 0) {
       try {
-        const response = await fetch(`${this.BASE_URL}/api/patients`, {
+        const query = new URLSearchParams({
+          name,
+          offset: offset.toString(), // Convert number to string
+        }).toString(); // Build the query string
+
+        const response = await fetch(`${this.BASE_URL}/api/patients?${query}`, {
           method: 'GET',
           headers: this.getHeaders(),
         });
+
         return await response.json();
       } catch (error) {
         console.error('Error fetching patients:', error);
         throw error;
       }
     }
+
   
     // Create a new patient
     async createPatient(patientData: object) {

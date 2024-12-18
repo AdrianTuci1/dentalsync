@@ -1,11 +1,11 @@
 .drawerContainer {
-    width: 350px;
-    padding: 20px;
+    width: 400px;
   }
   
   .drawerHeader {
     display: flex;
     justify-content: space-between;
+    align-items: center;
   }
   
   .closeButton {
@@ -16,8 +16,9 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin-bottom: 20px;
+    padding: 5px 20px;
     gap: 10px;
+
   }
   
   .drawerAvatar {
@@ -41,22 +42,32 @@
   
   .menuRow {
     display: flex;
-    justify-content: space-around;
-    padding: 10px 0;
+    justify-content: left;
+    gap: 25px;
+    padding: 10px 20px;
   }
   
   .menuItem {
     display: flex;
-    flex-direction: row;
     align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 30px;
+    border-radius: 8px;
+    background-color: #f5f5f5;
     cursor: pointer;
+    transition: background-color 0.3s ease;
   }
   
-  .menuIcon {
-    width: 30px;
-    height: 30px;
-    border-radius: 4px;
+  .menuItem:hover {
+    background-color: #e0e0e0;
   }
+  
+  .activeMenuItem {
+    background-color: #3f51b5;
+    color: white;
+  }
+  
   
   .menuText {
     margin-top: 5px;

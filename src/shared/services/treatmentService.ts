@@ -37,21 +37,26 @@ class TreatmentService {
       return data;
     }
   
-    // Get all treatments
-    async getAllTreatments(): Promise<Treatment[]> {
-      const response = await fetch(`${this.baseUrl}/api/treatments`, {
+    // Fetch treatments with optional search and pagination
+    async getAllTreatments(name: string = '', offset: number = 0): Promise<{ treatments: Treatment[]; offset: number }> {
+      const query = new URLSearchParams({
+        name,
+        offset: offset.toString(), // Convert offset to string
+      }).toString();
+
+      const response = await fetch(`${this.baseUrl}/api/treatments?${query}`, {
         method: 'GET',
         headers: this.getHeaders(),
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to fetch treatments');
       }
-  
+
       const data = await response.json();
-      return data.treatments;
+      return { treatments: data.treatments, offset: data.offset };
     }
-  
+
     // Get treatment by ID
     async getTreatmentById(treatmentId: string): Promise<Treatment> {
       const response = await fetch(`${this.baseUrl}/api/treatments/${treatmentId}`, {

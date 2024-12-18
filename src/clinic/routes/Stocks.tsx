@@ -8,7 +8,6 @@ import {
   Paper,
   Box,
   Button,
-  TextField,
   useMediaQuery,
   TableHead,
 } from '@mui/material';
@@ -17,37 +16,44 @@ import { useDispatch, useSelector } from 'react-redux';
 import { openDrawer } from '../../shared/services/drawerSlice';
 import ComponentService from '../../shared/services/componentService';
 import { Component } from '../types/componentType';
+import { getSubdomain } from '../../shared/utils/getSubdomains';
+import SearchInput from '../components/SearchInput';
 
 export const StocksTable: React.FC = () => {
   const [stocks, setStocks] = useState<Component[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [offset, setOffset] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const isSmallScreen = useMediaQuery('(max-width:800px)');
 
   const token = useSelector((state: any) => state.auth.subaccountToken);
-  const clinicDb = 'demo_db'; // Hardcoded clinicDb
+  const clinicDb = getSubdomain() // Hardcoded clinicDb
   const dispatch = useDispatch();
-  const componentService = new ComponentService(token, clinicDb);
+  const componentService = new ComponentService(token, `${clinicDb}_db` );
 
+  // Fetch Components
+  const fetchComponents = async (reset = false) => {
+    setIsLoading(true);
+    try {
+      const response = await componentService.getAllComponents(searchTerm, reset ? 0 : offset);
+      setStocks((prev) => (reset ? response.components : [...prev, ...response.components]));
+      setOffset(response.offset);
+    } catch (error) {
+      console.error('Failed to fetch components:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch components on mount and when searchTerm changes
   useEffect(() => {
-    const fetchStocks = async () => {
-      try {
-        const components = await componentService.getAllComponents();
-        setStocks(components);
-      } catch (error) {
-        console.error('Failed to fetch components:', error);
-      }
-    };
-
-    fetchStocks();
-  }, [componentService]);
+    fetchComponents(true); // Reset on initial load
+  }, [searchTerm]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
+    setOffset(0); // Reset offset when searching
   };
-
-  const filteredStocks = stocks.filter((stock) =>
-    stock.componentName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const handleRowClick = (stock: Component) => {
     dispatch(openDrawer({ type: 'Stock', data: { stock } }));
@@ -57,26 +63,26 @@ export const StocksTable: React.FC = () => {
     dispatch(openDrawer({ type: 'Stock', data: { stock: null } }));
   };
 
+  const handleLoadMore = () => {
+    fetchComponents();
+  };
+
   return (
     <>
       <TableContainer component={Paper}>
+        {/* Search & Add Section */}
         <Box display="flex" justifyContent="space-between" alignItems="center" padding="10px">
-          {/* Search Box */}
-          <TextField
-            label="Search"
-            variant="outlined"
-            size="small"
+          <SearchInput
             value={searchTerm}
             onChange={handleSearchChange}
-            style={{ marginLeft: '20px' }}
           />
 
-          {/* Add Stock Button */}
           <Button startIcon={<AddIcon />} variant="outlined" color="primary" onClick={handleAddStockClick}>
             Add New
           </Button>
         </Box>
 
+        {/* Table */}
         <Table aria-label="stocks table">
           {!isSmallScreen && (
             <TableHead>
@@ -89,7 +95,7 @@ export const StocksTable: React.FC = () => {
             </TableHead>
           )}
           <TableBody>
-            {filteredStocks.map((stock) => (
+            {stocks.map((stock) => (
               <TableRow
                 key={stock.id}
                 hover
@@ -111,9 +117,28 @@ export const StocksTable: React.FC = () => {
                 )}
               </TableRow>
             ))}
+            {stocks.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  No components available.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Load More Button */}
+      <Box display="flex" justifyContent="center" margin="20px 0">
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleLoadMore}
+          disabled={isLoading}
+        >
+          {isLoading ? 'Loading...' : 'Load More'}
+        </Button>
+      </Box>
     </>
   );
 };
