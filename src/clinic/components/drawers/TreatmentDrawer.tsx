@@ -14,12 +14,13 @@ import TreatmentService from '../../../shared/services/treatmentService';
 import ComponentService from '../../../shared/services/componentService';
 import CategoryInput from '../CategoryInput';
 import ComponentInput from '../ComponentInput';
+import { selectTopDrawer } from '../../../shared/utils/selectors';
 
 const TreatmentDrawer: React.FC = () => {
   const dispatch = useDispatch();
 
   // Get treatmentId from the Redux slice
-  const { drawerData } = useSelector((state: any) => state.drawer);
+  const { drawerData } = useSelector(selectTopDrawer);
   const treatmentId = drawerData?.treatmentId || null;
 
   const token = useSelector((state: any) => state.auth.subaccountToken);

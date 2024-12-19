@@ -11,12 +11,13 @@ import { Close as CloseIcon } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { closeDrawer } from '../../../shared/services/drawerSlice';
 import { Component } from '../../types/componentType';
+import { selectTopDrawer } from '../../../shared/utils/selectors';
 
 const StockDrawer: React.FC = () => {
   const dispatch = useDispatch();
 
   // Access drawerData from Redux
-  const { drawerData } = useSelector((state: any) => state.drawer);
+  const { drawerData } = useSelector(selectTopDrawer);
   const stock = drawerData?.stock || null; // Get stock from drawerData
 
   const [newStock, setNewStock] = useState<Partial<Component>>({

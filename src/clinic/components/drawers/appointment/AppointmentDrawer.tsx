@@ -20,9 +20,15 @@ import {
 import styles from '../../../styles/drawers/AppointmentDrawer.module.scss'; // Import CSS file for styling
 import { RootState } from '../../../../shared/services/store';
 
+// Selector for the topmost drawer
+const selectDrawerData = (state: RootState) => {
+  const topDrawer = state.drawer.drawers[state.drawer.drawers.length - 1];
+  return topDrawer?.data || null;
+};
+
 const AppointmentDrawer: React.FC = () => {
   const dispatch = useAppDispatch();
-  const drawerData = useAppSelector((state: any) => state.drawer.drawerData);
+  const drawerData = useAppSelector(selectDrawerData);
   const appointmentId: string | null = drawerData?.appointment?.appointmentId || null;
 
   const appointmentDetails = useAppSelector(
@@ -73,7 +79,15 @@ const AppointmentDrawer: React.FC = () => {
   ];
 
   return (
-    <Drawer anchor="right" open={true} onClose={handleClose}>
+    <Drawer
+       anchor="right" 
+       open={true} 
+       onClose={handleClose}
+       ModalProps={{
+        BackdropProps: {
+          style: { backgroundColor: 'transparent' },
+        },}}
+       >
       <Box className={styles.drawerContainer}>
         {!appointmentId ? (
           <InitialAppointmentTab />

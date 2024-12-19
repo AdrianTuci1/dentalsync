@@ -1,13 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Avatar, Box } from '@mui/material';
-import UserDrawer from './UserDrawer';
+import { useDispatch } from 'react-redux';
+import { openDrawer } from '../../shared/services/drawerSlice';
 
 const UserCard: React.FC = () => {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const dispatch = useDispatch();
 
-  // Toggle Drawer Open/Close
-  const toggleDrawer = (open: boolean) => () => {
-    setDrawerOpen(open);
+  // Handle Drawer Open
+  const handleOpenDrawer = () => {
+    dispatch(
+      openDrawer({
+        type: 'User',
+        data: {},
+      })
+    );
   };
 
   return (
@@ -21,17 +27,14 @@ const UserCard: React.FC = () => {
           padding: '8px',
           borderRadius: '8px',
         }}
-        onClick={toggleDrawer(true)}
+        onClick={handleOpenDrawer}
       >
         <Avatar
           src="/user.png"
           alt="User Avatar"
-          sx={{ width: 30, height: 30, marginRight: '0px', }}
+          sx={{ width: 30, height: 30, marginRight: '0px' }}
         />
       </Box>
-
-      {/* Drawer Component */}
-      <UserDrawer open={drawerOpen} onClose={toggleDrawer(false)} />
     </>
   );
 };

@@ -1,29 +1,28 @@
-// store/drawerSlice.js
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-const initialState = {
-  isOpen: false,
-  drawerType: null, // To differentiate drawers
-  drawerData: {},   // Dynamic data for the drawer
+interface DrawerState {
+  drawers: Array<{ type: string; data: any }>; // Stack of open drawers
+}
+
+const initialState: DrawerState = {
+  drawers: [], // Each entry represents a drawer
 };
 
 const drawerSlice = createSlice({
   name: 'drawer',
   initialState,
   reducers: {
-    openDrawer: (state, action) => {
-      state.isOpen = true;
-      state.drawerType = action.payload.type; // e.g., 'Appointment', 'Patient'
-      state.drawerData = action.payload.data || {}; // Any dynamic data
+    openDrawer: (state, action: PayloadAction<{ type: string; data: any }>) => {
+      state.drawers.push(action.payload); // Add a new drawer with type and data
     },
     closeDrawer: (state) => {
-      state.isOpen = false;
-      state.drawerType = null;
-      state.drawerData = {};
+      state.drawers.pop(); // Remove the topmost drawer
+    },
+    closeAllDrawers: (state) => {
+      state.drawers = []; // Clear all drawers
     },
   },
 });
 
-export const { openDrawer, closeDrawer } = drawerSlice.actions;
-
+export const { openDrawer, closeDrawer, closeAllDrawers } = drawerSlice.actions;
 export default drawerSlice.reducer;

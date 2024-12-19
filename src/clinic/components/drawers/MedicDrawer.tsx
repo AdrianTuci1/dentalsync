@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
   Drawer,
   Box,
-  Tabs,
-  Tab,
   Button,
   IconButton,
   Typography,
 } from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
+import { AccessTimeOutlined, AdminPanelSettingsOutlined, Close as CloseIcon, EditCalendar, InfoOutlined, MedicalServices } from '@mui/icons-material';
 import WorkingHoursStep from './addMedic/WorkingHoursStep';
 import DaysOffStep from './addMedic/DaysOffStep';
 import PermissionsStep from './addMedic/PermissionsStep';
@@ -24,13 +22,17 @@ import {
   ApiWorkingDayHour,
 } from '../../types/Medic';
 
+import styles from '../../styles/drawers/MedicDrawer.module.scss'
+import { selectTopDrawer } from '../../../shared/utils/selectors';
+
 const MedicDrawer: React.FC = () => {
   const dispatch = useDispatch();
 
-  const { drawerData, isOpen } = useSelector((state: any) => state.drawer);
+  const { drawerData, isOpen } = useSelector(selectTopDrawer);
   const medicId = drawerData?.medicId || null;
 
-  const [activeTab, setActiveTab] = useState(0);
+
+  const [activeTab, setActiveTab] = useState<string>('info');
   const [medicInfo, setMedicInfo] = useState<MedicInfo>({
     id: undefined,
     info: {
@@ -111,9 +113,6 @@ const MedicDrawer: React.FC = () => {
     fetchMedic();
   }, [medicId]);
 
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue);
-  };
 
   const handleChange = (field: string, value: any) => {
     setMedicInfo((prevInfo) => ({
@@ -135,34 +134,15 @@ const MedicDrawer: React.FC = () => {
     }
   };
 
-  const tabs = ['Info', 'Assigned Services', 'Working Hours', 'Days Off', 'Permissions'];
+  const tabs = [
+    { key: 'info', icon: <InfoOutlined />, component: <InfoTab info={medicInfo.info} onInfoChange={(field, value) => handleChange('info', { ...medicInfo.info, [field]: value })} /> },
+    { key: 'services', icon: <MedicalServices />, component: <TreatmentAccordion assignedTreatments={medicInfo.assignedServices.assignedTreatments} onServiceChange={(updatedServices) => handleChange('assignedServices', { assignedTreatments: updatedServices })} /> },
+    { key: 'workingHours', icon: <AccessTimeOutlined />, component: <WorkingHoursStep workingHours={medicInfo.workingHours} onWorkingHoursChange={(day, hours) => handleChange('workingHours', { ...medicInfo.workingHours, [day]: hours })} /> },
+    { key: 'daysOff', icon: <EditCalendar />, component: <DaysOffStep daysOff={medicInfo.daysOff} onDaysOffChange={(updatedDaysOff) => handleChange('daysOff', updatedDaysOff)} /> },
+    { key: 'permissions', icon: <AdminPanelSettingsOutlined />, component: <PermissionsStep permissions={medicInfo.permissions} onPermissionsChange={(updatedPermissions) => handleChange('permissions', updatedPermissions)} /> },
+  ];
+  
 
-  const getTabContent = (tabIndex: number) => {
-    switch (tabIndex) {
-      case 0:
-        return <InfoTab info={medicInfo.info} onInfoChange={(field, value) => handleChange('info', { ...medicInfo.info, [field]: value })} />;
-      case 1:
-        return (
-          <TreatmentAccordion
-            assignedTreatments={medicInfo.assignedServices.assignedTreatments}
-            onServiceChange={(updatedServices) => handleChange('assignedServices', { assignedTreatments: updatedServices })}
-          />
-        );
-      case 2:
-        return (
-          <WorkingHoursStep
-            workingHours={medicInfo.workingHours}
-            onWorkingHoursChange={(day, hours) => handleChange('workingHours', { ...medicInfo.workingHours, [day]: hours })}
-          />
-        );
-      case 3:
-        return <DaysOffStep daysOff={medicInfo.daysOff} onDaysOffChange={(updatedDaysOff) => handleChange('daysOff', updatedDaysOff)} />;
-      case 4:
-        return <PermissionsStep permissions={medicInfo.permissions} onPermissionsChange={(updatedPermissions) => handleChange('permissions', updatedPermissions)} />;
-      default:
-        return null;
-    }
-  };
 
   return (
     <Drawer anchor="right" open={isOpen} onClose={() => dispatch(closeDrawer())}>
@@ -174,11 +154,24 @@ const MedicDrawer: React.FC = () => {
           </IconButton>
         </Box>
 
-        <Tabs value={activeTab} onChange={handleTabChange} variant="fullWidth" textColor="primary">
-          {tabs.map((tab) => <Tab label={tab} key={tab} sx={{ fontSize: '0.85rem' }} />)}
-        </Tabs>
+                <div className={styles.tabRow}>
+                  {tabs.map((tab) => (
+                    <div
+                      key={tab.key}
+                      className={`${styles.tabItem} ${
+                        activeTab === tab.key ? styles.activeTabItem : ''
+                      }`}
+                      onClick={() => setActiveTab(tab.key)}
+                    >
+                      {tab.icon}
+                    </div>
+                  ))}
+                </div>
 
-        <Box sx={{ p: 2 }}>{getTabContent(activeTab)}</Box>
+
+        <Box className={styles.tabContent}>
+          {tabs.find((tab) => tab.key === activeTab)?.component}
+        </Box>
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
           <Button variant="contained" color="primary" onClick={handleSubmit}>Save</Button>

@@ -15,12 +15,13 @@ import DeleteTab from './patient/DeleteTab';
 import PatientService from '../../../shared/services/patientService';
 import { closeDrawer } from '../../../shared/services/drawerSlice';
 import styles from '../../styles/drawers/PatientDrawer.module.scss'; // Import CSS module for styling
+import { selectTopDrawer } from '../../../shared/utils/selectors';
 
 const PatientDrawer: React.FC = () => {
   const dispatch = useDispatch();
 
   // Access drawer data from Redux
-  const { drawerData } = useSelector((state: any) => state.drawer);
+  const { drawerData } = useSelector(selectTopDrawer);
   const patientId = drawerData?.patientId || null;
 
   const [activeTab, setActiveTab] = useState(0);

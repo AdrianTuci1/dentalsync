@@ -31,6 +31,7 @@ const AppointmentCard: React.FC<AppointmentCardProps> = ({ appointment }) => {
         borderTop: `1px solid #bdbdbd`,
         width: '100%',
         boxShadow: 'none',
+        cursor: 'pointer',
       }}
       onClick={() => onAppointmentClick(appointment)}
     >

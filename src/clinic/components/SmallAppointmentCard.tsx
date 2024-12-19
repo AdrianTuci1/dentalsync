@@ -1,31 +1,39 @@
 import React from "react";
 import "../styles/components/SmallAppointmentCard.scss";
 import { openDrawer } from "../../shared/services/drawerSlice";
-import { Appointment } from "../types/appointmentEvent";
 import { useDispatch } from "react-redux";
 
-interface AppointmentData {
+interface Appointment {
+  appointmentId: string;
   date: string;
   time: string;
+  medicUser: {
+    id: string;
+    name: string;
+  };
+  patientUser?:{
+    id: string;
+    name: string;
+  }
   initialTreatment: string;
-  medicUser: string;
-  patientUser: string;
-  color: string;
+  color: string; // Color received from the API response
 }
+
 
 interface SmallAppointmentCardProps {
   role: "medic" | "patient";
-  data: AppointmentData;
+  appointment: Appointment; // Pass the full appointment object
 }
 
 const SmallAppointmentCard: React.FC<SmallAppointmentCardProps> = ({
   role,
-  data,
+  appointment,
 }) => {
-  const { date, time, initialTreatment, medicUser, patientUser, color } = data;
+  const { date, time, initialTreatment, medicUser, patientUser, color } = appointment;
+
+  const dispatch = useDispatch();
 
 
-  const dispatch = useDispatch()
   // Format date to 'Mon, Nov 24'
   const formatDate = (date: string) => {
     const options: Intl.DateTimeFormatOptions = { weekday: "short", month: "short", day: "numeric" };
@@ -39,14 +47,15 @@ const SmallAppointmentCard: React.FC<SmallAppointmentCardProps> = ({
       .map((word) => word[0]?.toUpperCase())
       .join("");
 
-  const displayName = role === "medic" ? patientUser : medicUser;
+  const displayName = role === "medic" ? patientUser?.name : medicUser.name;
 
-  const handleAppointmentClick = (appointment: Appointment) => {
-    dispatch(openDrawer({ type: 'Appointment', data: { appointment: appointment } }));
+  // Handle appointment click
+  const handleAppointmentClick = () => {
+    dispatch(openDrawer({ type: "Appointment", data: { appointment } }));
   };
 
   return (
-    <div className="appointment-card" onClick={() => handleAppointmentClick}>
+    <div className="appointment-card" onClick={handleAppointmentClick}>
       <div className="card-header">
         <span className="date">{formatDate(date)}</span>
         <span className="time">{time}</span>

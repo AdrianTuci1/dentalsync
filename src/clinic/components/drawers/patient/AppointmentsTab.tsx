@@ -12,7 +12,11 @@ interface Appointment {
     id: string;
     name: string;
   };
-  initialTreatment: string | null;
+  patientUser?:{
+    id: string;
+    name: string;
+  }
+  initialTreatment: string;
   color: string; // Color received from the API response
 }
 
@@ -71,17 +75,10 @@ const AppointmentsTab: React.FC<AppointmentsTabProps> = ({ patientId }) => {
         <Box>
           {appointments.map((appointment) => (
             <SmallAppointmentCard
-              key={appointment.appointmentId}
-              role="patient" // Assuming the role is "patient" for this tab
-              data={{
-                date: appointment.date,
-                time: appointment.time,
-                initialTreatment: appointment.initialTreatment || "No Treatment",
-                medicUser: appointment.medicUser.name,
-                patientUser: "N/A", // For this tab, patient details are not displayed
-                color: appointment.color, // Use color from the API response
-              }}
-            />
+            key={appointment.appointmentId}
+            role="medic"
+            appointment={appointment} // Pass the whole appointment object
+          />
           ))}
         </Box>
       ) : (

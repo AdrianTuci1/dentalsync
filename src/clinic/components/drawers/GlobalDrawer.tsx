@@ -1,20 +1,24 @@
+import React from 'react';
 import { Drawer, Box } from '@mui/material';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { closeDrawer } from '../../../shared/services/drawerSlice';
 import MedicDrawer from './MedicDrawer';
 import TreatmentDrawer from './TreatmentDrawer';
 import StockDrawer from './StockDrawer';
 import PatientDrawer from './PatientDrawer';
 import AppointmentDrawer from './appointment/AppointmentDrawer';
+import UserDrawer from './UserDrawer';
 
-const DrawerContent = ({ type }: { type: string; data: any }) => {
+const DrawerContent: React.FC<{ type: string }> = ({ type }) => {
   switch (type) {
+    case 'User':
+      return <UserDrawer />;
     case 'Patient':
       return <PatientDrawer />;
     case 'Stock':
       return <StockDrawer />;
     case 'Medic':
-      return <MedicDrawer/>;
+      return <MedicDrawer />;
     case 'Treatment':
       return <TreatmentDrawer />;
     case 'Appointment':
@@ -24,18 +28,34 @@ const DrawerContent = ({ type }: { type: string; data: any }) => {
   }
 };
 
-const GlobalDrawer = () => {
+const GlobalDrawer: React.FC = () => {
   const dispatch = useDispatch();
-  const { isOpen, drawerType, drawerData } = useSelector((state: any) => state.drawer);
+  const { drawers } = useSelector((state: { drawer: { drawers: Array<{ type: string }> } }) => state.drawer);
 
-  const handleClose = () => dispatch(closeDrawer());
+  const handleClose = () => {
+    dispatch(closeDrawer()); // Closes the topmost drawer
+  };
 
   return (
-    <Drawer anchor="right" open={isOpen} onClose={handleClose} key={drawerType}>
-      <Box sx={{ width: 400, p: 2 }}>
-        <DrawerContent type={drawerType} data={drawerData} />
-      </Box>
-    </Drawer>
+    <>
+      {drawers.map((drawer, index) => (
+        <Drawer
+          key={index}
+          anchor="right"
+          open
+          onClose={handleClose}
+          ModalProps={{
+            BackdropProps: {
+              style: { display: index === drawers.length - 1 ? 'block' : 'none' }, // Only top drawer's backdrop is shown
+            },
+          }}
+        >
+          <Box sx={{ width: 400 }}>
+            <DrawerContent type={drawer.type} />
+          </Box>
+        </Drawer>
+      ))}
+    </>
   );
 };
 
