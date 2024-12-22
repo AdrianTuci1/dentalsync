@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Box, Switch, FormControlLabel } from "@mui/material";
 import TeethChart from "../../teeth/TeethChart";
 import { MouthViewPermanent } from "../../teeth/MouthViewPermanent";
@@ -7,6 +7,8 @@ import ToothDrawer from "../../teeth/ToothDrawer";
 import Accordion from "../../teeth/Accordion";
 import { Tooth } from "../../teeth/Tooth"; // Import the Tooth class
 import { ToothCondition } from "../../teeth/utils/toothCondition";
+import DentalHistoryService from "../../../../shared/services/dentalHistoryService";
+import { getSubdomain } from "../../../../shared/utils/getSubdomains";
 
 const DentalHistoryTab: React.FC<{ patientId: string }> = ({ patientId }) => {
   const [teethConditions, setTeethConditions] = useState<
@@ -16,9 +18,85 @@ const DentalHistoryTab: React.FC<{ patientId: string }> = ({ patientId }) => {
     Record<number, { description: string }[]>
   >({});
   const [selectedTooth, setSelectedTooth] = useState<Tooth | null>(null);
-  const [showCharts, setShowCharts] = useState<boolean>(true);
+  const [showCharts, setShowCharts] = useState<boolean>(false);
 
-  // Modify createTeeth to return a Record<number, Tooth>
+  const clinicDb = `${getSubdomain()}_db`;
+  const dentalHistoryService = new DentalHistoryService(clinicDb);
+
+  // Track initial state for change detection
+  const initialTeethConditions = useRef<Record<number, keyof typeof ToothCondition>>({});
+  const initialToothHistory = useRef<Record<number, { description: string }[]>>({});
+
+  // Check if there are unsaved changes
+  const hasChanges = () => {
+    return (
+      JSON.stringify(teethConditions) !== JSON.stringify(initialTeethConditions.current) ||
+      JSON.stringify(toothHistory) !== JSON.stringify(initialToothHistory.current)
+    );
+  };
+
+  const handleSaveChanges = async () => {
+    if (!hasChanges()) {
+      return;
+    }
+
+    try {
+      const teethUpdates = Object.keys(teethConditions).map((toothNumber) => ({
+        toothNumber: String(toothNumber),
+        condition: teethConditions[Number(toothNumber)],
+        history: toothHistory[Number(toothNumber)] || [],
+      }));
+
+      if (teethUpdates.length === 0) return;
+
+      const updatedTeeth = await dentalHistoryService.bulkPatchDentalHistory(
+        patientId,
+        teethUpdates
+      );
+      console.log("Updated Teeth:", updatedTeeth);
+
+      // Update initial state to match saved data
+      initialTeethConditions.current = { ...teethConditions };
+      initialToothHistory.current = { ...toothHistory };
+    } catch (error) {
+      console.error("Failed to save changes:", error);
+    }
+  };
+
+  // Fetch data from the service and initialize state
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await dentalHistoryService.getDentalHistory(patientId);
+        const conditions: Record<number, keyof typeof ToothCondition> = {};
+        const history: Record<number, { description: string }[]> = {};
+
+        data.forEach((tooth: any) => {
+          conditions[tooth.toothNumber] = tooth.condition;
+          history[tooth.toothNumber] = tooth.history || [];
+        });
+
+        setTeethConditions(conditions);
+        setToothHistory(history);
+
+        // Set initial state references
+        initialTeethConditions.current = conditions;
+        initialToothHistory.current = history;
+      } catch (error) {
+        console.error("Failed to fetch dental history:", error);
+      }
+    };
+
+    fetchData();
+  }, [patientId]);
+
+  // Save changes when the component unmounts
+  useEffect(() => {
+    return () => {
+      handleSaveChanges();
+    };
+  }, [teethConditions, toothHistory]);
+
   const createTeeth = (startISO: number, endISO: number): Record<number, Tooth> => {
     const teeth: Record<number, Tooth> = {};
     for (let ISO = startISO; ISO <= endISO; ISO++) {
@@ -32,7 +110,6 @@ const DentalHistoryTab: React.FC<{ patientId: string }> = ({ patientId }) => {
     return teeth;
   };
 
-  // Generate teeth as a Record<number, Tooth>
   const permanentTeeth = createTeeth(11, 48); // Permanent teeth (ISO 11-48)
   const deciduousTeeth = createTeeth(51, 85); // Deciduous teeth (ISO 51-85)
 
@@ -45,10 +122,8 @@ const DentalHistoryTab: React.FC<{ patientId: string }> = ({ patientId }) => {
     setSelectedTooth(null);
   };
 
-
   return (
     <Box sx={{ p: 1 }}>
-      {/* Toggle Switch */}
       <FormControlLabel
         control={
           <Switch
@@ -56,12 +131,11 @@ const DentalHistoryTab: React.FC<{ patientId: string }> = ({ patientId }) => {
             onChange={(e) => setShowCharts(e.target.checked)}
           />
         }
-        label={showCharts ? "Show Teeth Charts" : "Show Mouth Views"}
+        label={showCharts ? "Teeth Charts" : "Mouth View"}
       />
 
       {showCharts ? (
         <>
-          {/* Teeth Charts */}
           <Accordion title="Permanent Teeth Chart">
             <TeethChart
               teethType="permanent"
@@ -79,7 +153,6 @@ const DentalHistoryTab: React.FC<{ patientId: string }> = ({ patientId }) => {
         </>
       ) : (
         <>
-          {/* Mouth Views */}
           <Accordion title="Permanent Teeth Mouth View">
             <MouthViewPermanent teeth={permanentTeeth} onClick={handleSelectTooth} />
           </Accordion>
@@ -89,7 +162,6 @@ const DentalHistoryTab: React.FC<{ patientId: string }> = ({ patientId }) => {
         </>
       )}
 
-      {/* Tooth Drawer */}
       <ToothDrawer
         selectedTooth={selectedTooth}
         onClose={handleCloseDrawer}

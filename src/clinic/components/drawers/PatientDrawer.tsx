@@ -129,7 +129,7 @@ const PatientDrawer: React.FC = () => {
               {activeTab === 0 && (
                 <DetailsTab patientData={patientData} onInputChange={handleInputChange} onSave={handleSave} />
               )}
-              {activeTab === 1 && <DentalHistoryTab patientId={'1'} />}
+              {activeTab === 1 && <DentalHistoryTab patientId={patientData.id} />}
               {activeTab === 2 && <GalleryTab />}
               {activeTab === 3 && <AppointmentsTab patientId={patientData.id} />}
               {activeTab === 4 && <DeleteTab />}

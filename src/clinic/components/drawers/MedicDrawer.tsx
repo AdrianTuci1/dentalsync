@@ -25,6 +25,7 @@ import {
 import styles from '../../styles/drawers/MedicDrawer.module.scss'
 import { selectTopDrawer } from '../../../shared/utils/selectors';
 
+
 const MedicDrawer: React.FC = () => {
   const dispatch = useDispatch();
 
@@ -122,6 +123,7 @@ const MedicDrawer: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    console.log(medicInfo)
     try {
       if (medicInfo.id) {
         await medicService.updateMedic(medicInfo.id, medicInfo);
