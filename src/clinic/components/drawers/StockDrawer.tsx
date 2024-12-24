@@ -13,6 +13,7 @@ import { Component } from '../../types/componentType';
 import { selectTopDrawer } from '../../../shared/utils/selectors';
 import ComponentService from '../../../shared/services/componentService';
 import { getSubdomain } from '../../../shared/utils/getSubdomains';
+import { addStock, updateStock } from '../../../shared/services/stockSlice';
 
 const StockDrawer: React.FC = () => {
   const dispatch = useDispatch();
@@ -67,7 +68,7 @@ const StockDrawer: React.FC = () => {
       console.log('No changes detected. Skipping save.');
       return;
     }
-  
+
     const savedStock: Component = {
       id: newStock.id || '', // Ensure ID is present for updates
       componentName: newStock.componentName || '',
@@ -77,15 +78,17 @@ const StockDrawer: React.FC = () => {
       createdAt: newStock.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-  
+
     try {
       if (stock) {
         // Update existing stock
         await stockService.updateComponent(savedStock.id, savedStock);
+        dispatch(updateStock(savedStock)); // Dispatch update action
         console.log('Stock updated successfully:', savedStock);
       } else {
         // Create new stock
         const createdStock = await stockService.createComponent(savedStock);
+        dispatch(addStock(createdStock)); // Dispatch add action
         console.log('Stock created successfully:', createdStock);
       }
       dispatch(closeDrawer());
@@ -94,11 +97,10 @@ const StockDrawer: React.FC = () => {
       alert('Failed to save stock. Please try again.');
     }
   };
-  
 
   const handleClose = () => {
     if (stock && isModified()) {
-      handleSave(); // Auto-save only if modified
+      handleSave();
     }
     dispatch(closeDrawer());
   };

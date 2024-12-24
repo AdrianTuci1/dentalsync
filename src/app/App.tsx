@@ -10,6 +10,7 @@ function App() {
   const dispatch = useDispatch();
   const authState = useSelector((state: any) => state.auth); // Access global auth state
 
+
   // Load user data from localStorage on mount
   useEffect(() => {
     dispatch(loadUserFromLocalStorage());

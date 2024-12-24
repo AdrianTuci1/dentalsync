@@ -18,9 +18,9 @@ import ComponentService from '../../shared/services/componentService';
 import { Component } from '../types/componentType';
 import { getSubdomain } from '../../shared/utils/getSubdomains';
 import SearchInput from '../components/SearchInput';
+import { selectStocks, setStocks } from '../../shared/services/stockSlice';
 
 export const StocksTable: React.FC = () => {
-  const [stocks, setStocks] = useState<Component[]>([]);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [offset, setOffset] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -31,23 +31,33 @@ export const StocksTable: React.FC = () => {
   const dispatch = useDispatch();
   const componentService = new ComponentService(token, `${clinicDb}_db` );
 
+    // Redux stocks state
+    const stocks = useSelector(selectStocks);
+  
+
   // Fetch Components
   const fetchComponents = async (reset = false) => {
-    setIsLoading(true);
+    setIsLoading(true); // Start loading indicator
     try {
       const response = await componentService.getAllComponents(searchTerm, reset ? 0 : offset);
-      setStocks((prev) => (reset ? response.components : [...prev, ...response.components]));
-      setOffset(response.offset);
+
+      if (reset) {
+        dispatch(setStocks(response.components)); // Replace stocks in Redux
+      } else {
+        dispatch(setStocks([...stocks, ...response.components])); // Append to existing stocks
+      }
+
+      setOffset(response.offset); // Update offset for pagination
     } catch (error) {
       console.error('Failed to fetch components:', error);
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Stop loading indicator
     }
   };
 
   // Fetch components on mount and when searchTerm changes
   useEffect(() => {
-    fetchComponents(true); // Reset on initial load
+    fetchComponents(true); // Reset data when searchTerm changes
   }, [searchTerm]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +105,7 @@ export const StocksTable: React.FC = () => {
             </TableHead>
           )}
           <TableBody>
-            {stocks.map((stock) => (
+            {stocks.map((stock: Component) => (
               <TableRow
                 key={stock.id}
                 hover

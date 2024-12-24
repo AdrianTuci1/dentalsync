@@ -19,6 +19,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { openDrawer } from '../../shared/services/drawerSlice';
 import { MedicsListItem } from '../types/Medic';
 import SearchInput from '../components/SearchInput';
+import { getSubdomain } from '../../shared/utils/getSubdomains';
 
 const Medics: React.FC = () => {
   const [medics, setMedics] = useState<MedicsListItem[]>([]);
@@ -26,10 +27,11 @@ const Medics: React.FC = () => {
   const isSmallScreen = useMediaQuery('(max-width:800px)');
   const token = useSelector((state: any) => state.auth.subaccountToken);
   const dispatch = useDispatch();
+  const db = getSubdomain() + '_db'
 
   // Fetch medics from API
   useEffect(() => {
-    const medicService = new MedicService(token, 'demo_db');
+    const medicService = new MedicService(token, db);
     const fetchMedics = async () => {
       try {
         const medicsData = await medicService.getMedicsWithWorkingDays();

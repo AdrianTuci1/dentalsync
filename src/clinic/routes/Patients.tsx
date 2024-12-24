@@ -16,8 +16,7 @@ const Patients: React.FC = () => {
 
     const db = getSubdomain()
 
-    const patientService = new PatientService(token, `${db}_db`); // Replace with actual token/db
-
+    const patientService = new PatientService(token, `${db}_db`);
     // Fetch patients from API
     const fetchPatients = async (reset = false) => {
         setIsLoading(true);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Table,
   TableBody,
@@ -15,60 +15,47 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import { useDispatch, useSelector } from 'react-redux';
 import { openDrawer } from '../../shared/services/drawerSlice';
-import TreatmentService from '../../shared/services/treatmentService';
 import { Treatment } from '../types/treatmentType';
 import generateInitials from '../../shared/utils/generateInitials';
 import SearchInput from '../components/SearchInput';
+import { fetchTreatments, selectTreatments, selectLoading} from '../../shared/services/treatmentSlice';
+import { AppDispatch } from '../../shared/services/store';
 
 export const Treatments: React.FC = () => {
-  const [treatments, setTreatments] = useState<Treatment[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [offset, setOffset] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const treatments = useSelector(selectTreatments); // Select treatments from Redux
+  const loading = useSelector(selectLoading); // Select loading state
+  const isSmallScreen = useMediaQuery('(max-width:800px)'); // Responsive check
 
-  const isSmallScreen = useMediaQuery('(max-width:800px)');
-  const token = useSelector((state: any) => state.auth.subaccountToken);
-  const dispatch = useDispatch();
-  const treatmentService = new TreatmentService(token, 'demo_db'); // Replace with actual token and db
+  const [searchTerm, setSearchTerm] = useState(''); // Local state for search term
+  const [offset, setOffset] = useState(0); // Pagination offset
 
-  
-  // Fetch treatments
-  const fetchTreatments = async (reset = false) => {
-    setIsLoading(true);
-    try {
-      const response = await treatmentService.getAllTreatments(searchTerm, reset ? 0 : offset);
-      setTreatments((prev) => (reset ? response.treatments : [...prev, ...response.treatments]));
-      setOffset(response.offset); // Update offset for "Load More"
-    } catch (error) {
-      console.error('Failed to fetch treatments:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Refetch treatments when searchTerm changes
+  // Fetch treatments on mount or when searchTerm changes
   useEffect(() => {
-    fetchTreatments(true); // Reset on search term change
-  }, [searchTerm]);
+    dispatch(fetchTreatments({ searchTerm, offset: 0 }) as any); // Reset to fetch from the beginning
+    setOffset(0); // Reset offset
+  }, [dispatch, searchTerm]);
 
   // Handle search input changes
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-    setOffset(0); // Reset pagination
+    setSearchTerm(event.target.value); // Update search term
   };
 
-
-
+  // Handle adding a new treatment
   const handleAddNew = () => {
-    dispatch(openDrawer({ type: 'Treatment', data: { treatmentId: null } }));
+    dispatch(openDrawer({ type: 'Treatment', data: { treatmentId: null } })); // Open drawer for new treatment
   };
 
+  // Handle editing a treatment
   const handleRowClick = (treatmentId: string) => {
-    dispatch(openDrawer({ type: 'Treatment', data: { treatmentId } }));
+    dispatch(openDrawer({ type: 'Treatment', data: { treatmentId } })); // Open drawer for editing
   };
 
+  // Handle loading more treatments
   const handleLoadMore = () => {
-    fetchTreatments();
+    const newOffset = offset + 20; // Increment offset (assume 20 items per page)
+    setOffset(newOffset);
+    dispatch(fetchTreatments({ searchTerm, offset: newOffset }) as any); // Fetch more treatments
   };
 
   return (
@@ -76,19 +63,16 @@ export const Treatments: React.FC = () => {
       <TableContainer component={Paper}>
         {/* Action Section */}
         <Box display="flex" justifyContent="space-between" alignItems="center" padding="10px">
-          {/* Search Box */}
-          <SearchInput
-            value={searchTerm}
-            onChange={handleSearchChange}
-          />
-
+          {/* Search Input */}
+          <SearchInput value={searchTerm} onChange={handleSearchChange} />
+          {/* Add New Button */}
           <Button startIcon={<AddIcon />} variant="outlined" onClick={handleAddNew}>
             Add New
           </Button>
         </Box>
 
-        {/* Treatment Table */}
-        <Table aria-label="treatment table">
+        {/* Treatments Table */}
+        <Table aria-label="treatments table">
           {!isSmallScreen && (
             <TableHead>
               <TableRow>
@@ -100,7 +84,7 @@ export const Treatments: React.FC = () => {
             </TableHead>
           )}
           <TableBody>
-            {treatments.map((treatment) => (
+            {treatments.map((treatment: Treatment) => (
               <TableRow
                 key={treatment.id}
                 hover
@@ -152,9 +136,9 @@ export const Treatments: React.FC = () => {
           variant="contained"
           color="primary"
           onClick={handleLoadMore}
-          disabled={isLoading}
+          disabled={loading}
         >
-          {isLoading ? 'Loading...' : 'Load More'}
+          {loading ? 'Loading...' : 'Load More'}
         </Button>
       </Box>
     </>
