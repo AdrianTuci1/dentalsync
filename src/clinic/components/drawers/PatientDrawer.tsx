@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Drawer,
@@ -12,10 +12,11 @@ import DentalHistoryTab from './patient/DentalHistoryTab';
 import GalleryTab from './patient/GalleryTab';
 import AppointmentsTab from './patient/AppointmentsTab';
 import DeleteTab from './patient/DeleteTab';
-import PatientService from '../../../shared/services/patientService';
 import { closeDrawer } from '../../../shared/services/drawerSlice';
 import styles from '../../styles/drawers/PatientDrawer.module.scss'; // Import CSS module for styling
 import { selectTopDrawer } from '../../../shared/utils/selectors';
+import { createPatientUser, fetchPatientUser, updatePatientUser } from '../../../shared/services/patientUserSlice';
+import { PatientProfile } from '../../types/patient';
 
 const PatientDrawer: React.FC = () => {
   const dispatch = useDispatch();
@@ -25,63 +26,68 @@ const PatientDrawer: React.FC = () => {
   const patientId = drawerData?.patientId || null;
 
   const [activeTab, setActiveTab] = useState(0);
-  const [patientData, setPatientData] = useState<any>({});
-  const [loading, setLoading] = useState<boolean>(false);
 
-  const token = useSelector((state: any) => state.auth.subaccountToken);
+  const [patientUser, setPatientUser] = useState<any>(null);
 
-  const patientService = new PatientService(token, 'demo_db');
 
-  // Reset patient data when opening for a new patient
   useEffect(() => {
-    if (!patientId) {
-      setPatientData({});
-      setActiveTab(0);
+    if (patientId) {
+      dispatch(fetchPatientUser(patientId) as any)
+        .unwrap()
+        .then((data: PatientProfile) => setPatientUser(data))
+        .catch(console.error);
     }
-  }, [patientId]);
+  }, [dispatch, patientId]);
 
-  // Fetch patient data when opening for an existing patient
-  useEffect(() => {
-    const fetchPatientData = async () => {
-      if (patientId && token) {
-        setLoading(true);
-        try {
-          const data = await patientService.getPatient(patientId);
-          setPatientData(data);
-        } catch (error) {
-          console.error('Failed to fetch patient data:', error);
-        } finally {
-          setLoading(false);
-        }
+  const handleInputChange = (field: string, value: any) => {
+    setPatientUser((prev: any) => ({
+      ...prev,
+      [field.includes('.') ? field.split('.')[0] : field]: field.includes('.')
+        ? {
+            ...prev[field.split('.')[0]],
+            [field.split('.')[1]]: value,
+          }
+        : value,
+    }));
+  };
+
+  const handleSave = () => {
+    if (patientUser) {
+      // Prepare payload to match the server's expectations
+      const sanitizedPayload = {
+        email: patientUser.email,
+        name: patientUser.name,
+        age: parseInt(patientUser.patientProfile?.age, 10) || 0, // Ensure age is a number
+        gender: patientUser.patientProfile?.gender || 'Other',
+        phone: patientUser.patientProfile?.phone || '',
+        address: patientUser.patientProfile?.address || '',
+        labels: Array.isArray(patientUser.patientProfile?.labels)
+          ? patientUser.patientProfile.labels
+          : [],
+        notes: patientUser.patientProfile?.notes || '',
+      };
+  
+      if (patientId) {
+        // Update existing patient
+        dispatch(updatePatientUser({ id: patientId, data: sanitizedPayload }) as any)
+          .unwrap()
+          .then(() => console.log('Patient updated successfully'))
+          .catch(console.error);
+      } else {
+        // Create new patient
+        dispatch(createPatientUser(sanitizedPayload) as any)
+          .unwrap()
+          .then(() => console.log('Patient created successfully'))
+          .catch(console.error);
       }
-    };
-
-    fetchPatientData();
-  }, [patientId, token]);
-
+    }
+  };
   const handleTabChange = (index: number) => {
     setActiveTab(index);
   };
 
-  const handleInputChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement | { value: unknown }>) => {
-    setPatientData((prevData: any) => ({ ...prevData, [field]: event.target.value }));
-  };
-
   const handleClose = () => {
     dispatch(closeDrawer());
-  };
-
-  const handleSave = async () => {
-    try {
-      if (patientId) {
-        await patientService.updatePatient(patientId, patientData);
-      } else {
-        await patientService.createPatient(patientData);
-      }
-      dispatch(closeDrawer());
-    } catch (error) {
-      console.error('Failed to save patient data:', error);
-    }
   };
 
   const tabs = [
@@ -98,7 +104,7 @@ const PatientDrawer: React.FC = () => {
         {/* Header */}
         <Box className={styles.header}>
           <Typography variant="subtitle1" className={styles.title}>
-            {patientData.name || 'Add Patient'}
+            {patientUser?.id ? `${patientUser.name}` : 'Add Patient'}
           </Typography>
           <IconButton edge="end" onClick={handleClose} aria-label="close">
             <CloseIcon />
@@ -106,35 +112,35 @@ const PatientDrawer: React.FC = () => {
         </Box>
 
         {/* Tabs */}
-        <Box className={styles.tabRow}>
-          {tabs.map((tab, index) => (
-            <div
-              key={index}
-              className={`${styles.tabItem} ${
-                activeTab === index ? styles.activeTabItem : ''
-              }`}
-              onClick={() => handleTabChange(index)}
-            >
-              {tab.icon}
-            </div>
-          ))}
-        </Box>
+        {patientUser?.id && (
+          <Box className={styles.tabRow}>
+            {tabs.map((tab, index) => (
+              <div
+                key={index}
+                className={`${styles.tabItem} ${
+                  activeTab === index ? styles.activeTabItem : ''
+                }`}
+                onClick={() => handleTabChange(index)}
+              >
+                {tab.icon}
+              </div>
+            ))}
+          </Box>
+        )}
+
 
         {/* Tab Content */}
         <Box className={styles.tabContent}>
-          {loading ? (
-            <Typography>Loading...</Typography>
-          ) : (
-            <>
-              {activeTab === 0 && (
-                <DetailsTab patientData={patientData} onInputChange={handleInputChange} onSave={handleSave} />
-              )}
-              {activeTab === 1 && <DentalHistoryTab patientId={patientData.id} />}
-              {activeTab === 2 && <GalleryTab />}
-              {activeTab === 3 && <AppointmentsTab patientId={patientData.id} />}
-              {activeTab === 4 && <DeleteTab />}
-            </>
-          )}
+          {activeTab === 0 &&           
+          <DetailsTab
+            patientUser={patientUser}
+            onInputChange={handleInputChange}
+            onSave={handleSave}
+          />}
+          {activeTab === 1 && <DentalHistoryTab patientId={patientId} />}
+          {activeTab === 2 && <GalleryTab />}
+          {activeTab === 3 && <AppointmentsTab patientId={patientId} />}
+          {activeTab === 4 && <DeleteTab />}
         </Box>
       </Box>
     </Drawer>

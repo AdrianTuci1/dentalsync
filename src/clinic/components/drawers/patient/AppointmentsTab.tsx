@@ -68,7 +68,7 @@ const AppointmentsTab: React.FC<AppointmentsTabProps> = ({ patientId }) => {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box>
       {loading && offset === 0 ? (
         <CircularProgress />
       ) : appointments.length > 0 ? (

@@ -8,26 +8,23 @@ import {
   Button,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Patient } from '../../../types/patient';
 
 interface DetailsTabProps {
-  patientData: Patient;
-  onInputChange: (field: string, isSelect?: boolean) => (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
-  onSave: () => void;
+  patientUser: any; // The patient data passed as a prop
+  onInputChange: (field: string, value: any) => void; // Callback to handle input changes
+  onSave: () => void; // Callback to save changes
 }
 
-const DetailsTab: React.FC<DetailsTabProps> = ({ patientData, onInputChange, onSave }) => {
+const DetailsTab: React.FC<DetailsTabProps> = ({ patientUser, onInputChange, onSave }) => {
   const [expanded, setExpanded] = React.useState<{ [key: string]: boolean }>({
     info: true,
-    contact: true,
-    others: true,
+    others: false,
   });
 
   const handleAccordionChange = (panel: string) => (_: React.SyntheticEvent, isExpanded: boolean) => {
     setExpanded({ ...expanded, [panel]: isExpanded });
   };
 
-  // Define inline style types
   const inputStyles: React.CSSProperties = {
     width: '100%',
     padding: '8px',
@@ -57,8 +54,8 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ patientData, onInputChange, onS
             Name
             <input
               type="text"
-              value={patientData?.name || ''}
-              onChange={onInputChange('name')}
+              value={patientUser?.name || ''}
+              onChange={(e) => onInputChange('name', e.target.value)}
               style={inputStyles}
             />
           </label>
@@ -66,16 +63,16 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ patientData, onInputChange, onS
             Age
             <input
               type="number"
-              value={patientData?.patientProfile?.age || ''}
-              onChange={onInputChange('patientProfile.age')}
+              value={patientUser?.patientProfile?.age || ''}
+              onChange={(e) => onInputChange('patientProfile.age', e.target.value)}
               style={inputStyles}
             />
           </label>
           <label style={labelStyles}>
             Gender
             <select
-              value={patientData?.patientProfile?.gender || ''}
-              onChange={onInputChange('patientProfile.gender')}
+              value={patientUser?.patientProfile?.gender || ''}
+              onChange={(e) => onInputChange('patientProfile.gender', e.target.value)}
               style={inputStyles}
             >
               <option value="Male">Male</option>
@@ -87,26 +84,17 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ patientData, onInputChange, onS
             Avatar URL
             <input
               type="text"
-              value={patientData?.photo || ''}
-              onChange={onInputChange('photo')}
+              value={patientUser?.photo || ''}
+              onChange={(e) => onInputChange('photo', e.target.value)}
               style={inputStyles}
             />
           </label>
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Contact Accordion */}
-      <Accordion expanded={expanded.contact} onChange={handleAccordionChange('contact')}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>Contact</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
           <label style={labelStyles}>
             Phone
             <input
               type="text"
-              value={patientData?.patientProfile?.phone || ''}
-              onChange={onInputChange('patientProfile.phone')}
+              value={patientUser?.patientProfile?.phone || ''}
+              onChange={(e) => onInputChange('patientProfile.phone', e.target.value)}
               style={inputStyles}
             />
           </label>
@@ -114,8 +102,8 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ patientData, onInputChange, onS
             Email
             <input
               type="email"
-              value={patientData?.email || ''}
-              onChange={onInputChange('email')}
+              value={patientUser?.email || ''}
+              onChange={(e) => onInputChange('email', e.target.value)}
               style={inputStyles}
             />
           </label>
@@ -123,8 +111,8 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ patientData, onInputChange, onS
             Address
             <input
               type="text"
-              value={patientData?.patientProfile?.address || ''}
-              onChange={onInputChange('patientProfile.address')}
+              value={patientUser?.patientProfile?.address || ''}
+              onChange={(e) => onInputChange('patientProfile.address', e.target.value)}
               style={inputStyles}
             />
           </label>
@@ -141,8 +129,14 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ patientData, onInputChange, onS
             Labels
             <input
               type="text"
-              value={patientData?.patientProfile?.labels?.join(', ') || ''}
-              onChange={onInputChange('patientProfile.labels')}
+              value={Array.isArray(patientUser?.patientProfile?.labels) ? 
+                    patientUser.patientProfile.labels.join(', ') : ''}
+              onChange={(e) =>
+                onInputChange(
+                  'patientProfile.labels',
+                  e.target.value.split(',').map((label) => label.trim()) // Convert string back to array
+                )
+              }
               style={inputStyles}
               placeholder="Separate labels with commas"
             />
@@ -150,8 +144,8 @@ const DetailsTab: React.FC<DetailsTabProps> = ({ patientData, onInputChange, onS
           <label style={labelStyles}>
             Notes
             <textarea
-              value={patientData?.patientProfile?.notes || ''}
-              onChange={onInputChange('patientProfile.notes')}
+              value={patientUser?.patientProfile?.notes || ''}
+              onChange={(e) => onInputChange('patientProfile.notes', e.target.value)}
               rows={4}
               style={{ ...inputStyles, resize: 'vertical' }}
             />

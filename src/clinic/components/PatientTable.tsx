@@ -13,6 +13,7 @@ import {
     Button,
     useMediaQuery,
 } from '@mui/material';
+import { ArrowBack, ArrowForward } from '@mui/icons-material';
 
 interface Patient {
     id: string;
@@ -36,6 +37,7 @@ interface Appointment {
     date: string;
     time: string;
     treatmentName: string;
+    color?: string;
 }
 
 interface PatientTableProps {
@@ -74,11 +76,15 @@ const PatientTable: React.FC<PatientTableProps> = ({ patients, onPatientClick, o
                                     >
                                         <TableCell>
                                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                <Avatar alt={patient.name} src={patient.photo} sx={{ marginRight: 2 }} />
+                                                <Avatar
+                                                    alt={patient.name}
+                                                    src={patient.photo || '/default-avatar.png'}
+                                                    sx={{ marginRight: 2 }}
+                                                />
                                                 <Box>
                                                     <Typography variant="body1">{patient.name}</Typography>
                                                     <Typography variant="body2" color="textSecondary">
-                                                        {patient.patientProfile.gender} - {patient.patientProfile.age} years old
+                                                        {patient?.patientProfile?.gender || 'Unknown'} - {patient?.patientProfile?.age || 'N/A'} years old
                                                     </Typography>
                                                 </Box>
                                             </Box>
@@ -86,28 +92,103 @@ const PatientTable: React.FC<PatientTableProps> = ({ patients, onPatientClick, o
                                         {!isSmallScreen && (
                                             <>
                                                 <TableCell>
-                                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
-                                                        {previousAppointment && (
-                                                            <Box sx={{ display: 'flex', flexDirection: 'column', marginRight: 2 }}>
-                                                                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                                                                    {previousAppointment.treatmentName}
-                                                                </Typography>
-                                                                <Typography variant="caption">{previousAppointment.date}</Typography>
+
+                                                    <Box
+                                                        sx={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        width: '100%',
+                                                        padding: '10px',
+                                                        }}
+                                                    >
+                                                        {/* Previous Appointment */}
+                                                        <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 2,
+                                                        }}
+                                                        >
+                                                        <Box
+                                                            sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            width: 40,
+                                                            height: 40,
+                                                            backgroundColor: previousAppointment?.color || '#ccc',
+                                                            borderRadius: '4px',
+                                                            }}
+                                                        >
+                                                            {previousAppointment ? (
+                                                            <ArrowBack sx={{ color: '#fff' }} />
+                                                            ) : (
+                                                            <Typography variant="caption" sx={{ color: '#fff', textAlign: 'center' }}>
+                                                                -
+                                                            </Typography>
+                                                            )}
+                                                        </Box>
+                                                        {previousAppointment ? (
+                                                            <Box sx={{ maxWidth: '120px', wordWrap: 'break-word' }}> {/* Limit width and allow wrapping */}
+                                                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                                                {previousAppointment.treatmentName}
+                                                            </Typography>
+                                                            <Typography variant="caption">{previousAppointment.date}</Typography>
                                                             </Box>
+                                                        ) : (
+                                                            <Typography variant="caption" sx={{ color: '#888' }}>
+                                                            No previous appointment
+                                                            </Typography>
                                                         )}
-                                                        {nextAppointment && (
-                                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                                                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                                                                    {nextAppointment.treatmentName}
-                                                                </Typography>
-                                                                <Typography variant="caption">{nextAppointment.date}</Typography>
+                                                        </Box>
+
+                                                        {/* Next Appointment */}
+                                                        <Box
+                                                        sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 2,
+                                                        }}
+                                                        >
+                                                        {nextAppointment ? (
+                                                            <Box sx={{ width: '120px', wordWrap: 'break-word', textAlign:'right' }}> {/* Limit width and allow wrapping */}
+                                                            <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                                                                {nextAppointment.treatmentName}
+                                                            </Typography>
+                                                            <Typography variant="caption">{nextAppointment.date}</Typography>
                                                             </Box>
+                                                        ) : (
+                                                            <Typography variant="caption" sx={{ color: '#888' }}>
+                                                            No following appointment
+                                                            </Typography>
                                                         )}
+                                                        <Box
+                                                            sx={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            width: 40,
+                                                            height: 40,
+                                                            backgroundColor: nextAppointment?.color || '#ccc',
+                                                            borderRadius: '4px',
+                                                            }}
+                                                        >
+                                                            {nextAppointment ? (
+                                                            <ArrowForward sx={{ color: '#fff' }} />
+                                                            ) : (
+                                                            <Typography variant="caption" sx={{ color: '#fff', textAlign: 'center' }}>
+                                                                -
+                                                            </Typography>
+                                                            )}
+                                                        </Box>
+                                                        </Box>
                                                     </Box>
+
                                                 </TableCell>
-                                                <TableCell>{patient.patientProfile.paymentsMade.join(', ')}</TableCell>
+                                                <TableCell>{patient?.patientProfile?.paymentsMade?.join(', ') || 'N/A'}</TableCell>
                                                 <TableCell>
-                                                    {patient.patientProfile.labels.map((label, index) => (
+                                                    {patient?.patientProfile?.labels?.map((label, index) => (
                                                         <Box
                                                             key={index}
                                                             sx={{
@@ -120,7 +201,7 @@ const PatientTable: React.FC<PatientTableProps> = ({ patients, onPatientClick, o
                                                         >
                                                             {label}
                                                         </Box>
-                                                    ))}
+                                                    )) || 'N/A'}
                                                 </TableCell>
                                             </>
                                         )}
