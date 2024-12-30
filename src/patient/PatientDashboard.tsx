@@ -1,38 +1,48 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import DesktopNavbar from './components/DesktopNavbar';
-import MobileNavbar from './components/MobileNavbar';
+import HomePage from './routes/HomePage';
 import TreatmentsPage from './routes/TreatmentsPage';
+import MedicsPage from './routes/MedicsPage';
 import ConsultationsPage from './routes/ConsultationsPage';
 import SettingsPage from './routes/SettingsPage';
 import './styles/dashboard.scss';
-import ChatList from './routes/ChatList';
 
 function PatientDashboard() {
-  const [activePage, setActivePage] = useState<string>('treatments');
+  const authState = useSelector((state: any) => state.auth); // Access auth state
+  const user = authState?.clinicUser; // Get authenticated user
+  const [availablePages, setAvailablePages] = useState<string[]>(['home', 'treatments', 'medics']);
+  const location = useLocation();
 
-  const renderPage = () => {
-    switch (activePage) {
-      case 'treatments':
-        return <TreatmentsPage />;
-      case 'consultations':
-        return <ConsultationsPage />;
-      case 'profile':
-        return <ChatList />;
-      case 'settings':
-        return <SettingsPage />;
-      default:
-        return <TreatmentsPage />;
+  useEffect(() => {
+    if (user?.role === 'patient') {
+      setAvailablePages((prev) => [...prev, 'consultations', 'settings']);
     }
-  };
+  }, [user]);
+
+  const activePage = location.pathname.replace('/', '');
 
   return (
     <div className="dashboard">
+      {/* Navbar */}
       <div className="dash__nav">
-      <DesktopNavbar onSelect={setActivePage} activePage={activePage} />
-      <MobileNavbar onSelect={setActivePage} activePage={activePage} />
+        <DesktopNavbar activePage={activePage} availablePages={availablePages} />
       </div>
+
+      {/* Content under Navbar */}
       <main className="dashboard__content">
-        {renderPage()}
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/treatments" element={<TreatmentsPage />} />
+          <Route path="/medics" element={<MedicsPage />} />
+          {user?.role === 'patient' && (
+            <Route path="/consultations" element={<ConsultationsPage />} />
+          )}
+          <Route path="/settings" element={<SettingsPage />} />
+          {/* Redirect to home for unmatched routes */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </main>
     </div>
   );

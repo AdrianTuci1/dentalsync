@@ -1,60 +1,93 @@
 import React from 'react';
-import { Home, Assignment, Person, ChatBubble, Event, ExitToApp } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
+import {
+  ExitToApp,
+  AccountCircle,
+  Dashboard,
+  Phone,
+  HomeOutlined,
+  EventNoteOutlined,
+  SettingsOutlined,
+  HistoryOutlined,
+  MedicalServicesOutlined,
+} from '@mui/icons-material';
 import '../styles/Navbar.scss';
-import { Typography } from '@mui/material';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../shared/services/authSlice';
-import { openRequestAppointment } from '../../shared/services/requestSlice';
 
 interface DesktopNavbarProps {
-  onSelect: (section: string) => void;
   activePage: string;
+  availablePages: string[];
 }
 
-const DesktopNavbar: React.FC<DesktopNavbarProps> = ({ onSelect, activePage }) => {
-  const dispatch = useDispatch()
+const DesktopNavbar: React.FC<DesktopNavbarProps> = ({ activePage, availablePages }) => {
+  const dispatch = useDispatch();
+  const authState = useSelector((state: any) => state.auth); // Access auth state
+  const isAuthenticated = !!authState.clinicUser;
+  const isClinicUser = authState?.clinicUser?.role === 'clinic'; // Check if the user is clinic
 
   const handleLogOut = () => {
     dispatch(logout());
   };
 
+  const navItems = [
+    { section: 'home', icon: <HomeOutlined />, path: '/home' },
+    { section: 'treatments', icon: <EventNoteOutlined />, path: '/treatments' },
+    { section: 'medics', icon: <MedicalServicesOutlined />, path: '/medics' },
+    { section: 'consultations', icon: <HistoryOutlined />, path: '/consultations' },
+    { section: 'settings', icon: <SettingsOutlined />, path: '/settings' },
+  ];
 
   return (
     <nav className="navbar desktop-navbar">
+      {/* Left-side Navigation */}
       <ul className="navbar-left">
-        <li onClick={() => onSelect('treatments')}>
-          <div className={`icon-box ${activePage === 'treatments' ? 'selected' : ''}`}>
-            <Home />
-          </div>
-        </li>
-        <li onClick={() => onSelect('consultations')}>
-          <div className={`icon-box ${activePage === 'consultations' ? 'selected' : ''}`}>
-            <Assignment />
-          </div>
-        </li>
-        <li onClick={() => onSelect('profile')}>
-          <div className={`icon-box ${activePage === 'profile' ? 'selected' : ''}`}>
-            <ChatBubble />
-          </div>
-        </li>
-        <li onClick={() => onSelect('settings')}>
-          <div className={`icon-box ${activePage === 'settings' ? 'selected' : ''}`}>
-            <Person />
-          </div>
-        </li>
+        {navItems
+          .filter((item) => availablePages.includes(item.section))
+          .map(({ section, icon, path }) => (
+            <li key={section}>
+              <Link to={path} className="nav-link">
+                <div className={`icon-box ${activePage === section ? 'selected' : ''}`}>
+                  {icon}
+                </div>
+              </Link>
+            </li>
+          ))}
       </ul>
+
+      {/* Right-side Navigation */}
       <ul className="navbar-right">
-        <li onClick={() => dispatch(openRequestAppointment())}>
-                      <div className="icon-box">
-                          <Event />
-                          <Typography>Request Appointment</Typography>
-                      </div>
-                  </li>
-          <li onClick={() => handleLogOut()}>
+        {isClinicUser ? (
+          <li>
+            <Link to="/dashboard" className="nav-link">
+              <div className={`icon-box ${activePage === 'dashboard' ? 'selected' : ''}`}>
+                <Dashboard />
+              </div>
+            </Link>
+          </li>
+        ) : (
+          <li>
+            <div className="icon-box">
+              <Phone />
+            </div>
+          </li>
+        )}
+        {!isAuthenticated && (
+          <li>
+            <Link to="/login" className="nav-link">
+              <div className="icon-box">
+                <AccountCircle />
+              </div>
+            </Link>
+          </li>
+        )}
+        {isAuthenticated && (
+          <li onClick={handleLogOut}>
             <div className="icon-box">
               <ExitToApp />
             </div>
           </li>
+        )}
       </ul>
     </nav>
   );

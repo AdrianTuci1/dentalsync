@@ -1,107 +1,13 @@
 .outline{
   width: 100%;
-  height: 100vh;
+  padding-block-start: 60px;
 }
 // pentru padding content
 .treatments-page {
     display: flex;
     flex-direction: column;
-    position: relative; 
     overflow: auto;
     outline: 2px solid;
-    height: 100vh;
+    height: 100%;
   }
   
-
-  .treatment-list {
-    display: flex;
-    flex-direction: column;
-    padding-bottom: 30px;
-    padding: 20px;
-
-    .clinic-info, .previous-treatment, .treatment-categories {
-      margin-bottom: 20px;
-    }
-  
-    .previous-treatment {
-      background: #f9f9f9;
-      padding: 10px;
-      border-radius: 8px;
-    }
-  
-    .treatment-categories h3 {
-      margin-bottom: 10px;
-    }
-  }
-
-  @media (min-width:1024px){
-  .grid{
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    height: fit-content;
-    margin-bottom: 20px;
-    padding-inline: 100px;
-  }
-  .sections{
-    width: 100%;
-  }
-
-  .availability{
-    min-width: 320px;
-  }
-  }
-  
-  .appointment-section{
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    }
-
-  .sections{
-    display: flex;
-    flex-direction: column;
-    gap: 50px;
-  }
-
-@media (min-width: 1024px){
-  .last-section{
-    display: flex;
-    flex-direction: column;
-    padding-inline: 200px;
-  }
-  }
-
-@media(max-width: 1024px) {
-  .availability{
-    margin-block: 30px;
-  }
-
-  .sections{
-    gap: 20px;
-  }
-}
-
-    // For mobile: show bottom navbar and hide top navbar
-    @media (min-width: 1024px) {
-        .outline{
-          max-height: 100vh;
-        }
-        .treatments-page{
-            padding-block-start: 60px;
-            height: 100vh;
-        }
-    }
-
-
-
-    // For mobile: show bottom navbar and hide top navbar
-    @media (max-width: 1023px) {
-      .outline{
-        max-height: 100vh;
-      }
-      .treatments-page{
-        padding-block-end: 60px;
-      }
-    }

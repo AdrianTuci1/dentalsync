@@ -1,0 +1,26 @@
+.treatment-list{
+    margin-inline: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+}
+
+.grid{
+    display: flex;
+    padding: 15px;
+    width: 100%;
+    gap: 50px;
+    align-items: center;
+    justify-content: center;
+}
+
+.description-container{
+    padding: 15px;
+    margin-inline:100px ;
+}
+
+.availability{
+    height: 100%;
+}
+
