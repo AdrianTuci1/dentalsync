@@ -14,6 +14,7 @@ import {
 import '../styles/Navbar.scss';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../shared/services/authSlice';
+import { useMediaQuery } from '@mui/material';
 
 interface DesktopNavbarProps {
   activePage: string;
@@ -26,13 +27,16 @@ const DesktopNavbar: React.FC<DesktopNavbarProps> = ({ activePage, availablePage
   const isAuthenticated = !!authState.clinicUser;
   const isClinicUser = authState?.clinicUser?.role === 'clinic'; // Check if the user is clinic
 
+  const isSmallScreen = useMediaQuery('(max-width: 1024px)');
+
   const handleLogOut = () => {
     dispatch(logout());
   };
 
   const navItems = [
-    { section: 'home', icon: <HomeOutlined />, path: '/home' },
+    { section: 'home', icon: <HomeOutlined />, path: '/' },
     { section: 'treatments', icon: <EventNoteOutlined />, path: '/treatments' },
+    ...(isSmallScreen ? [{ section: 'dashboard', icon: <Dashboard />, path: '/dashboard' }] : []),
     { section: 'medics', icon: <MedicalServicesOutlined />, path: '/medics' },
     { section: 'consultations', icon: <HistoryOutlined />, path: '/consultations' },
     { section: 'settings', icon: <SettingsOutlined />, path: '/settings' },
@@ -54,6 +58,7 @@ const DesktopNavbar: React.FC<DesktopNavbarProps> = ({ activePage, availablePage
             </li>
           ))}
       </ul>
+      
 
       {/* Right-side Navigation */}
       <ul className="navbar-right">
@@ -89,6 +94,17 @@ const DesktopNavbar: React.FC<DesktopNavbarProps> = ({ activePage, availablePage
           </li>
         )}
       </ul>
+
+            {/* Login link for unauthenticated users on small screens */}
+            {isSmallScreen && !isAuthenticated && (
+        <div className="login-section">
+          <ul><li><div className="icon-box">
+          <Link to="/login" className="nav-link">
+              <AccountCircle />
+          </Link>
+          </div></li></ul>
+        </div>
+      )}
     </nav>
   );
 };

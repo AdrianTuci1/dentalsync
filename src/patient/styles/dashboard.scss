@@ -28,23 +28,5 @@
     overflow: hidden;
   }
 
-  // For desktop: show top navbar and hide bottom navbar
-  @media (min-width: 1024px) {
-    .desktop-navbar {
-      display: flex;
-    }
-    .mobile-navbar {
-      display: none;
-    }
-  }
 
-  // For mobile: show bottom navbar and hide top navbar
-  @media (max-width: 1023px) {
-    .desktop-navbar {
-      display: none;
-    }
-    .mobile-navbar {
-      display: flex;
-    }
-  }
 }

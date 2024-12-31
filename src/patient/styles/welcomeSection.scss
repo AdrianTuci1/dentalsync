@@ -72,6 +72,9 @@
   
       .clinic-info {
         text-align: left;
+        display: flex;
+        flex-direction: row;
+        gap: 15px;
   
         h3 {
           font-size: 1.2rem;
@@ -109,4 +112,13 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  .loc-info{
+    padding: 5px;
+    border-radius: 5px;
+
+    &:hover{
+      cursor: pointer;
+      scale:1.05;
+    }
+  }
 }

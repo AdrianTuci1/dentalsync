@@ -1,6 +1,10 @@
 .navbar {
   width: 100%;
-  justify-content: center;
+  justify-content: space-between;
+
+  @media(max-width:'1024px'){
+    padding: 25px;
+  }
   ul {
     display: flex;
     justify-content: center;
@@ -43,30 +47,21 @@
     color: inherit; /* Ensures it inherits the color from the parent element */
   }
 
-  &.desktop-navbar {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 10px;
-    background-color: #f5f5f5;
-    border-bottom: 1px solid #ddd;
+  .navbar-left{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
   }
 
-  &.mobile-navbar {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 10px;
-    background-color: #f5f5f5;
-    border-top: 1px solid #ddd;
+  @media (max-width: 1024px) {
+    .navbar-right{
+    display: none;
+    }
   }
+
 
   @media (min-width: 1024px) {
-    &.desktop-navbar {
+    .desktop-navbar {
       display: flex;
       flex-direction: row;
       justify-content: space-between;
@@ -75,9 +70,6 @@
       ul {
         padding-inline: 25px;
       }
-    }
-    &.mobile-navbar {
-      display: none;
     }
   }
 }

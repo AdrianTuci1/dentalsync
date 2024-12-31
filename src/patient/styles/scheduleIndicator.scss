@@ -1,0 +1,25 @@
+.schedule-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+  
+    .open {
+      background-color: #28a745; // Green
+    }
+  
+    .closed {
+      background-color: #dc3545; // Red
+    }
+  
+    .status-text {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #333;
+    }
+  }

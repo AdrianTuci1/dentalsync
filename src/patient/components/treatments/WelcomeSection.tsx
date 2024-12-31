@@ -3,6 +3,7 @@ import FmdGoodIcon from '@mui/icons-material/FmdGood';
 import LocationMap from './LocationMap';
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import ScheduleIndicator from '../ScheduleIndicator';
 
 const WelcomeSection: React.FC = () => {
   const authState = useSelector((state: any) => state.auth); // Access authentication state
@@ -16,7 +17,7 @@ const WelcomeSection: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [temperature, setTemperature] = useState<string>('');
 
-  const greeting = "Welcome to our clinic!";
+  const greeting = "welcome back!";
 
   // Update time every second
   useEffect(() => {
@@ -48,15 +49,18 @@ const WelcomeSection: React.FC = () => {
         <div className="header">
           <img src="/logoclinic.png" alt="Clinic Logo" className="clinic-logo" />
           <div className="clinic-info">
+            <ScheduleIndicator />
+            <div className="info-detail">
             <h3>{clinicName}</h3>
             <p>{city}</p>
+            </div>
           </div>
           <div className="empty"></div>
         </div>
         <div className="content">
           <p className="date">{currentDate}</p>
           {user ? (
-            <h2 className="greeting">Hi {user}, {greeting}!</h2>
+            <h2 className="greeting">Hi {user}, {greeting}</h2>
           ) : (
             <h2 className="greeting">{currentTime}, {temperature}</h2>
           )}

@@ -18,10 +18,12 @@ function PatientDashboard() {
   useEffect(() => {
     if (user?.role === 'patient') {
       setAvailablePages((prev) => [...prev, 'consultations', 'settings']);
+    } else if (user?.role === 'clinic') {
+      setAvailablePages((prev) => [...prev, 'dashboard', 'settings']);
     }
   }, [user]);
 
-  const activePage = location.pathname.replace('/', '');
+  const activePage = location.pathname.replace('/', '') || 'home';
 
   return (
     <div className="dashboard">
@@ -40,6 +42,9 @@ function PatientDashboard() {
             <Route path="/consultations" element={<ConsultationsPage />} />
           )}
           <Route path="/settings" element={<SettingsPage />} />
+          {user?.role === 'clinic' && (
+            <Route path="/dashboard" element={<div>Clinic Dashboard</div>} />
+          )}
           {/* Redirect to home for unmatched routes */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
