@@ -27,7 +27,6 @@ const TreatmentAccordion: React.FC<TreatmentAccordionProps> = ({
 
   const handleFieldChange = (field: keyof AppointmentTreatment, value: any) => {
     const updatedTreatment = { ...treatment, [field]: value };
-    console.log("After handleFieldChange:", updatedTreatment);
     onEdit(updatedTreatment);
   };
 
@@ -51,7 +50,6 @@ const TreatmentAccordion: React.FC<TreatmentAccordionProps> = ({
       treatmentId,
       treatmentName
     };
-    console.log('Handle treatment select:', treatmentName, treatmentId);
     onEdit(updatedTreatment);
 
     setSearchQuery(treatmentName);

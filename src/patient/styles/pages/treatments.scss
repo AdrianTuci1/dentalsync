@@ -3,11 +3,11 @@
     flex-direction: row;
     gap: 20px;
     width: 100%;
-    margin: 70px 200px 50px 150px;
-  
+    margin: 70px 200px 10px 150px;
+
     @media (max-width: 1024px) {
       flex-direction: column;
-      margin-inline: 20px;
+      margin-inline: 0px;
     }
   
     .navigation-menu {
@@ -52,6 +52,8 @@
   
       @media (max-width: 1024px) {
         display: flex;
+        position: fixed;
+        margin-inline: 10px;
       }
   
       .chip {
@@ -72,6 +74,7 @@
       flex-direction: column;
       gap: 30px;
       padding-inline-start: 280px;
+      padding-top: 20px;
 
       @media (max-width: 1024px) {
         margin: 20px ;

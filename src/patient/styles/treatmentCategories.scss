@@ -1,44 +1,43 @@
 .treatment-categories {
-    h3 {
-      font-size: 1.5rem;
-      margin-bottom: 1.5rem;
-      text-align: center;
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); // Two columns
+    gap: 16px; // Spacing between boxes
+  }
+
+  .category-box {
+    width: 200px;
+    height: 200px;
+    position: relative;
+    padding: 16px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 100px;
+    cursor: pointer;
+
+    &:hover {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
-  
-    .categories-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 200px);
-      gap: 20px;
-      justify-content: center;
-      align-items: center;
+
+    .category-name {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      max-width: calc(100% - 75px); // Ensures the name fits within the box
+      font-size: 20px;
+      font-weight: bold;
+      color: #333;
+      word-wrap: break-word;
     }
-  
-    .category-box {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      width: 200px;
-      height: 200px;
-      border-radius: 16px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      cursor: pointer;
-      transition: transform 0.2s;
-  
-      &:hover {
-        transform: scale(1.05);
-      }
-  
-      .category-name {
-        font-size: 1.2rem;
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 10px;
-      }
-  
-      .arrow-icon {
-        font-size: 1.5rem;
-        color: #757575;
-      }
+
+    .arrow-icon {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      font-size: 20px;
+      color: #333;
     }
   }
+}

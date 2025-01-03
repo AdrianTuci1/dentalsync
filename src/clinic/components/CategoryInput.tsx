@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Box, Paper, List, ListItem, IconButton, Typography } from '@mui/material';
-import { Add, Remove, Close } from '@mui/icons-material';
+import { Close } from '@mui/icons-material';
 import CategoryService from '../../shared/services/categoryService';
 
 interface CategoryInputProps {
@@ -9,94 +9,54 @@ interface CategoryInputProps {
   clinicDbName: string;
 }
 
-interface Category {
-  id: string;
-  name: string;
-}
-
 const CategoryInput: React.FC<CategoryInputProps> = ({ value, onChange, clinicDbName }) => {
-  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
-  const [pendingCategory, setPendingCategory] = useState<string>(value);
+  const [filteredCategories, setFilteredCategories] = useState<string[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const categoryService = new CategoryService(clinicDbName);
 
-  useEffect(() => {
-    setPendingCategory(value);
-  }, [value]);
-
-  const fetchCategories = async () => {
+  const fetchFilteredCategories = async (search: string) => {
+    setLoading(true);
     try {
-      const data = await categoryService.getCategories();
-      setFilteredCategories(data.categories); // Assuming each category object has 'id' and 'name'
-      setIsDropdownOpen(true);
+      const categories = await categoryService.getFilteredCategories(search);
+      setFilteredCategories(categories);
     } catch (error) {
-      console.error('Failed to fetch categories:', error);
+      console.error('Failed to fetch filtered categories:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleCategoryInput = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = event.target.value;
-    setPendingCategory(inputValue);
     onChange(inputValue);
-    setIsDropdownOpen(true);
 
     if (inputValue) {
-      const filtered = filteredCategories.filter((cat) =>
-        cat.name.toLowerCase().includes(inputValue.toLowerCase())
-      );
-      setFilteredCategories(filtered);
+      fetchFilteredCategories(inputValue); // Fetch categories based on the input
+      setIsDropdownOpen(true);
     } else {
-      fetchCategories();
+      setFilteredCategories([]);
+      setIsDropdownOpen(false);
     }
   };
 
-  const handleCategorySelect = (categoryName: string) => {
-    onChange(categoryName);
-    setPendingCategory(categoryName);
+  const handleCategorySelect = (category: string) => {
+    onChange(category);
     setIsDropdownOpen(false);
-  };
-
-  const handleCategoryRemove = async (categoryId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    try {
-      await categoryService.deleteCategory(categoryId);
-      setFilteredCategories((prevCategories) => prevCategories.filter((cat) => cat.id !== categoryId));
-    } catch (error) {
-      console.error('Error removing category:', error);
-    }
-  };
-
-  const handleAddCategory = async () => {
-    if (pendingCategory && !filteredCategories.some((cat) => cat.name === pendingCategory)) {
-      try {
-        const newCategory = await categoryService.createCategory(pendingCategory);
-        setFilteredCategories((prevCategories) => [...prevCategories, newCategory]);
-        setPendingCategory('');
-        onChange(pendingCategory);
-        setIsDropdownOpen(false);
-      } catch (error) {
-        console.error('Error adding category:', error);
-      }
-    }
-  };
-
-  const clearCategoryInput = () => {
-    setPendingCategory('');
-    onChange('');
-    setIsDropdownOpen(false);
-    fetchCategories();
   };
 
   const handleInputFocus = () => {
-    fetchCategories();
+    if (value) {
+      fetchFilteredCategories(value);
+    }
     setIsDropdownOpen(true);
   };
 
   const handleClickOutside = (event: MouseEvent) => {
     if (
-      inputRef.current && 
+      inputRef.current &&
       dropdownRef.current &&
       !inputRef.current.contains(event.target as Node) &&
       !dropdownRef.current.contains(event.target as Node)
@@ -122,10 +82,10 @@ const CategoryInput: React.FC<CategoryInputProps> = ({ value, onChange, clinicDb
         <input
           ref={inputRef}
           type="text"
-          value={pendingCategory}
-          onChange={handleCategoryInput}
+          value={value}
+          onChange={handleInputChange}
           onFocus={handleInputFocus}
-          placeholder="Select or add a category"
+          placeholder="Search or select a category"
           style={{
             width: '100%',
             padding: '8px',
@@ -133,9 +93,9 @@ const CategoryInput: React.FC<CategoryInputProps> = ({ value, onChange, clinicDb
             borderRadius: '4px',
           }}
         />
-        {pendingCategory && (
+        {value && (
           <IconButton
-            onClick={clearCategoryInput}
+            onClick={() => onChange('')}
             style={{
               position: 'absolute',
               right: '10px',
@@ -164,35 +124,24 @@ const CategoryInput: React.FC<CategoryInputProps> = ({ value, onChange, clinicDb
           }}
         >
           <List>
-            {filteredCategories.map((cat) => (
-              <ListItem
-                key={cat.id}
-                onClick={() => handleCategorySelect(cat.name)}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  cursor: 'pointer',
-                }}
-              >
-                <Typography>{cat.name}</Typography>
-                <IconButton
-                  onClick={(e) => handleCategoryRemove(cat.id, e)}
-                  style={{ color: 'red' }}
+            {loading ? (
+              <Typography align="center" padding="8px">
+                Loading...
+              </Typography>
+            ) : filteredCategories.length > 0 ? (
+              filteredCategories.map((cat) => (
+                <ListItem
+                  key={cat}
+                  onClick={() => handleCategorySelect(cat)}
+                  style={{ cursor: 'pointer' }}
                 >
-                  <Remove />
-                </IconButton>
-              </ListItem>
-            ))}
-            {!filteredCategories.some((cat) => cat.name === pendingCategory) && pendingCategory && (
-              <ListItem 
-                onClick={handleAddCategory} 
-                style={{ cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}
-              >
-                <Typography color="primary">Add "{pendingCategory}"</Typography>
-                <IconButton style={{ color: 'blue' }}>
-                  <Add />
-                </IconButton>
-              </ListItem>
+                  {cat}
+                </ListItem>
+              ))
+            ) : (
+              <Typography align="center" padding="8px">
+                No categories found
+              </Typography>
             )}
           </List>
         </Paper>

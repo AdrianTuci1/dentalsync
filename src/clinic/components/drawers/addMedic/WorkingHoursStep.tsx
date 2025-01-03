@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, FormControlLabel, Switch, TextField, Typography } from '@mui/material';
+import { Box, FormControlLabel, Switch, Typography } from '@mui/material';
 
 interface WorkingHoursStepProps {
   workingHours: { [key: string]: string };
@@ -14,7 +14,7 @@ const WorkingHoursStep: React.FC<WorkingHoursStepProps> = ({ workingHours, onWor
     { label: 'Thursday', key: 'Thu' },
     { label: 'Friday', key: 'Fri' },
     { label: 'Saturday', key: 'Sat' },
-    { label: 'Sunday', key: 'Sun' }
+    { label: 'Sunday', key: 'Sun' },
   ];
 
   const parseTimeRange = (timeRange: string) => {
@@ -26,19 +26,18 @@ const WorkingHoursStep: React.FC<WorkingHoursStepProps> = ({ workingHours, onWor
 
   const handleToggleDay = (dayKey: string) => {
     if (workingHours[dayKey]) {
-      // Day is currently enabled, so disable it by removing it from workingHours
-      onWorkingHoursChange(dayKey, ''); // Send empty string to remove from parent
+      onWorkingHoursChange(dayKey, ''); // Disable the day
     } else {
-      // Day is currently disabled, so enable it with default hours
-      onWorkingHoursChange(dayKey, '9:00-17:00');
+      onWorkingHoursChange(dayKey, '09:00-17:00'); // Enable with default hours
     }
   };
 
   const handleTimeChange = (dayKey: string, type: 'start' | 'end', timeValue: string) => {
-    const currentRange = parseTimeRange(workingHours[dayKey] || '9:00-17:00');
-    const newRange = type === 'start'
-      ? formatTimeRange(timeValue, currentRange.endTime)
-      : formatTimeRange(currentRange.startTime, timeValue);
+    const currentRange = parseTimeRange(workingHours[dayKey] || '09:00-17:00');
+    const newRange =
+      type === 'start'
+        ? formatTimeRange(timeValue, currentRange.endTime)
+        : formatTimeRange(currentRange.startTime, timeValue);
 
     onWorkingHoursChange(dayKey, newRange);
   };
@@ -47,11 +46,13 @@ const WorkingHoursStep: React.FC<WorkingHoursStepProps> = ({ workingHours, onWor
     <Box>
       {daysOfWeek.map(({ label, key }) => {
         const isEnabled = !!workingHours[key];
-        const { startTime, endTime } = isEnabled ? parseTimeRange(workingHours[key]) : { startTime: '', endTime: '' };
+        const { startTime, endTime } = isEnabled
+          ? parseTimeRange(workingHours[key])
+          : { startTime: '', endTime: '' };
 
         return (
           <Box key={key} sx={{ mb: 2 }}>
-            {/* Day Switch */}
+            {/* Day Toggle */}
             <FormControlLabel
               control={
                 <Switch
@@ -65,42 +66,37 @@ const WorkingHoursStep: React.FC<WorkingHoursStepProps> = ({ workingHours, onWor
             {/* Time Inputs */}
             {isEnabled ? (
               <Box display="flex" alignItems="center" ml={4} mt={1}>
-                <TextField
-                  label="Start Time"
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => handleTimeChange(key, 'start', e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                  inputProps={{ step: 300 }} // 5 minutes
-                  sx={{
-                    width: '90px',
-                    mr: 2,
-                    '& .MuiInputBase-input': {
-                      padding: '6px 8px',
-                    },
-                    '& .MuiInputLabel-root': {
-                      fontSize: '12px',
-                    },
-                  }}
-                />
-                <Typography variant="body2" sx={{ lineHeight: '40px', mr: 2 }}>to</Typography>
-                <TextField
-                  label="End Time"
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => handleTimeChange(key, 'end', e.target.value)}
-                  InputLabelProps={{ shrink: true }}
-                  inputProps={{ step: 300 }} // 5 minutes
-                  sx={{
-                    width: '90px',
-                    '& .MuiInputBase-input': {
-                      padding: '6px 8px',
-                    },
-                    '& .MuiInputLabel-root': {
-                      fontSize: '12px',
-                    },
-                  }}
-                />
+                <label style={{ marginRight: '8px' }}>
+                  Start Time:
+                  <input
+                    type="time"
+                    value={startTime}
+                    onChange={(e) => handleTimeChange(key, 'start', e.target.value)}
+                    style={{
+                      marginLeft: '8px',
+                      marginRight: '16px',
+                      padding: '4px',
+                      width: '100px',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                    }}
+                  />
+                </label>
+                <label>
+                  End Time:
+                  <input
+                    type="time"
+                    value={endTime}
+                    onChange={(e) => handleTimeChange(key, 'end', e.target.value)}
+                    style={{
+                      marginLeft: '8px',
+                      padding: '4px',
+                      width: '100px',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px',
+                    }}
+                  />
+                </label>
               </Box>
             ) : (
               <Typography variant="body2" color="textSecondary" ml={4}>

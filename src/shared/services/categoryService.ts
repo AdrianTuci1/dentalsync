@@ -1,73 +1,60 @@
 class CategoryService {
-    private baseUrl: string;
-    private clinicDb: string;
-  
-    constructor(clinicDb: string) {
-      this.baseUrl = import.meta.env.VITE_SERVER; // Set this in your .env file
-      this.clinicDb = clinicDb;
+  private baseUrl: string;
+  private clinicDb: string;
+
+  constructor(clinicDb: string) {
+    this.baseUrl = import.meta.env.VITE_SERVER; // Server URL from .env file
+    this.clinicDb = clinicDb;
+  }
+
+  // Fetch all unique categories
+  async getAllCategories(): Promise<string[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/categories`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Clinic-Db': this.clinicDb, // Pass clinicDb to the backend
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error fetching categories: ${response.statusText}`);
+      }
+
+      const categories = await response.json();
+      return categories;
+    } catch (error) {
+      console.error('Error in getAllCategories:', error);
+      throw error;
     }
-  
-    // Get all categories
-    async getCategories() {
-      try {
-        const response = await fetch(`${this.baseUrl}/api/category`, {
+  }
+
+  // Fetch filtered categories based on search query
+  async getFilteredCategories(search: string): Promise<string[]> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/api/categories/look?search=${encodeURIComponent(search)}`,
+        {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'x-clinic-db': this.clinicDb,
+            'X-Clinic-Db': this.clinicDb, // Pass clinicDb to the backend
           },
-        });
-        if (!response.ok) {
-          throw new Error(`Error fetching categories: ${response.statusText}`);
         }
-        return response.json();
-      } catch (error) {
-        console.error('Error in getCategories:', error);
-        throw error;
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error fetching filtered categories: ${response.statusText}`);
       }
-    }
-  
-    // Create a new category
-    async createCategory(name: string) {
-      try {
-        const response = await fetch(`${this.baseUrl}/api/category`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-clinic-db': this.clinicDb,
-          },
-          body: JSON.stringify({ name }),
-        });
-        if (!response.ok) {
-          throw new Error(`Error creating category: ${response.statusText}`);
-        }
-        return response.json();
-      } catch (error) {
-        console.error('Error in createCategory:', error);
-        throw error;
-      }
-    }
-  
-    // Delete a category by ID
-    async deleteCategory(categoryId: string) {
-      try {
-        const response = await fetch(`${this.baseUrl}/api/category/${categoryId}`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-clinic-db': this.clinicDb,
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`Error deleting category: ${response.statusText}`);
-        }
-        return response.json();
-      } catch (error) {
-        console.error('Error in deleteCategory:', error);
-        throw error;
-      }
+
+      const filteredCategories = await response.json();
+      return filteredCategories;
+    } catch (error) {
+      console.error('Error in getFilteredCategories:', error);
+      throw error;
     }
   }
-  
-  export default CategoryService;
-  
+}
+
+export default CategoryService;

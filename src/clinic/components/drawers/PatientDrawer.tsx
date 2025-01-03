@@ -81,6 +81,7 @@ const PatientDrawer: React.FC = () => {
           .catch(console.error);
       }
     }
+    console.log(patientUser)
   };
   const handleTabChange = (index: number) => {
     setActiveTab(index);

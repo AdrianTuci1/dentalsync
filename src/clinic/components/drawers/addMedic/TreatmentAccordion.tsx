@@ -1,108 +1,95 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
-    Checkbox,
-    FormControlLabel
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import TreatmentService from '../../../../shared/services/treatmentService';
-import { Treatment } from '../../../types/treatmentType';
-import { useSelector } from 'react-redux';
+import CategoryService from '../../../../shared/services/categoryService';
+import { getSubdomain } from '../../../../shared/utils/getSubdomains';
 
-export interface Category {
-    id: string;
-    name: string;
-    treatments: Treatment[];
+interface Treatment {
+  id: string;
+  name: string;
+  category: string | null;
+  price: number;
 }
 
 interface TreatmentAccordionProps {
-    assignedTreatments: string[];
-    onServiceChange: (updatedServices: string[]) => void;
+  assignedTreatments: string[];
+  onServiceChange: (updatedServices: string[]) => void;
 }
 
-const TreatmentAccordion: React.FC<TreatmentAccordionProps> = ({ assignedTreatments, onServiceChange }) => {
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [selectedTreatments, setSelectedTreatments] = useState<string[]>(assignedTreatments || []);
+const TreatmentAccordion: React.FC<TreatmentAccordionProps> = ({
+  assignedTreatments,
+  onServiceChange,
+}) => {
+  const [categories, setCategories] = useState<Record<string, Treatment[]>>({});
+  const [selectedTreatments, setSelectedTreatments] = useState<string[]>(assignedTreatments || []);
 
-    const token = useSelector((state: any) => state.auth.subaccountToken);
-    const treatmentService = new TreatmentService(token, 'demo_db');
+  const clinicDb = getSubdomain() + '_db'; // Replace with the actual Redux state key for the clinic DB
+  const categoryService = new CategoryService(clinicDb);
 
-    const fetchData = useCallback(async () => {
-      try {
-        let data: Category[] = await treatmentService.getTreatmentsByCategory();
-    
-        // Separate treatments without a category
-        const noCategoryTreatments: Treatment[] = [];
-        data = data.map((category) => {
-          const treatmentsWithCategory = category.treatments.filter((treatment) => {
-            if (!treatment.category) {
-              noCategoryTreatments.push(treatment);
-              return false;
-            }
-            return true;
-          });
-          return { ...category, treatments: treatmentsWithCategory };
-        });
-    
-        if (noCategoryTreatments.length > 0) {
-          data.push({
-            id: 'no_category',
-            name: 'No Category',
-            treatments: noCategoryTreatments,
-          });
-        }
-    
-        setCategories(data);
-      } catch (error) {
-        console.error('Error fetching treatments by category:', error);
+  const fetchCategories = useCallback(async () => {
+    try {
+      // Fetch categories from the backend
+      const data = await categoryService.getAllCategories();
+
+      // Validate and transform the response to match the expected type
+      if (typeof data === 'object' && data !== null) {
+        setCategories(data as any);
+      } else {
+        console.error('Invalid API response format:', data);
       }
-    }, [treatmentService]);
-    
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  }, [categoryService]);
 
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
-    useEffect(() => {
-        setSelectedTreatments(assignedTreatments || []);
-    }, [assignedTreatments]);
+  useEffect(() => {
+    setSelectedTreatments(assignedTreatments || []);
+  }, [assignedTreatments]);
 
-    const handleCheck = (treatmentName: string) => {
-        const updatedSelected = selectedTreatments.includes(treatmentName)
-            ? selectedTreatments.filter((name) => name !== treatmentName)
-            : [...selectedTreatments, treatmentName];
+  const handleCheck = (treatmentName: string) => {
+    const updatedSelected = selectedTreatments.includes(treatmentName)
+      ? selectedTreatments.filter((name) => name !== treatmentName)
+      : [...selectedTreatments, treatmentName];
 
-        setSelectedTreatments(updatedSelected);
-        onServiceChange(updatedSelected);
-    };
+    setSelectedTreatments(updatedSelected);
+    onServiceChange(updatedSelected);
+  };
 
-    return (
-        <div>
-            {categories.map((category) => (
-                <Accordion key={category.id}>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        {category.name}
-                    </AccordionSummary>
-                    <AccordionDetails>
-                        {category.treatments.map((treatment) => (
-                            <FormControlLabel
-                                key={treatment.id}
-                                control={
-                                    <Checkbox
-                                        checked={selectedTreatments.includes(treatment.name)}
-                                        onChange={() => handleCheck(treatment.name)}
-                                    />
-                                }
-                                label={treatment.name}
-                            />
-                        ))}
-                    </AccordionDetails>
-                </Accordion>
+  return (
+    <div>
+      {Object.entries(categories).map(([categoryName, treatments]) => (
+        <Accordion key={categoryName}>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            {categoryName}
+          </AccordionSummary>
+          <AccordionDetails>
+            {treatments.map((treatment) => (
+              <FormControlLabel
+                key={treatment.id}
+                control={
+                  <Checkbox
+                    checked={selectedTreatments.includes(treatment.name)}
+                    onChange={() => handleCheck(treatment.name)}
+                  />
+                }
+                label={`${treatment.name} - $${treatment.price}`}
+              />
             ))}
-        </div>
-    );
+          </AccordionDetails>
+        </Accordion>
+      ))}
+    </div>
+  );
 };
 
 export default TreatmentAccordion;

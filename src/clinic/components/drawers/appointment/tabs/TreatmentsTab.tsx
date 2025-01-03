@@ -121,7 +121,6 @@ const TreatmentsTab: React.FC = () => {
     }
   };
 
-  console.log("Recived treatments:", treatments);
 
   return (
     <div className="treatments-tab">
