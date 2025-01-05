@@ -4,8 +4,7 @@ import { format, addDays, subDays, isSameDay } from 'date-fns';
 
 interface WeekNavigatorProps {
   currentWeek: Date[];
-  selectedDate: Date;
-  onSelectDate: (date: Date) => void;
+  selectedDate: Date; // Retained for context but not used in selection logic
   getAppointmentsCount: (date: Date) => number;
   onPreviousWeek: () => void;
   onNextWeek: () => void;
@@ -13,50 +12,42 @@ interface WeekNavigatorProps {
 
 const WeekNavigator: React.FC<WeekNavigatorProps> = ({
   currentWeek,
-  selectedDate,
-  onSelectDate,
   getAppointmentsCount,
   onPreviousWeek,
   onNextWeek,
 }) => {
-  // Responsive design for larger screens
   const isLargeScreen = useMediaQuery('(min-width:800px)');
+  const now = new Date(); // Current day reference
 
-  // Helper function to render each week's day items
   const renderDays = (weekDays: Date[], isCurrentWeek: boolean) => {
     return weekDays.map((day, index) => {
       const dayInitial = format(day, 'EEE').slice(0, 2); // First two letters of the day, e.g., 'TU'
       const formattedDate = format(day, 'dd/MM'); // e.g., '10/09'
       const appointmentsCount = getAppointmentsCount(day);
-      const isSelected = isSameDay(day, selectedDate);
+      const isNow = isSameDay(day, now); // Highlight only the current day (now)
 
       return (
         <Box
           key={index}
-          onClick={() => onSelectDate(day)} // Allow selecting any day
           sx={{
             padding: '1px',
             textAlign: 'center',
-            backgroundColor: isSelected
-              ? '#1976d2' // Selected day background (blue color)
+            backgroundColor: isNow
+              ? '#1976d2' // Highlight current day (now)
               : isCurrentWeek
               ? '#fff' // Current week background
               : '#b0bec5', // Non-current week background
-            color: isSelected
-              ? '#fff' // Selected day text color
-              : '#000', // Other days text color
-            cursor: 'pointer', // Days are clickable
+            color: isNow ? '#fff' : '#000', // Text color for current day vs others
+            cursor: 'pointer',
             flexGrow: isCurrentWeek ? 1.8 : 1, // Current week slots are larger
             height: '100px',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            border: isSelected
-              ? '2px solid #1976d2' // Selected day border
-              : '1px solid #ccc', // Other days border
+            border: isNow ? '2px solid #1976d2' : '1px solid #ccc', // Border for now vs others
             '&:hover': {
-              backgroundColor: isSelected ? '#1565c0' : '#f0f0f0', // Hover effect
+              backgroundColor: isNow ? '#1565c0' : '#f0f0f0', // Hover effect for all days
             },
           }}
         >
@@ -90,8 +81,8 @@ const WeekNavigator: React.FC<WeekNavigatorProps> = ({
   return (
     <Box
       sx={{
-        display: isLargeScreen ? 'flex' : 'none', // Hide when window is less than 800px
-        justifyContent: 'center', // Center the current week
+        display: isLargeScreen ? 'flex' : 'none', // Hide for smaller screens
+        justifyContent: 'center',
         alignItems: 'center',
         width: '100%',
         margin: '0px 0',
@@ -105,10 +96,11 @@ const WeekNavigator: React.FC<WeekNavigatorProps> = ({
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: '#b0bec5', // Darker background for previous week
+          backgroundColor: '#b0bec5',
           borderRadius: '8px',
-          flexGrow: 1, // Auto-adjust width
+          flexGrow: 1,
           cursor: 'pointer',
+          height: '100%',
         }}
       >
         {renderDays(currentWeek.map((day) => subDays(day, 7)), false)}
@@ -120,7 +112,8 @@ const WeekNavigator: React.FC<WeekNavigatorProps> = ({
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          flexGrow: 2, // Larger flex for current week
+          flexGrow: 2,
+          height: '100%',
         }}
       >
         {renderDays(currentWeek, true)}
@@ -133,10 +126,11 @@ const WeekNavigator: React.FC<WeekNavigatorProps> = ({
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          backgroundColor: '#e0e0e0', // Darker background for next week
+          backgroundColor: '#e0e0e0',
           borderRadius: '8px',
-          flexGrow: 1, // Auto-adjust width
+          flexGrow: 1,
           cursor: 'pointer',
+          height: '100%',
         }}
       >
         {renderDays(currentWeek.map((day) => addDays(day, 7)), false)}

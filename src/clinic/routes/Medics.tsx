@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -53,12 +53,21 @@ const Medics: React.FC = () => {
     fetchMedics();
   }, [token]);
 
-  // Filtered medics based on search
-  const filteredMedics = medics.filter((medic) =>
-    medic.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    medic.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    medic.contact.includes(searchTerm)
-  );
+
+    // Filtered medics based on search term
+    const filteredMedics = useMemo(() => {
+      if (!searchTerm.trim()) {
+        return medics; // If searchTerm is empty, return all medics
+      }
+  
+      const lowercasedSearch = searchTerm.toLowerCase();
+      return medics.filter(
+        (medic) =>
+          medic.name.toLowerCase().includes(lowercasedSearch) ||
+          medic.specialty.toLowerCase().includes(lowercasedSearch) ||
+          medic.contact.toLowerCase().includes(lowercasedSearch)
+      );
+    }, [medics, searchTerm]);
 
   // Dispatch openDrawer action for adding or editing a medic
   const handleOpenDrawer = (medicId: string | null) => {

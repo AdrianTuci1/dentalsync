@@ -8,11 +8,8 @@ import { calculateCurrentWeek } from '../../shared/utils/calculateCurrentWeek';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../../shared/services/store';
 import { openDrawer } from '../../shared/services/drawerSlice';
-import { addWeeks, subWeeks, isSameWeek, isSameDay } from 'date-fns';
+import { addWeeks, subWeeks, isSameWeek, isSameDay, format } from 'date-fns';
 import { useWebSocket } from '../../shared/services/WebSocketContext'; // Use the WebSocket context
-
-// fix the WeekNavigator
-// fix the fetchAppointments(ln40) - startDate is off by a day
 
 
 const Appointments: React.FC = () => {
@@ -26,17 +23,23 @@ const Appointments: React.FC = () => {
   const currentUser = useSelector((state: RootState) => state.auth.subaccountUser);
 
   useEffect(() => {
+  
+    // Calculate the current week
     const weekDates = calculateCurrentWeek(selectedDate);
+  
     setCurrentWeek(weekDates);
-
-    const isCurrentWeek = isSameWeek(selectedDate, new Date(), { weekStartsOn: 1 });
-
+  
+    // Check if the selected week is the current week
+    const now = new Date();
+    const isCurrentWeek = isSameWeek(selectedDate, now, { weekStartsOn: 1 });
+  
     if (isCurrentWeek) {
-      fetchAppointments(); // Fetch current week appointments without parameters
+      fetchAppointments(); // Fetch appointments for the current week
     } else {
-      const startDate = weekDates[0].toISOString().split('T')[0];
-      const endDate = weekDates[6].toISOString().split('T')[0];
-      fetchAppointments({ startDate, endDate }); // Pass startDate and endDate for a different week
+      const startDate = format(weekDates[0], 'yyyy-MM-dd'); // Format in local time
+      const endDate = format(weekDates[6], 'yyyy-MM-dd');
+
+      fetchAppointments({ startDate, endDate }); // Fetch appointments for other weeks
     }
   }, [selectedDate, fetchAppointments]);
 
@@ -88,7 +91,6 @@ const Appointments: React.FC = () => {
       <WeekNavigator
         currentWeek={currentWeek}
         selectedDate={selectedDate}
-        onSelectDate={setSelectedDate}
         getAppointmentsCount={getAppointmentsCount}
         onPreviousWeek={handlePreviousWeek}
         onNextWeek={handleNextWeek}

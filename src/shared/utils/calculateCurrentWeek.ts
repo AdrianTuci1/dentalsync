@@ -1,19 +1,20 @@
-// utils/calculateCurrentWeek.ts
+import { startOfWeek, addDays } from 'date-fns';
+
+
 export const calculateCurrentWeek = (selectedDate: Date): Date[] => {
-  const dayOfWeek = selectedDate.getDay();
-  const startOfWeek = new Date(selectedDate);
-  const mondayOffset = (dayOfWeek === 0 ? -6 : 1) - dayOfWeek; // If it's Sunday (0), start from last Monday, otherwise calculate the offset
-  startOfWeek.setDate(selectedDate.getDate() + mondayOffset); // Set the date to Monday of the current week
-  startOfWeek.setHours(0, 0, 0, 0);
+  // Normalize the selected date to avoid time issues
+  const normalizedDate = new Date(selectedDate);
+  normalizedDate.setHours(0, 0, 0, 0);
 
-  return Array.from({ length: 7 }, (_, i) => {
-    const date = new Date(startOfWeek);
-    date.setDate(startOfWeek.getDate() + i);
-    return date;
-  });
+
+  // Get the Monday of the current week
+  const monday = startOfWeek(normalizedDate, { weekStartsOn: 1 }); // Week starts on Monday
+
+  // Generate the full week starting from Monday
+  const week = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
+
+  return week;
 };
-
-  
 
   // isDateInWeek.ts
 export const isDateInWeek = (date: Date, week: Date[]): boolean => {
