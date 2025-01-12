@@ -7,6 +7,7 @@ import ClinicDescription from '../home/ClinicDescription';
 import '../../styles/homeSection.scss'
 import Testimonials from '../home/Testimonials';
 import Gallery from '../home/Gallery';
+import DailyStats from '../DailyStats';
 
 const busyDates = [
   new Date(2024, 10, 5),
@@ -38,49 +39,57 @@ const nonWorkingDays = [
   new Date(2024, 10, 17),
 ];
 
-const TreatmentList: React.FC = () => {
+const HomeContent: React.FC = () => {
   const authState = useSelector((state: any) => state.auth);
   const isAuthenticated = !!authState?.clinicUser;
 
   return (
     <div className="treatment-list">
-        {/* Clinic Description */}
-        {!isAuthenticated && (
-        <div className="description-container">
-          <ClinicDescription />
-        </div>
+
+      {/* Clinic Description */}
+      {!isAuthenticated && (
+      <section className="description-container">
+        <ClinicDescription />
+      </section>
       )}
-      <div className="grid">
-        {/* Conditionally render Upcoming/Previous or Categories */}
+
+      {/* Upcoming/Previous or Categories */}
+      <section className="upcoming-previous">
         {isAuthenticated ? (
           <UpcomingPreviousSection />
-        ) : (
-          <TreatmentCategories />
-        )}
+        ) : ('')}
 
-        {/* Calendar */}
-        <div className="availability">
+      </section>
+      
+      <section className='treatment-categories'>
+        <TreatmentCategories />
+      </section>
+
+      {/* Calendar */}
+      <section className="availability">
+        <div className="availability-wrapper">
+        <DailyStats />
           <AvailabilityCalendar
             busyDates={busyDates}
             moderateDates={moderateDates}
             normalDates={normalDates}
             nonWorkingDays={nonWorkingDays}
           />
-        </div>
-      </div>
+          </div>
+      </section>
 
       {/* Testimonials */}
-      <div className="testimonials">
+      <section className="testimonials">
         <Testimonials />
-      </div>
+      </section>
 
       {/* Gallery */}
-      <div className="gallery">
+      <section className="gallery">
         <Gallery />
-      </div>
+      </section>
 
     </div>
   );
 };
 
-export default TreatmentList;
+export default HomeContent;

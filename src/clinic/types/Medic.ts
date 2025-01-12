@@ -53,7 +53,7 @@ export interface ApiMedicData {
   subaccount_of: number;
   photo: string;
   medicProfile: ApiMedicProfile;
-  permissions: ApiPermission[];
+  permissions?: [];
 }
 
 
@@ -85,5 +85,5 @@ export interface MedicInfo {
     [day: string]: string;
   };
   daysOff: DayOff[];
-  permissions: ApiPermission[];
+  permissions: [];
 }

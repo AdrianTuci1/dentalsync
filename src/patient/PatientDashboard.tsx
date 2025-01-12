@@ -14,6 +14,7 @@ function PatientDashboard() {
   const user = authState?.clinicUser; // Get authenticated user
   const [availablePages, setAvailablePages] = useState<string[]>(['home', 'treatments', 'medics']);
   const location = useLocation();
+  
 
   useEffect(() => {
     if (user?.role === 'patient') {

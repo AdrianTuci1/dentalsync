@@ -24,117 +24,168 @@ import {
 
 import styles from '../../styles/drawers/MedicDrawer.module.scss'
 import { selectTopDrawer } from '../../../shared/utils/selectors';
+import eventEmitter from '../../../shared/utils/events';
+import { getSubdomain } from '../../../shared/utils/getSubdomains';
 
 
-const MedicDrawer: React.FC = () => {
-  const dispatch = useDispatch();
-
-  const { drawerData, isOpen } = useSelector(selectTopDrawer);
-  const medicId = drawerData?.medicId || null;
+const transformMedicInfoToTableFormat = (medicInfo: any) => {
+  console.log('Data received by transformMedicInfoToTableFormat:', medicInfo);
 
 
-  const [activeTab, setActiveTab] = useState<string>('info');
-  const [medicInfo, setMedicInfo] = useState<MedicInfo>({
-    id: undefined,
-    info: {
-      name: '',
-      email: '',
-      employmentType: '',
-      specialization: '',
-      phone: '',
-      address: '',
-      photo: '',
-    },
-    assignedServices: {
-      assignedTreatments: [],
-    },
-    workingHours: {},
-    daysOff: [],
-    permissions: [],
+  // Explicitly type dayAbbreviations
+  const dayAbbreviations: Record<"Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun", string> = {
+    Mon: "M",
+    Tue: "T",
+    Wed: "W",
+    Thu: "T",
+    Fri: "F",
+    Sat: "S",
+    Sun: "S",
+  };
+
+  // Initialize all days in order with empty strings by default
+  const weekDaysOrder: Array<keyof typeof dayAbbreviations> = [
+    "Mon",
+    "Tue",
+    "Wed",
+    "Thu",
+    "Fri",
+    "Sat",
+    "Sun",
+  ];
+
+  const transformedWorkingDays = weekDaysOrder.map((day) => {
+    const hours = medicInfo.workingHours?.[day]?.trim();
+    return hours ? dayAbbreviations[day] : ""; // Add abbreviation if hours exist, otherwise empty string
   });
 
-  const token = useSelector((state: any) => state.auth.subaccountToken);
-  const medicService = new MedicService(token, 'demo_db');
+  const transformedData = {
+    id: medicInfo.id,
+    name: medicInfo.name || medicInfo.info?.name || "Unknown",
+    specialty: medicInfo.specialization || medicInfo.info?.specialization || "Unknown",
+    contact: medicInfo.phone || medicInfo.info?.phone || "No contact",
+    email: medicInfo.email || medicInfo.info?.email || "No email",
+    workingDays: transformedWorkingDays, // Transformed array of working days
+    type: medicInfo.info.employmentType === "full-time" ? "FULL-TIME" : "PART-TIME",
+  };
 
-  // Fetch or reset medic details on medicId change
-  useEffect(() => {
-    const fetchMedic = async () => {
-      if (medicId) {
-        try {
-          const data: ApiMedicData = await medicService.viewMedic(medicId);
-          setMedicInfo({
-            id: data.id.toString(),
-            info: {
-              name: data.name || '',
-              email: data.email || '',
-              employmentType: data.medicProfile.employmentType || '',
-              specialization: data.medicProfile.specialization || '',
-              phone: data.medicProfile.phone || '',
-              address: data.medicProfile.address || '',
-              photo: data.photo || '',
-            },
-            assignedServices: {
-              assignedTreatments: data.medicProfile.assignedTreatments || [],
-            },
-            workingHours: data.medicProfile.workingDaysHours.reduce(
-              (acc: { [day: string]: string }, curr: ApiWorkingDayHour) => {
-                acc[curr.day] = `${curr.startTime}-${curr.endTime}`;
-                return acc;
+  console.log("Transformed data:", transformedData);
+  return transformedData;
+};
+
+const MedicDrawer: React.FC = () => {
+    const dispatch = useDispatch();
+    const { drawerData, isOpen } = useSelector(selectTopDrawer);
+    const medicId = drawerData?.medicId || null;
+  
+    const [activeTab, setActiveTab] = useState<string>("info");
+    const [medicInfo, setMedicInfo] = useState<MedicInfo>({
+      id: undefined,
+      info: {
+        name: "",
+        email: "",
+        employmentType: "",
+        specialization: "",
+        phone: "",
+        address: "",
+        photo: "",
+      },
+      assignedServices: {
+        assignedTreatments: [],
+      },
+      workingHours: {},
+      daysOff: [],
+      permissions: [],
+    });
+  
+    const token = useSelector((state: any) => state.auth.subaccountToken);
+    const db = getSubdomain() + '_db'
+    const medicService = new MedicService(token, db);
+  
+    // Fetch or reset medic details on medicId change
+    useEffect(() => {
+      const fetchMedic = async () => {
+        if (medicId) {
+          try {
+            const data: ApiMedicData = await medicService.viewMedic(medicId);
+            setMedicInfo({
+              id: data.id.toString(),
+              info: {
+                name: data.name || "",
+                email: data.email || "",
+                employmentType: data.medicProfile.employmentType || "",
+                specialization: data.medicProfile.specialization || "",
+                phone: data.medicProfile.phone || "",
+                address: data.medicProfile.address || "",
+                photo: data.photo || "",
               },
-              {}
-            ),
-            daysOff: data.medicProfile.daysOff || [],
-            permissions: data.permissions || [],
-          });
-        } catch (error) {
-          console.error('Error fetching medic:', error);
+              assignedServices: {
+                assignedTreatments: data.medicProfile.assignedTreatments || [],
+              },
+              workingHours: data.medicProfile.workingDaysHours.reduce(
+                (acc: { [day: string]: string }, curr: ApiWorkingDayHour) => {
+                  acc[curr.day] = `${curr.startTime}-${curr.endTime}`;
+                  return acc;
+                },
+                {}
+              ),
+              daysOff: data.medicProfile.daysOff || [],
+              permissions: data.permissions || [],
+            });
+          } catch (error) {
+            console.error("Error fetching medic:", error);
+          }
+        } else {
+          resetMedicInfo();
         }
-      } else {
-        // Reset form for new medic
-        setMedicInfo({
-          id: undefined,
-          info: {
-            name: '',
-            email: '',
-            employmentType: '',
-            specialization: '',
-            phone: '',
-            address: '',
-            photo: '',
-          },
-          assignedServices: {
-            assignedTreatments: [],
-          },
-          workingHours: {},
-          daysOff: [],
-          permissions: [],
-        });
+      };
+  
+      fetchMedic();
+    }, [medicId]);
+  
+    const resetMedicInfo = () => {
+      setMedicInfo({
+        id: undefined,
+        info: {
+          name: "",
+          email: "",
+          employmentType: "",
+          specialization: "",
+          phone: "",
+          address: "",
+          photo: "",
+        },
+        assignedServices: {
+          assignedTreatments: [],
+        },
+        workingHours: {},
+        daysOff: [],
+        permissions: [],
+      });
+    };
+  
+    const handleChange = (field: string, value: any) => {
+      setMedicInfo((prevInfo) => ({
+        ...prevInfo,
+        [field]: value,
+      }));
+    };
+  
+    const handleSubmit = async () => {
+      try {
+        if (medicInfo.id) {
+          await medicService.updateMedic(medicInfo.id, medicInfo);
+          eventEmitter.emit("medicUpdated", transformMedicInfoToTableFormat(medicInfo));
+        } else {
+          const newMedic = await medicService.createMedic(medicInfo);
+          eventEmitter.emit("medicCreated", transformMedicInfoToTableFormat(newMedic));
+        }
+        dispatch(closeDrawer());
+      } catch (error) {
+        console.error("Error saving medic:", error);
       }
     };
-    fetchMedic();
-  }, [medicId]);
 
-
-  const handleChange = (field: string, value: any) => {
-    setMedicInfo((prevInfo) => ({
-      ...prevInfo,
-      [field]: value,
-    }));
-  };
-
-  const handleSubmit = async () => {
-    console.log(medicInfo)
-    try {
-      if (medicInfo.id) {
-        await medicService.updateMedic(medicInfo.id, medicInfo);
-      } else {
-        await medicService.createMedic(medicInfo);
-      }
-      dispatch(closeDrawer());
-    } catch (error) {
-      console.error('Error saving medic:', error);
-    }
-  };
 
   const tabs = [
     { key: 'info', icon: <InfoOutlined />, component: <InfoTab info={medicInfo.info} onInfoChange={(field, value) => handleChange('info', { ...medicInfo.info, [field]: value })} /> },

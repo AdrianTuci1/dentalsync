@@ -78,8 +78,8 @@ const TreatmentAccordion: React.FC<TreatmentAccordionProps> = ({
                 key={treatment.id}
                 control={
                   <Checkbox
-                    checked={selectedTreatments.includes(treatment.name)}
-                    onChange={() => handleCheck(treatment.name)}
+                    checked={selectedTreatments.includes(treatment.id)}
+                    onChange={() => handleCheck(treatment.id)}
                   />
                 }
                 label={`${treatment.name} - $${treatment.price}`}

@@ -22,7 +22,7 @@ const previousAppointment = {
 
 const UpcomingPreviousSection: React.FC = () => {
   return (
-    <div className="sections" style={{height:'100%', display:'flex', flexDirection:'column', gap:'50px', width:'100%', maxWidth:'400px'}}>
+    <div className="sections" style={{height:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'50px', width:'100%', paddingBlock: '50px', flexWrap:'wrap'}}>
       <div className="appointment-section" style={{gap:'10px', display:'flex', flexDirection:'column'}}>
         <h3>Upcoming</h3>
         {upcomingAppointment ? (

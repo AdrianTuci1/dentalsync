@@ -1,3 +1,5 @@
+
+
 class AuthService {
   private static instance: AuthService;
 
@@ -40,6 +42,7 @@ class AuthService {
       },
       body: JSON.stringify({ subaccountId, pin }),
     });
+
 
     const data = await response.json();
     if (response.ok) {

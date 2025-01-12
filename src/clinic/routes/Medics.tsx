@@ -20,6 +20,7 @@ import { openDrawer } from '../../shared/services/drawerSlice';
 import { MedicsListItem } from '../types/Medic';
 import SearchInput from '../components/SearchInput';
 import { getSubdomain } from '../../shared/utils/getSubdomains';
+import eventEmitter from '../../shared/utils/events';
 
 const Medics: React.FC = () => {
   const [medics, setMedics] = useState<MedicsListItem[]>([]);
@@ -29,19 +30,26 @@ const Medics: React.FC = () => {
   const dispatch = useDispatch();
   const db = getSubdomain() + '_db'
 
+
   // Fetch medics from API
   useEffect(() => {
-    const medicService = new MedicService(token, db);
     const fetchMedics = async () => {
+      if (!token || !db) {
+        console.error('Missing token or database');
+        return;
+      }
+
+      const medicService = new MedicService(token, db);
+
       try {
         const medicsData = await medicService.getMedicsWithWorkingDays();
         const formattedMedics = medicsData.map((medic: any) => ({
           id: medic.id,
           name: medic.name,
-          specialty: medic.specialization,
-          contact: medic.phone,
-          email: medic.email,
-          workingDays: medic.workingDays,
+          specialty: medic.specialization || 'Unknown',
+          contact: medic.phone || 'No contact',
+          email: medic.email || 'No email',
+          workingDays: medic.workingDays || [],
           type: medic.employmentType === 'full-time' ? 'FULL-TIME' : 'PART-TIME',
         }));
         setMedics(formattedMedics);
@@ -51,7 +59,44 @@ const Medics: React.FC = () => {
     };
 
     fetchMedics();
-  }, [token]);
+  }, [token, db]);
+
+  useEffect(() => {
+    const handleMedicUpdated = (updatedMedic: MedicsListItem) => {
+      console.log('Received medicUpdated:', updatedMedic);
+  
+      setMedics((prevMedics) => {
+        const updatedMedics = prevMedics.map((medic) => {
+          if (String(medic.id) === String(updatedMedic.id)) {
+            console.log('Updating medic:', medic, 'with:', updatedMedic);
+            return { ...updatedMedic }; // Replace with a new object
+          }
+          return medic;
+        });
+  
+        console.log('Updated medics state:', updatedMedics);
+        return updatedMedics;
+      });
+    };
+  
+    const handleMedicCreated = (newMedic: MedicsListItem) => {
+      console.log('Received medicCreated:', newMedic);
+  
+      setMedics((prevMedics) => {
+        const newMedics = [...prevMedics, { ...newMedic }];
+        console.log('Updated medics state after creation:', newMedics);
+        return newMedics;
+      });
+    };
+  
+    eventEmitter.on('medicUpdated', handleMedicUpdated);
+    eventEmitter.on('medicCreated', handleMedicCreated);
+  
+    return () => {
+      eventEmitter.off('medicUpdated', handleMedicUpdated);
+      eventEmitter.off('medicCreated', handleMedicCreated);
+    };
+  }, []);
 
 
     // Filtered medics based on search term
@@ -78,6 +123,7 @@ const Medics: React.FC = () => {
       })
     );
   };
+
 
   return (
     <>

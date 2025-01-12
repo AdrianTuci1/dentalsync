@@ -6,6 +6,7 @@ import appointmentsReducer from './appointmentsSlice';
 import stockReducer from './stockSlice';
 import treatmentReducer from './treatmentSlice';
 import patientUserReducer from './patientUserSlice'
+import permissionsReducer from "./permissionsSlice";
 import { getSubdomain } from '../utils/getSubdomains';
 
 const extraArgument = {
@@ -26,6 +27,7 @@ const store = configureStore({
     stocks: stockReducer,
     treatments: treatmentReducer,
     patientUser: patientUserReducer,
+    permissions: permissionsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -119,29 +119,11 @@ const AvailabilityCalendar: React.FC<AvailabilityCalendarProps> = ({
   };
 
   return (
-    <div className="availability-calendar">
-      {renderHeader()}
-      {renderDays()}
-      {renderCells()}
-      <div className="legend">
-        <div className="legend-item busy">
-          <div className="legend-color"></div>
-          <span className="legend-text">Busy</span>
-        </div>
-        <div className="legend-item moderate">
-          <div className="legend-color"></div>
-          <span className="legend-text">Moderate</span>
-        </div>
-        <div className="legend-item normal">
-          <div className="legend-color"></div>
-          <span className="legend-text">Normal</span>
-        </div>
-        <div className="legend-item non-working">
-          <div className="legend-color"></div>
-          <span className="legend-text">Non-Working</span>
-        </div>
+      <div className="availability-calendar">
+        {renderHeader()}
+        {renderDays()}
+        {renderCells()}
       </div>
-    </div>
   );
 };
 

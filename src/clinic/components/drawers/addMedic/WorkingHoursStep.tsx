@@ -26,9 +26,9 @@ const WorkingHoursStep: React.FC<WorkingHoursStepProps> = ({ workingHours, onWor
 
   const handleToggleDay = (dayKey: string) => {
     if (workingHours[dayKey]) {
-      onWorkingHoursChange(dayKey, ''); // Disable the day
+      onWorkingHoursChange(dayKey, ""); // Disable the day by setting an empty string
     } else {
-      onWorkingHoursChange(dayKey, '09:00-17:00'); // Enable with default hours
+      onWorkingHoursChange(dayKey, "09:00-17:00"); // Enable with default hours
     }
   };
 

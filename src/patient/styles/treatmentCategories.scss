@@ -1,8 +1,15 @@
 .treatment-categories {
+    width: 100%;
   .categories-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); // Two columns
+    display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 16px; // Spacing between boxes
+
+    @media (max-width:'1024px') {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+  }
   }
 
   .category-box {
@@ -12,32 +19,67 @@
     padding: 16px;
     border-radius: 8px;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: space-between;
     min-height: 100px;
     cursor: pointer;
 
-    &:hover {
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    @media (max-width:'1024px') {
+      width: 220px;
+      height: 220px;
+  }
+
+    
+    .identifier{
+      font-weight: 100;
+      font-size: 12px;
+      opacity: 0.7;
     }
 
     .category-name {
       position: absolute;
-      top: 32px;
+      top: 36px;
       left: 16px;
       max-width: calc(100% - 75px); // Ensures the name fits within the box
       font-size: 20px;
       font-weight: bold;
       color: #333;
       word-wrap: break-word;
+      @media (max-width:'1024px') {
+        font-size: 28px;
+    }
+    }
+
+    .arrow-box{
+      display: flex;
+      position: absolute;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      background: black;
+      bottom: 16px;
+      right: 16px;
+      outline: 2px solid;
+      width: 30px;
+      height: 30px;
     }
 
     .arrow-icon {
-      position: absolute;
       bottom: 16px;
       right: 16px;
       font-size: 20px;
-      color: #333;
+      transition: color 0.3s ease;
+      color: white;
+    }
+  }
+
+
+  .category-box:hover {
+    .arrow-box{
+    background: white;
+    }
+    .arrow-icon {
+      color: black;
     }
   }
 }

@@ -9,6 +9,9 @@ import Treatments from "./routes/Treatments";
 import { WebSocketProvider } from "../shared/services/WebSocketContext";
 import GlobalDrawer from "./components/drawers/GlobalDrawer";
 import { debounce } from "lodash";
+import { fetchAndCachePermissions, getPermissionsFromCookies } from "../shared/services/permissionHelper";
+import { useSelector } from "react-redux";
+import { getSubdomain } from "../shared/utils/getSubdomains";
 
 // Lazy load content components
 const HomePage = lazy(() => import("./routes/HomePage"));
@@ -19,7 +22,11 @@ function Dashboard() {
   const [activeTab, setActiveTab] = useState<string>("home");
   const [isSidebarVisible, setIsSidebarVisible] = useState<boolean>(window.innerWidth >= 768);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  const [permissions, setPermissions] = useState<{ id: number; name: string }[]>([]); // State to hold permissions
   const isMobile = window.innerWidth < 768;
+
+  const token = useSelector((state: any) => state.auth.subaccountToken);
+  const database = getSubdomain() + '_db'
 
   const handleResize = useCallback(() => {
     if (window.innerWidth < 768) {
@@ -35,6 +42,36 @@ function Dashboard() {
     window.addEventListener("resize", debouncedResize);
     return () => window.removeEventListener("resize", debouncedResize);
   }, [handleResize]);
+
+  // Fetch permissions on mount
+  useEffect(() => {
+    const loadPermissions = async () => {
+
+      if (!token || !database) {
+        console.error("Missing token or database for fetching permissions.");
+        return;
+      }
+
+      const cachedPermissions = getPermissionsFromCookies();
+      if (cachedPermissions.length > 0) {
+        setPermissions(cachedPermissions); // Load cached permissions
+      } else {
+        try {
+          const fetchedPermissions = await fetchAndCachePermissions(token, database);
+          setPermissions(fetchedPermissions); // Update state with fetched permissions
+        } catch (error) {
+          console.error("Error fetching permissions:", error);
+        }
+      }
+    };
+
+    loadPermissions();
+  }, []);
+
+  // Check if a user has a specific permission
+  //const hasPermission = (permissionName: string): boolean => {
+  //  return permissions.some((permission) => permission.name === permissionName);
+  //};
 
   const renderContent = () => (
     <Suspense fallback={<div>Loading...</div>}>

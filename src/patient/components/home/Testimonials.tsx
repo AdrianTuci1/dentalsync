@@ -1,6 +1,7 @@
 import React from 'react';
 import '../../styles/testimonials.scss';
-import { Avatar } from '@mui/material';
+import { FaStar } from 'react-icons/fa';
+
 
 const testimonials = [
   {
@@ -24,13 +25,19 @@ const testimonials = [
 ];
 
 const Testimonials: React.FC = () => {
+  const stars = [];
+
+  // Add the component 5 times to the array
+  for (let i = 0; i < 5; i++) {
+    stars.push(<FaStar key={i} />);
+  }
+
   return (
     <div className="customer-testimonials">
-      <h3>What Our Customers Say</h3>
+      <h3 className='testimonial-title'>{stars}</h3>
       <div className="testimonial-cards">
         {testimonials.map((testimonial, index) => (
           <div key={index} className="testimonial-card">
-            <Avatar src={testimonial.photo} alt={`${testimonial.name}'s photo`} className="customer-photo" />
             <p className="testimonial-text">{testimonial.testimonial}</p>
             <h4 className="customer-name">{testimonial.name}</h4>
           </div>
