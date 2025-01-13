@@ -63,28 +63,23 @@ const Medics: React.FC = () => {
 
   useEffect(() => {
     const handleMedicUpdated = (updatedMedic: MedicsListItem) => {
-      console.log('Received medicUpdated:', updatedMedic);
   
       setMedics((prevMedics) => {
         const updatedMedics = prevMedics.map((medic) => {
           if (String(medic.id) === String(updatedMedic.id)) {
-            console.log('Updating medic:', medic, 'with:', updatedMedic);
             return { ...updatedMedic }; // Replace with a new object
           }
           return medic;
         });
   
-        console.log('Updated medics state:', updatedMedics);
         return updatedMedics;
       });
     };
   
     const handleMedicCreated = (newMedic: MedicsListItem) => {
-      console.log('Received medicCreated:', newMedic);
   
       setMedics((prevMedics) => {
         const newMedics = [...prevMedics, { ...newMedic }];
-        console.log('Updated medics state after creation:', newMedics);
         return newMedics;
       });
     };

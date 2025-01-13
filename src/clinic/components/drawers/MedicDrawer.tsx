@@ -29,7 +29,6 @@ import { getSubdomain } from '../../../shared/utils/getSubdomains';
 
 
 const transformMedicInfoToTableFormat = (medicInfo: any) => {
-  console.log('Data received by transformMedicInfoToTableFormat:', medicInfo);
 
 
   // Explicitly type dayAbbreviations
@@ -69,7 +68,6 @@ const transformMedicInfoToTableFormat = (medicInfo: any) => {
     type: medicInfo.info.employmentType === "full-time" ? "FULL-TIME" : "PART-TIME",
   };
 
-  console.log("Transformed data:", transformedData);
   return transformedData;
 };
 
@@ -142,6 +140,8 @@ const MedicDrawer: React.FC = () => {
   
       fetchMedic();
     }, [medicId]);
+
+    
   
     const resetMedicInfo = () => {
       setMedicInfo({
@@ -176,6 +176,7 @@ const MedicDrawer: React.FC = () => {
         if (medicInfo.id) {
           await medicService.updateMedic(medicInfo.id, medicInfo);
           eventEmitter.emit("medicUpdated", transformMedicInfoToTableFormat(medicInfo));
+          console.log(medicInfo)
         } else {
           const newMedic = await medicService.createMedic(medicInfo);
           eventEmitter.emit("medicCreated", transformMedicInfoToTableFormat(newMedic));
