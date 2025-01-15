@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Drawer, Box } from '@mui/material';
+import { Drawer, Box, IconButton } from '@mui/material';
 import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import PostAddIcon from '@mui/icons-material/PostAdd';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { Close as CloseIcon } from '@mui/icons-material';
 import { useAppDispatch, useAppSelector } from '../../../../shared/services/hooks';
 import { closeDrawer } from '../../../../shared/services/drawerSlice';
 import InitialAppointmentTab from './tabs/InitialAppointmentTab';
@@ -103,8 +104,14 @@ const AppointmentDrawer: React.FC = () => {
                   onClick={() => setActiveTab(tab.key)}
                 >
                   {tab.icon}
+                  
                 </div>
               ))}
+              <div className={styles.edge}>
+          <IconButton edge="end" onClick={() => dispatch(closeDrawer())}>
+            <CloseIcon />
+          </IconButton>
+          </div>
             </div>
 
             <Box className={styles.tabContent}>

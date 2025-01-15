@@ -1,32 +1,21 @@
-@media (min-width: 1024px){
-.added-map{
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-}
-}
-
-@media (max-width: 1024px){
-  .map-part{
-    display: none;
-  }
-  .added-map{
-    display: flex;
-    flex-direction: row;
-  }
-  }
-
 .welcome-section {
+  position: relative;
+  padding-inline: 100px;
+  margin-block-start: 20px;
+
+
+  @media (max-width: 1024px) {
+    padding-inline: 20px;
+  }
+
+  /* Background Section */
+  .background-container {
     position: relative;
-    min-height: 400px;
     width: 100%;
-    color: #fff;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    height: 400px;
     overflow: hidden;
-  
+    border-radius: 25px;
+
     .background-image {
       position: absolute;
       top: 0;
@@ -34,86 +23,162 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      z-index: 0;
+      transform: rotate(-180deg);
     }
-  
+
     .overlay {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.7); // Semi-transparent overlay
-      z-index: 1;
+      background: rgba(0, 0, 0, 0.7);
     }
-  
-    .header,
-    .content,
-    .location {
+  }
+
+  /* Outline Box in Top-Left Corner */
+  .outline-box {
+    position: absolute;
+    top: 0px; /* Positioning inside the background-container */
+    left: 95px;
+    z-index: 990;
+    padding: 5px;
+
+    @media (max-width:'1024px'){
+      left: 15px;
+    }
+
+    .dropdown-box {
       position: relative;
-      z-index: 2; // Ensure content is above the background and overlay
-    }
-  
-    .header {
-      display: flex;
-      width: 100%;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-      .clinic-logo {
-        width: 40px;
-        height: 40px;
-      }
-      
-      .empty{
-        width: 40px;
-        height: 40px;
-      }
-  
-      .clinic-info {
-        text-align: left;
+      padding: 15px 20px;
+      border-radius: 25px;
+      background: #333;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+
+      .dropdown-content {
         display: flex;
-        flex-direction: row;
+        align-items: center;
         gap: 15px;
-  
-        h3 {
-          font-size: 1.2rem;
-          margin: 0;
+
+        .arrow {
+          color: white;
         }
-  
-        p {
-          font-size: 0.9rem;
-          margin: 0;
-          color: #f0f0f0;
+
+        .clinic-logo {
+          width: 50px;
+          height: 50px;
+          border-radius: 10px;
+          object-fit: cover;
+        }
+
+        .clinic-info {
+          h2 {
+            font-size: 1.6rem;
+            color: white;
+            margin: 0;
+          }
+
+          p {
+            font-size: 1rem;
+            color: #868585;
+            margin: 0;
+          }
         }
       }
     }
-  
-    .content {
-      margin-block-start: 40px;
-  
-      .date {
-        font-size: 0.9rem;
-        margin-bottom: 5px;
-      }
-  
-      .greeting {
-        font-size: 1.4rem;
-        font-weight: bold;
-        margin: 0;
+
+    .dropdown-menu {
+      position: absolute;
+      top: calc(100% + 15px);
+      left: 0;
+      width: 200px;
+      background: #333;
+      border-radius: 10px;
+      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+
+      button {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        text-align: left;
+        padding: 10px;
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        gap: 15px;
+
+        &:hover {
+          background: #444;
+        }
+
+        &.active {
+          background: #555;
+        }
+
+        .menu-logo {
+          width: 40px;
+          height: 40px;
+          border-radius: 5px;
+          object-fit: cover;
+        }
+
+        .menu-info {
+          h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: white;
+          }
+
+          p {
+            margin: 0;
+            font-size: 1rem;
+            color: #aaa;
+          }
+        }
       }
     }
   }
-  
 
-.location{
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  .loc-info{
-    padding: 5px;
-    border-radius: 5px;
+  .map-section {
+    margin-top: 20px;
+    border-radius: 25px;
+    padding-inline: 100px;
+    overflow: hidden;
+
+    @media(max-width:'1024px') {
+      padding-inline: 0;
+    }
+
+    .map-placeholder {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      background: #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
   }
 }
+
+
+
+  .rectangle {
+    --r: 30px; /* radius */
+    /* control the cutout */
+    --x: 270px;
+    --y: 110px;
+    /**/
+    transform: rotate(180deg);
+    
+    border-radius: var(--r);
+    --g:/var(--r) var(--r) no-repeat exclude 
+      radial-gradient(100% 100% at 0 0,#0000 100%,#000 calc(100% + 1px));
+    mask:
+      calc(100% - var(--x)) 100% var(--g),100% calc(100% - var(--y)) var(--g),
+      radial-gradient(100% 100% at 100% 100%,#0000 100%,#000 calc(100% + 1px))
+       calc(100% - var(--x) + var(--r)) calc(100% - var(--y) + var(--r))/
+       var(--r) var(--r) no-repeat,
+      conic-gradient(from 90deg at right var(--x) bottom var(--y),#0000 25%,#000 0);
+  }

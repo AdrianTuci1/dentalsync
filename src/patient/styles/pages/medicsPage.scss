@@ -1,116 +1,151 @@
-.outer-layer{
-    display: flex;
-    width: 100%;
-    margin: 70px 100px;
+.outer-layer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  background-color: #f9f9f9;
+  margin-top: 60px;
+  margin-inline: 150px;
 
-    @media( max-width:'1024px') {
-      margin: 70px 10px;
-    }
+  @media (max-width:'1024px') {
+    margin-inline: 0px;
+  }
 }
 
 .medics-page {
-    display: flex;
-    flex-wrap: wrap;
-    width: 100%;
-    gap: 20px;
-    margin-block-start: 20px;
-    height: 100%;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 1024px;
+}
 
-    @media( max-width:'1024px') {
-      margin: 0;
+.medic-card {
+  background: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  width: 100%;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.medic-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.medic-photo {
+  width: 120px;
+  height: 150px;
+  border-radius: 15px;
+  object-fit: cover;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.medic-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  .medic-name {
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin: 0;
+    color: #333;
+  }
+
+  .medic-speciality-chip {
+    display: inline-block;
+    font-size: 0.9rem;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 15px;
+    text-align: center;
+    margin-top: 5px;
+  }
+
+  .medic-experience,
+  .medic-likes {
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #555;
+
+    .icon {
+      color: #ff6f61;
     }
   }
-  
-  .medic-card {
-    min-width: 320px;
-    width: 100%;
-    height: 220px;
-    background-color: #f9f9f9;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+  .working-days {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 15px;
-    transition: transform 0.2s, box-shadow 0.2s;
+    gap: 5px;
 
-    @media (min-width: '1024px') {
-      max-width:320px;
-    }
-  
-    &:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    }
-  
-    .row {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-  
-      .medic-photo {
-        width: 80px;
-        height: 80px;
-        border-radius: 7px;
-        object-fit: cover;
-      }
-  
-      .medic-info {
-        flex-grow: 1;
-  
-        .medic-name {
-          font-size: 1.2rem;
-          font-weight: bold;
-          margin: 0;
-          color: #333;
-        }
-  
-        .medic-speciality {
-          font-size: 0.9rem;
-          color: #666;
-          margin: 5px 0;
-        }
-  
-        .medic-phone {
-          font-size: 0.9rem;
-          color: #007bff;
-          display: flex;
-          align-items: center;
-  
-          .phone-icon {
-            font-size: 1rem;
-            margin-right: 5px;
-          }
-        }
-      }
-    }
-
-  
-    .working-days {
+    .working-day-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: #eaeaea;
       display: flex;
       justify-content: center;
-      gap: 10px;
-  
-      .working-day-circle {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: #e0e0e0;
-        font-size: 0.9rem;
-        font-weight: bold;
-        color: white;
-        transition: background-color 0.3s;
-  
-        &.active {
-          background-color: #007bff;
-        }
+      align-items: center;
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #999;
+      transition: background-color 0.3s, color 0.3s;
+
+      &.active {
+        background: #007bff;
+        color: #ffffff;
       }
+    }}
+}
+
+.medic-details {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+
+  .appointment-button {
+    max-width: fit-content;
+    background: #007bff;
+    color: #ffffff;
+    border: none;
+    width: fit-content;
+    border-radius: 8px;
+    padding: 10px 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+
+    &:hover {
+      background-color: #0056b3;
     }
   }
+}
 
+/* Breakpoint for smaller devices */
+@media (max-width: 1024px) {
+  .medics-page {
+    max-width: 100%;
+  }
+
+  .medic-card {
+    flex-direction: column;
+  }
+
+  .appointment-button {
+    width: fit-content;
+    align-self: flex-end;
+  }
+}

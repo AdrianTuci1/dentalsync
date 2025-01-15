@@ -231,8 +231,13 @@ const handleClose = async () => {
            },
         },}}
         >
-    <Box sx={{width:'400px'}} >
-
+    <div
+          style={{
+            width: window.innerWidth <= 500 ? "100vw" : "400px", // Full screen on small devices
+            maxWidth: "100vw", // Prevent overflow
+            margin: "0 auto", // Center on larger screens
+          }}
+    >
       {/* Header */}
       <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <Typography variant="h6">{treatmentId ? 'Edit Treatment' : 'Create Treatment'}</Typography>
@@ -332,7 +337,7 @@ const handleClose = async () => {
           </Button>
         </Box>
       )}
-    </Box>
+    </div>
     </Drawer>
   )};
 

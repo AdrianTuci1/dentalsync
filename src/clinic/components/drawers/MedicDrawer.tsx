@@ -200,7 +200,7 @@ const MedicDrawer: React.FC = () => {
 
   return (
     <Drawer anchor="right" open={isOpen} onClose={() => dispatch(closeDrawer())}>
-      <Box sx={{ width: 400 }}>
+      <Box className={styles.drawerContainer}>
         <Box sx={{ p: 2, display: 'flex', alignItems: 'center' }}>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>{medicId ? 'Edit Medic' : 'Add Medic'}</Typography>
           <IconButton edge="end" onClick={() => dispatch(closeDrawer())}>

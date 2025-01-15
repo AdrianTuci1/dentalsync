@@ -82,7 +82,7 @@ const AppointmentCell: React.FC<AppointmentCellProps> = ({ previousAppointment, 
             <Typography variant="caption">{nextAppointment.date}</Typography>
           </Box>
         ) : (
-          <Typography variant="caption" sx={{ color: '#888' }}>
+          <Typography variant="caption" sx={{ color: '#888', textAlign:'right' }}>
             No following appointment
           </Typography>
         )}

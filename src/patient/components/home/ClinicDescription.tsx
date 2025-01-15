@@ -3,7 +3,7 @@ import React from 'react';
 const ClinicDescription: React.FC = () => {
   return (
     <div className="clinic-description" style={{display:'flex', flexDirection:'column', gap:'1rem'}}>
-      <h2>About Our Clinic</h2>
+      <h2>About Us</h2>
       <p>
         Welcome to Demo Clinic! Our mission is to provide exceptional dental care in a
         comfortable and friendly environment. <br />

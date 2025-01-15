@@ -43,6 +43,7 @@ const HomeContent: React.FC = () => {
   const authState = useSelector((state: any) => state.auth);
   const isAuthenticated = !!authState?.clinicUser;
 
+
   return (
     <div className="treatment-list">
 

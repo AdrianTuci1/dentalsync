@@ -6,11 +6,12 @@ import Footer from '../components/Footer';
 
 const HomePage: React.FC = () => {
 
+
   return (
     <>
     <div className="outline">
+      <WelcomeSection/>
       <div className="treatments">
-        <WelcomeSection/>
         <HomeContent />
         {/* Footer */}
         <Footer />

@@ -1,5 +1,6 @@
 import React from 'react';
 import ConsultationCard from '../ConsultationCard';
+import '../../styles/upcomingPreviousSection.scss'
 
 const upcomingAppointment = {
   id: '2',
@@ -19,28 +20,27 @@ const previousAppointment = {
   time: '09:00 - 10:00',
 };
 
-
 const UpcomingPreviousSection: React.FC = () => {
   return (
-    <div className="sections" style={{height:'100%', display:'flex', alignItems:'center', justifyContent:'center', gap:'50px', width:'100%', paddingBlock: '50px', flexWrap:'wrap'}}>
-      <div className="appointment-section" style={{gap:'10px', display:'flex', flexDirection:'column'}}>
+    <div className="sections">
+      <div className="appointment-section">
         <h3>Upcoming</h3>
         {upcomingAppointment ? (
           <ConsultationCard 
-          consultation={upcomingAppointment}
-          onClick={() => ''}
-           />
+            consultation={upcomingAppointment}
+            onClick={() => ''}
+          />
         ) : (
           <p>No upcoming appointment</p>
         )}
       </div>
-      <div className="appointment-section" style={{gap:'10px', display:'flex', flexDirection:'column'}}>
+      <div className="appointment-section">
         <h3>Previous</h3>
         {previousAppointment ? (
-                    <ConsultationCard 
-                    consultation={previousAppointment}
-                    onClick={() => ''}
-                     />
+          <ConsultationCard 
+            consultation={previousAppointment}
+            onClick={() => ''}
+          />
         ) : (
           <p>No previous appointment</p>
         )}

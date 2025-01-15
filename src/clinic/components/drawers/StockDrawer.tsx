@@ -107,7 +107,13 @@ const StockDrawer: React.FC = () => {
 
   return (
     <Drawer anchor="right" open={true} onClose={handleClose}>
-      <Box sx={{ width: 400, padding: 2 }}>
+      <div
+                style={{
+                  width: window.innerWidth <= 500 ? "100vw" : "400px", // Full screen on small devices
+                  maxWidth: "100vw", // Prevent overflow
+                  margin: "0 auto", // Center on larger screens
+                }}
+          >
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Typography variant="h6">{stock ? 'Edit Stock' : 'Add New Stock'}</Typography>
           <IconButton onClick={handleClose}>
@@ -171,7 +177,7 @@ const StockDrawer: React.FC = () => {
             </Button>
           </Box>
         )}
-      </Box>
+      </div>
     </Drawer>
   );
 };

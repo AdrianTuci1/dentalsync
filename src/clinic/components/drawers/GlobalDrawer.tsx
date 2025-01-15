@@ -1,5 +1,5 @@
 import React from 'react';
-import { Drawer, Box } from '@mui/material';
+import { Drawer } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import { closeDrawer } from '../../../shared/services/drawerSlice';
 import MedicDrawer from './MedicDrawer';
@@ -50,9 +50,16 @@ const GlobalDrawer: React.FC = () => {
             },
           }}
         >
-          <Box sx={{ width: 400 }}>
-            <DrawerContent type={drawer.type} />
-          </Box>
+
+        <div
+          style={{
+            width: window.innerWidth <= 500 ? "100vw" : "400px", // Full screen on small devices
+            maxWidth: "100vw", // Prevent overflow
+            margin: "0 auto", // Center on larger screens
+          }}
+        >
+          <DrawerContent type={drawer.type} />
+        </div>
         </Drawer>
       ))}
     </>

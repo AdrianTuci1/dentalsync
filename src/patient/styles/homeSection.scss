@@ -16,11 +16,11 @@
     width: 100%;
     align-items: center;
     justify-content: center;
+    padding-inline: 10px;
 }
 
 .description-container{
-    padding: 15px;
-    margin-inline:100px ;
+    padding: 25px;
 
     @media (max-width:'1024px'){
         margin-inline: 10px;
@@ -37,13 +37,12 @@
     padding-block: 40px;
     display: flex;
     width: 100%;
-
     justify-content: center;
     align-items: center;
     .availability-wrapper{
         display: flex;
-        gap: 60px;
         height: 100%;
+        gap: 70px;
 
         @media (max-width:'1024px') {
             flex-direction: column;

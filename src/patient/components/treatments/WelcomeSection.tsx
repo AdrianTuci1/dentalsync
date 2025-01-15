@@ -1,81 +1,67 @@
 import '../../styles/welcomeSection.scss';
-import FmdGoodIcon from '@mui/icons-material/FmdGood';
+import { useState } from 'react';
 import LocationMap from './LocationMap';
-import { useState, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import ScheduleIndicator from '../ScheduleIndicator';
+import { ArrowDownward } from '@mui/icons-material';
 
 const WelcomeSection: React.FC = () => {
-  const authState = useSelector((state: any) => state.auth); // Access authentication state
-  const user = authState?.subaccountUser?.name || authState?.clinicUser?.name || ''; // Get user name from auth state
-
   const position: [number, number] = [44.4268, 26.1025];
-  const clinicName = "Shinedent";
-  const location = "Bulevardul Dacia Nr.84";
-  const city = 'Bucharest';
-  const [currentDate, setCurrentDate] = useState<string>('');
-  const [currentTime, setCurrentTime] = useState<string>('');
-  const [temperature, setTemperature] = useState<string>('');
+  const clinics = [
+    { id: 1, name: "Shinedent", city: "Bucharest", logo: "/logoclinic.png" },
+    { id: 2, name: "BrightSmile", city: "Cluj", logo: "/logoclinic2.png" },
+  ];
+  const [selectedClinic, setSelectedClinic] = useState(clinics[0]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  const greeting = "welcome back!";
-
-  // Update time every second
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = new Date();
-      setCurrentDate(now.toDateString());
-      setCurrentTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  // Fetch temperature data (Example with a dummy temperature API or fixed value)
-  useEffect(() => {
-    const fetchTemperature = async () => {
-      // Replace this with an actual API call if needed
-      const temp = "25°C"; // Dummy temperature
-      setTemperature(temp);
-    };
-
-    fetchTemperature();
-  }, []);
+  const handleClinicChange = (clinicId: number) => {
+    const clinic = clinics.find((c) => c.id === clinicId);
+    if (clinic) {
+      setSelectedClinic(clinic);
+      setDropdownOpen(false); // Close dropdown after selection
+    }
+  };
 
   return (
-    <div className="added-map">
-      <div className="welcome-section">
+    <div className="welcome-section">
+      <div className="background-container rectangle">
         <img src="/democlinic.jpg" alt="Background" className="background-image" />
-        <div className="overlay"></div> {/* Overlay for transparency */}
-        <div className="header">
-          <img src="/logoclinic.png" alt="Clinic Logo" className="clinic-logo" />
-          <div className="clinic-info">
-            <ScheduleIndicator />
-            <div className="info-detail">
-            <h3>{clinicName}</h3>
-            <p>{city}</p>
+        <div className="overlay"></div>
+      </div>
+
+      <div className="outline-box">
+        <div className="dropdown-box" onClick={() => setDropdownOpen(!dropdownOpen)}>
+          <div className="dropdown-content">
+            <img src={selectedClinic.logo} alt="Clinic Logo" className="clinic-logo" />
+            <div className="clinic-info">
+              <h2>{selectedClinic.name}</h2>
+              <p>{selectedClinic.city}</p>
+            </div>
+            <div className="arrow">
+              <ArrowDownward />
             </div>
           </div>
-          <div className="empty"></div>
         </div>
-        <div className="content">
-          <p className="date">{currentDate}</p>
-          {user ? (
-            <h2 className="greeting">Hi {user}, {greeting}</h2>
-          ) : (
-            <h2 className="greeting">{currentTime}, {temperature}</h2>
-          )}
-        </div>
-        <div className="location">
-          <div
-            className="loc-info"
-            style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '10px' }}
-          >
-            <FmdGoodIcon />
-            <p>{location}</p>
+
+        {dropdownOpen && (
+          <div className="dropdown-menu">
+            {clinics.map((clinic) => (
+              <button
+                key={clinic.id}
+                onClick={() => handleClinicChange(clinic.id)}
+                className={selectedClinic.id === clinic.id ? "active" : ""}
+              >
+                <img src={clinic.logo} alt={`${clinic.name} Logo`} className="menu-logo" />
+                <div className="menu-info">
+                  <h3>{clinic.name}</h3>
+                  <p>{clinic.city}</p>
+                </div>
+              </button>
+            ))}
           </div>
-        </div>
+        )}
       </div>
-      <div className="map-part">
+
+      {/* Map Section */}
+      <div className="map-section">
         <LocationMap position={position} />
       </div>
     </div>
