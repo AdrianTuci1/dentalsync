@@ -19,7 +19,7 @@ const LocationMap: React.FC<LocationMapProps> = ({ position }) => {
   const mapboxStyle = 'mapbox/streets-v11'; // You can change to any Mapbox style
 
   return (
-    <div className="location-map" style={{display:'flex', overflow:'hidden', borderRadius:'25px'}}>
+    <div className="location-map" style={{display:'flex', overflow:'hidden', borderRadius:'25px', zIndex:'1'}}>
       <MapContainer
         center={position}
         zoom={14}

@@ -45,7 +45,7 @@ const DesktopNavbar: React.FC<DesktopNavbarProps> = ({ activePage, availablePage
   return (
     <nav className="navbar desktop-navbar">
       {/* Left-side Navigation */}
-      <ul className="navbar-left">
+      <ul className={window.innerWidth > 1024 ? "navbar-left pad" : "mobile-navbar"}>
         {navItems
           .filter((item) => availablePages.includes(item.section))
           .map(({ section, icon, path }) => (
@@ -61,7 +61,7 @@ const DesktopNavbar: React.FC<DesktopNavbarProps> = ({ activePage, availablePage
       
 
       {/* Right-side Navigation */}
-      <ul className="navbar-right">
+      <ul className="navbar-right pad">
         {isClinicUser ? (
           <li>
             <Link to="/dashboard" className="nav-link">
@@ -97,7 +97,7 @@ const DesktopNavbar: React.FC<DesktopNavbarProps> = ({ activePage, availablePage
 
             {/* Login link for unauthenticated users on small screens */}
             {isSmallScreen && !isAuthenticated && (
-        <div className="login-section">
+        <div className="login-section pad">
           <ul><li><div className="icon-box">
           <Link to="/login" className="nav-link">
               <AccountCircle />

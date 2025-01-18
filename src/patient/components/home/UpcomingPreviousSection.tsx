@@ -11,20 +11,12 @@ const upcomingAppointment = {
   time: '10:00 - 11:00',
 };
 
-const previousAppointment = {
-  id: '1',
-  medicName: 'Dr. John Doe',
-  medicImage: '/path/to/image1.jpg',
-  treatmentName: 'Dental Cleaning',
-  date: '20 Dec 2024',
-  time: '09:00 - 10:00',
-};
 
 const UpcomingPreviousSection: React.FC = () => {
   return (
     <div className="sections">
       <div className="appointment-section">
-        <h3>Upcoming</h3>
+        <h3>Urmeaza</h3>
         {upcomingAppointment ? (
           <ConsultationCard 
             consultation={upcomingAppointment}
@@ -32,17 +24,6 @@ const UpcomingPreviousSection: React.FC = () => {
           />
         ) : (
           <p>No upcoming appointment</p>
-        )}
-      </div>
-      <div className="appointment-section">
-        <h3>Previous</h3>
-        {previousAppointment ? (
-          <ConsultationCard 
-            consultation={previousAppointment}
-            onClick={() => ''}
-          />
-        ) : (
-          <p>No previous appointment</p>
         )}
       </div>
     </div>

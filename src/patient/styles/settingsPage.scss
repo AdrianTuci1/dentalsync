@@ -1,129 +1,64 @@
+
+
 .settings-page {
   display: flex;
-  width: 100%;
+  margin-top: 60px;
+  height: calc(100vh - 60px);
+  font-family: Arial, sans-serif;
 
-  @media (max-width: 1024px) {
-    padding-inline: 0;
-    flex-direction: column; // Stack content vertically on smaller screens
-    margin-block-end: 60px;
-  }
-
-  @media (min-width: 1024px) {
-    padding-inline: 0;
-    margin-block-start: 60px;
-  }
-
-  &.split-view {
-    height: calc(100vh - 60px);
-    .main-content {
-      width: 50%; // Occupy half screen when menu content is open on larger screens
-    }
-    .menu-content {
-      display: block;
-      width: 50%;
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    @media (max-width: 1024px) {
-      .menu-content{
-        width: 100%;
-      }
-    }
-  }
-
-  .main-content {
-    width: 100%; // Full width when no menu is selected
-    transition: width 0.3s ease;
-  }
-
-  .profile-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-  }
-
-  .profile-section {
-    display: flex;
-    align-items: center;
-    flex-direction: column;
+  .menu-sidebar {
+    width: 400px;
+    background-color: #f7f7f7;
+    border-right: 1px solid #ddd;
     padding: 20px;
-    text-align: center;
 
-    @media (min-width: 1024px) {
-      flex-direction: row;
-      text-align: left;
-      justify-content: flex-start;
-    }
-
-    .profile-avatar {
-      width: 100px;
-      height: 100px;
-      margin-bottom: 10px;
-
-      @media (min-width: 1024px) {
-        margin-bottom: 0;
-        margin-right: 15px;
-      }
-    }
-
-    .edit-avatar-button {
-      margin-top: -25px;
-
-      @media (min-width: 1024px) {
-        margin-top: 0;
-      }
-    }
-
-    .user-name {
+    .menu-title {
+      font-size: 1.5rem;
       font-weight: bold;
-      margin-top: 10px;
+      margin-bottom: 20px;
+    }
 
-      @media (min-width: 1024px) {
-        margin-top: 0;
+    .menu-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      .menu-item {
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, color 0.3s ease;
+
+        &:hover {
+          background-color: #eaeaea;
+        }
+
+        &.active {
+          background-color: #007bff;
+          color: #fff;
+        }
       }
     }
   }
 
-  .settings-menu {
-    padding: 10px 20px;
+  .content-area {
+    flex: 1;
+    padding: 20px;
+    background-color: #fff;
 
-    .menu-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      padding: 10px 0;
-
-      &:hover {
-        background-color: #f0f0f0;
-      }
+    .content-title {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 20px;
     }
-  }
 
-  .menu-content {
-    display: none;
-    background: #fafafa;
-    transition: width 0.3s ease;
-    position: relative;
-
-    @media (max-width: 850px) {
-      display: block;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 1000; // Ensure overlay is above other elements
+    .content-box {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
       padding: 20px;
-      overflow-y: auto;
-    }
-
-    .close-button {
-      position: absolute;
-      top: 10px;
-      right: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
   }
 }

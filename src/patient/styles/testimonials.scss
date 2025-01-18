@@ -1,32 +1,64 @@
 .customer-testimonials {
-    text-align: left;
+    text-align: center;
     margin: 2rem 0;
+    width: 100%;
 
-    h3 {
-      font-size: 2.7rem;
-      margin-bottom: 2rem;
-      color: gold;
-    }
 
-    .testimonial-title{
+    .testimonial-title {
+      position: relative;
+      height: 100px; // Adjust based on the desired arch height
+      margin-bottom: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+  
+      .star {
+        position: absolute;
+        top: 0;
+        transform-origin: bottom center;
+        color: #ffd700; // Gold color for stars
+  
+        // Define positions and sizes for each star
+        &.star-0 {
+          transform: translateX(-170px) rotate(-30deg);
+          font-size: 40px;
+        }
+        &.star-1 {
+          transform: translateX(-95px) rotate(-15deg);
+          font-size: 46px;
+        }
+        &.star-2 {
+          transform: translateX(0px) rotate(0deg);
+          font-size: 54px; // Middle star is the largest
+        }
+        &.star-3 {
+          transform: translateX(95px) rotate(15deg);
+          font-size: 46px;
+        }
+        &.star-4 {
+          transform: translateX(170px) rotate(30deg);
+          font-size: 40px;
+        }
+      }
     }
+  
   
     .testimonial-cards {
       display: flex;
       justify-content: center;
       gap: 20px;
       flex-wrap: wrap;
+
+      @media (max-width:'1024px') {
+        flex-direction: column;
+      }
     }
   
     .testimonial-card {
       display: flex;
       flex-direction: column;
       align-items: center;
-      max-width: 320px;
+      max-width: 400px;
       padding: 20px;
       background-color: #f9f9f9;
       border-radius: 10px;

@@ -1,9 +1,12 @@
 
 
 .availability-calendar {
-  max-width: 300px;
   margin: 0 auto;
+  max-width: 400px;
+  height: 100%;
   display: flex;
+  align-items: center;
+  justify-content: center;
   flex-direction: column;
 
   .header {

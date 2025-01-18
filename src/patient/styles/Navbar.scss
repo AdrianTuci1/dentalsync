@@ -2,6 +2,7 @@
   width: 100%;
   justify-content: space-between;
 
+
   ul {
     display: flex;
     justify-content: center;
@@ -50,9 +51,20 @@
     align-items: center;
   }
 
+  .pad{
+    padding: 20px;
+  }
+
   @media (max-width: 1024px) {
     .navbar-right{
     display: none;
+    }
+
+    .mobile-navbar{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      top: 0px;
     }
   }
 
@@ -71,15 +83,3 @@
   }
 }
 
-@media (min-width: 1024px) {
-  .desktop-navbar {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-
-    ul {
-      padding-inline: 25px;
-    }
-  }
-}

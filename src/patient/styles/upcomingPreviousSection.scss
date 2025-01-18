@@ -12,12 +12,14 @@
       flex-direction: column;
       gap: 10px;
       flex: 1; // Allow sections to expand
-      min-width: 350px; // Ensure sections are at least 350px wide
-      max-width: 450px; // Optional: Limit max width
       box-sizing: border-box;
+      background: rgb(41, 41, 41);
+      padding: 10px;
+      border-radius: 15px;
   
       h3 {
-        margin: 0 0 10px;
+        color: white;
+        margin: 0px 10px 10px;
         font-size: 1.5rem;
       }
   

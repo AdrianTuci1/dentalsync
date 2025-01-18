@@ -25,16 +25,15 @@ const testimonials = [
 ];
 
 const Testimonials: React.FC = () => {
-  const stars = [];
 
-  // Add the component 5 times to the array
-  for (let i = 0; i < 5; i++) {
-    stars.push(<FaStar key={i} />);
-  }
 
   return (
     <div className="customer-testimonials">
-      <h3 className='testimonial-title'>{stars}</h3>
+      <div className="testimonial-title">
+        {[...Array(5)].map((_, index) => (
+          <FaStar key={index} className={`star star-${index}`} />
+        ))}
+      </div>
       <div className="testimonial-cards">
         {testimonials.map((testimonial, index) => (
           <div key={index} className="testimonial-card">

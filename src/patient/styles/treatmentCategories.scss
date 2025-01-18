@@ -13,8 +13,8 @@
   }
 
   .category-box {
-    width: 200px;
-    height: 200px;
+    width: 210px;
+    height: 210px;
     position: relative;
     padding: 16px;
     border-radius: 8px;
@@ -24,10 +24,14 @@
     min-height: 100px;
     cursor: pointer;
 
-    @media (max-width:'1024px') {
-      width: 220px;
-      height: 220px;
-  }
+    @media (max-width:'500px') {
+      width: 170px;
+      height: auto;
+      aspect-ratio: 1/1;
+    }
+    
+     
+        
 
     
     .identifier{
@@ -41,13 +45,19 @@
       top: 36px;
       left: 16px;
       max-width: calc(100% - 75px); // Ensures the name fits within the box
-      font-size: 20px;
+      font-size: 25px;
       font-weight: bold;
       color: #333;
       word-wrap: break-word;
-      @media (max-width:'1024px') {
-        font-size: 28px;
+
+    @media (max-width:'500px') {
+      font-size: 20px;
+      max-width: calc(100% - 40px);
     }
+
+    @media (max-width:'1024px') {
+      font-size: 23px;
+  }
     }
 
     .arrow-box{
@@ -83,3 +93,6 @@
     }
   }
 }
+
+
+

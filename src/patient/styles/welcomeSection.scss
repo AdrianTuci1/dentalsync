@@ -1,29 +1,36 @@
 .welcome-section {
+  margin-block-start: 10px;
+  padding-inline: 100px; // Inline padding for the whole component
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
   position: relative;
-  padding-inline: 100px;
-  margin-block-start: 20px;
 
-
-  @media (max-width: 1024px) {
+  @media (max-width:'1024px') {
     padding-inline: 20px;
   }
 
-  /* Background Section */
   .background-container {
     position: relative;
     width: 100%;
     height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     overflow: hidden;
-    border-radius: 25px;
+
+    &.rectangle {
+      transform: scaleX(-1); // Mirrors the background
+    }
 
     .background-image {
-      position: absolute;
-      top: 0;
-      left: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transform: rotate(-180deg);
+      position: absolute;
+      top: 0;
+      left: 0;
     }
 
     .overlay {
@@ -32,145 +39,188 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.7);
+      background-color: rgba(0, 0, 0, 0.5);
     }
   }
 
-  /* Outline Box in Top-Left Corner */
-  .outline-box {
+  .content-container {
     position: absolute;
-    top: 0px; /* Positioning inside the background-container */
-    left: 95px;
-    z-index: 990;
-    padding: 5px;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1; // Keeps content above the mirrored background
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
 
-    @media (max-width:'1024px'){
-      left: 15px;
-    }
-
-    .dropdown-box {
-      position: relative;
-      padding: 15px 20px;
+    .logo-container {
+      position: absolute;
+      bottom: 10px;
+      left: 110px;
+      width: 130px;
+      height: 130px;
+      background: rgb(37, 37, 37);
       border-radius: 25px;
-      background: #333;
-      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      outline: 2px solid;
 
-      .dropdown-content {
-        display: flex;
-        align-items: center;
-        gap: 15px;
+      @media (max-width:'1024px') {
+        left: 30px;
+      }
 
-        .arrow {
-          color: white;
-        }
-
-        .clinic-logo {
-          width: 50px;
-          height: 50px;
-          border-radius: 10px;
-          object-fit: cover;
-        }
-
-        .clinic-info {
-          h2 {
-            font-size: 1.6rem;
-            color: white;
-            margin: 0;
-          }
-
-          p {
-            font-size: 1rem;
-            color: #868585;
-            margin: 0;
-          }
-        }
+      .logo {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
       }
     }
 
-    .dropdown-menu {
+    .clinic-address{
       position: absolute;
-      top: calc(100% + 15px);
-      left: 0;
-      width: 200px;
-      background: #333;
-      border-radius: 10px;
-      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+      top: 20px;
+      right: 130px;
+      display: flex;
 
-      button {
+
+      @media (max-width:'1024px') {
+        right: 40px;
+      }
+      .clinic-location{
+        color: white;
+        text-align: center;
+        font-size: 1.25rem;
+        margin: 0;
+        padding: 5px 10px;
+        background: rgb(37, 37, 37);
+        border-radius: 8px;
+        width: fit-content;
         display: flex;
         align-items: center;
-        width: 100%;
-        text-align: left;
-        padding: 10px;
-        background: none;
+        gap: 10px;
+      }
+    }
+
+    .clinic-info-container {
+      position: absolute;
+      bottom: 50px;
+      left: 300px; // Adjusted for spacing from the logo
+      color: white;
+      display: flex;
+      flex-direction: row;
+      gap: 30px;
+      align-items: center;
+      padding: 10px;
+
+      @media (max-width:'1024px') {
+        left: 200px;
+      }
+
+      .info-wrap-nc{
+        position: relative;
+
+      .clinic-name {
+        font-size: 2rem;
+        font-weight: bold;
+        margin: 0;
+      }
+
+      .clinic-city {
+        font-size: 1.25rem;
+        margin: 0;
+      }
+    }
+  }
+
+    .dropdown-container {
+      bottom: 10px;
+
+      @media (max-width:'1024px') {
+        right: 40px;
+      }
+
+      .dropdown-trigger {
+        background: white;
         border: none;
-        color: white;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         cursor: pointer;
-        gap: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: transform 0.2s ease;
 
         &:hover {
-          background: #444;
+          transform: scale(1.1);
         }
+      }
 
-        &.active {
-          background: #555;
-        }
+      .dropdown-menu {
+        position: absolute;
+        left: 5px;
+        width: 100%;
+        margin-top: 10px;
+        background: white;
+        border-radius: 10px;
+        padding: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 
-        .menu-logo {
-          width: 40px;
-          height: 40px;
-          border-radius: 5px;
-          object-fit: cover;
-        }
+        button {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px;
+          width: 100%;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          transition: background-color 0.3s ease;
 
-        .menu-info {
-          h3 {
-            margin: 0;
-            font-size: 1.2rem;
+          &:hover {
+            background-color: #f0f0f0;
+          }
+
+          &.active {
+            background-color: #007bff;
             color: white;
           }
 
-          p {
-            margin: 0;
-            font-size: 1rem;
-            color: #aaa;
+          .menu-logo {
+            width: 30px;
+            height: 30px;
+          }
+
+          .menu-info {
+            h3 {
+              margin: 0;
+              font-size: 1rem;
+            }
+
+            p {
+              margin: 0;
+              font-size: 0.875rem;
+              color: gray;
+            }
           }
         }
       }
     }
   }
 
-  .map-section {
-    margin-top: 20px;
-    border-radius: 25px;
-    padding-inline: 100px;
-    overflow: hidden;
-
-    @media(max-width:'1024px') {
-      padding-inline: 0;
-    }
-
-    .map-placeholder {
-      position: relative;
-      width: 100%;
-      height: 400px;
-      background: #ccc;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-  }
 }
-
-
 
   .rectangle {
     --r: 30px; /* radius */
     /* control the cutout */
-    --x: 270px;
-    --y: 110px;
+    --x: 150px;
+    --y: 150px;
     /**/
-    transform: rotate(180deg);
+    transform: rotate(0deg) scaleX(-1);
+    direction: ltr;
     
     border-radius: var(--r);
     --g:/var(--r) var(--r) no-repeat exclude 

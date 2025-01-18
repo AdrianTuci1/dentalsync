@@ -8,6 +8,7 @@ import '../../styles/homeSection.scss'
 import Testimonials from '../home/Testimonials';
 import Gallery from '../home/Gallery';
 import DailyStats from '../DailyStats';
+import LocationMap from './LocationMap';
 
 const busyDates = [
   new Date(2024, 10, 5),
@@ -43,6 +44,8 @@ const HomeContent: React.FC = () => {
   const authState = useSelector((state: any) => state.auth);
   const isAuthenticated = !!authState?.clinicUser;
 
+  const position: [number, number] = [44.4268, 26.1025];
+
 
   return (
     <div className="treatment-list">
@@ -61,6 +64,10 @@ const HomeContent: React.FC = () => {
         ) : ('')}
 
       </section>
+
+      <section className="loc-map">
+        <LocationMap position={position}/>
+      </section>
       
       <section className='treatment-categories'>
         <TreatmentCategories />
@@ -69,13 +76,17 @@ const HomeContent: React.FC = () => {
       {/* Calendar */}
       <section className="availability">
         <div className="availability-wrapper">
-        <DailyStats />
+          <div className="stats">
+          <DailyStats />
+          </div>
+          <div className="stats">
           <AvailabilityCalendar
             busyDates={busyDates}
             moderateDates={moderateDates}
             normalDates={normalDates}
             nonWorkingDays={nonWorkingDays}
           />
+          </div>
           </div>
       </section>
 
