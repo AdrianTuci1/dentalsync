@@ -10,6 +10,8 @@
       "@/*": ["src/*"],
       "@teeth/*": ["src/features/clinic/components/teeth/*"],
       "@styles-cl/*": ["./src/features/clinic/styles"],
-    }
-  }
+    },
+    "declaration": false,
+  },
+  "include": ["src", "src/service-worker.ts"],
 }
