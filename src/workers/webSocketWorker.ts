@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-import { WorkerResponse } from "../clinic/types/worker";
+import { WorkerResponse } from "@/features/clinic/types/worker";
 
 let websocket: WebSocket | null = null;
 let messageQueue: string[] = []; // Queue messages until WebSocket is open

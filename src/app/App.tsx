@@ -2,14 +2,18 @@ import './main.scss';
 import { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import Dashboard from '../clinic/Dashboard';
-import PatientDashboard from '../patient/PatientDashboard';
+import Dashboard from '@/features/clinic/Dashboard';
+import PatientDashboard from '@/features/patient/PatientDashboard';
 import SignIn from './SignIn'; // Import the SignIn component
-import { loadUserFromLocalStorage } from '../shared/services/authSlice';
+import { loadUserFromLocalStorage } from '@/api/authSlice';
+import { testValue } from '@/test';
+
 
 function App() {
   const dispatch = useDispatch();
   const authState = useSelector((state: any) => state.auth);
+
+  console.log(testValue);
 
   useEffect(() => {
     dispatch(loadUserFromLocalStorage());

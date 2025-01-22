@@ -1,6 +1,6 @@
 // demoAppointments.ts
 
-import { Appointment } from '../clinic/types/appointmentEvent';
+import { Appointment } from '@/features/clinic/types/appointmentEvent';
 
 export const demoAppointments: Appointment[] = [
   {

@@ -18,7 +18,15 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Alias configuration */
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"],
+      "@teeth/*": ["src/features/clinic/components/teeth/*"],
+      "@styles-cl/*": ["./src/features/clinic/styles"],
+    }
   },
   "include": ["src"]
 }

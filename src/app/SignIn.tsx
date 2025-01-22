@@ -1,8 +1,8 @@
 import React, { useState, useEffect, startTransition } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { clinicLoginSuccess, logout, subaccountLoginSuccess } from '../shared/services/authSlice';
-import AuthService from '../shared/services/AuthService';
-import { getSubdomain } from '../shared/utils/getSubdomains';
+import { clinicLoginSuccess, logout, subaccountLoginSuccess } from '@/api/authSlice';
+import AuthService from '@/api/AuthService';
+import { getSubdomain } from '@/shared/utils/getSubdomains';
 import './signin.scss';
 
 interface Profile {

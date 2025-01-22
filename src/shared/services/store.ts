@@ -1,12 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from './authSlice';
-import requestReducer from './requestSlice';
-import drawerReducer from './drawerSlice';
-import appointmentsReducer from './appointmentsSlice';
-import stockReducer from './stockSlice';
-import treatmentReducer from './treatmentSlice';
-import patientUserReducer from './patientUserSlice'
-import permissionsReducer from "./permissionsSlice";
+import authReducer from '@/api/authSlice';
+import requestReducer from '@/api/requestSlice';
+import drawerReducer from '@/components/drawerSlice';
+import appointmentsReducer from '@/api/appointmentsSlice';
+import stockReducer from '@/api/stockSlice';
+import treatmentReducer from '@/api/treatmentSlice';
+import patientUserReducer from '@/api/patientUserSlice'
+import permissionsReducer from "@/api/permissionsSlice";
 import { getSubdomain } from '../utils/getSubdomains';
 
 const extraArgument = {
