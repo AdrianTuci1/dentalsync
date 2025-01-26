@@ -9,6 +9,7 @@ import patientUserReducer from '@/api/patientUserSlice'
 import permissionsReducer from "@/api/permissionsSlice";
 import { getSubdomain } from '../utils/getSubdomains';
 
+
 const extraArgument = {
   get token() {
     return store.getState().auth.subaccountToken; // Dynamically fetch token
@@ -32,7 +33,7 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       thunk: {
-        extraArgument, // Pass dynamically computed extraArgument
+        extraArgument, // Use typed extraArgument
       },
     }),
 });
