@@ -15,4 +15,9 @@ const requestSlice = createSlice({
 });
 
 export const { openRequestAppointment, closeRequestAppointment } = requestSlice.actions;
+
+
+// Explicitly export the DrawerState type
+export type { requestSlice };
+
 export default requestSlice.reducer;

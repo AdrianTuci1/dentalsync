@@ -43,3 +43,5 @@ sw.addEventListener('message', (event) => {
 sw.addEventListener('activate', (event) => {
   event.waitUntil(sw.clients.claim());
 });
+
+

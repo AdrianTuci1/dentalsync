@@ -146,4 +146,8 @@ const patientUserSlice = createSlice({
 });
 
 export const { resetPatientUserState, updatePatientInList } = patientUserSlice.actions;
+
+// Explicitly export the DrawerState type
+export type { PatientUserState };
+
 export default patientUserSlice.reducer;

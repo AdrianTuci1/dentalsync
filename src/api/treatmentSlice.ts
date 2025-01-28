@@ -146,3 +146,7 @@ export const selectError = (state: any) => state.treatments.error;
 
 // Export Reducer
 export default treatmentSlice.reducer;
+
+
+// Explicitly export the DrawerState type
+export type { TreatmentState };

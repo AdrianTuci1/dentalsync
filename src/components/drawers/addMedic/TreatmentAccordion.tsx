@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Accordion,
   AccordionSummary,
@@ -29,15 +29,13 @@ const TreatmentAccordion: React.FC<TreatmentAccordionProps> = ({
   const [categories, setCategories] = useState<Record<string, Treatment[]>>({});
   const [selectedTreatments, setSelectedTreatments] = useState<string[]>(assignedTreatments || []);
 
-  const clinicDb = getSubdomain() + '_db'; // Replace with the actual Redux state key for the clinic DB
-  const categoryService = new CategoryService(clinicDb);
+  // Persistent instance of CategoryService
+  const categoryServiceRef = useRef(new CategoryService(`${getSubdomain()}_db`));
 
   const fetchCategories = useCallback(async () => {
     try {
-      // Fetch categories from the backend
-      const data = await categoryService.getAllCategories();
+      const data = await categoryServiceRef.current.getAllCategories();
 
-      // Validate and transform the response to match the expected type
       if (typeof data === 'object' && data !== null) {
         setCategories(data as any);
       } else {
@@ -46,7 +44,7 @@ const TreatmentAccordion: React.FC<TreatmentAccordionProps> = ({
     } catch (error) {
       console.error('Error fetching categories:', error);
     }
-  }, [categoryService]);
+  }, []);
 
   useEffect(() => {
     fetchCategories();

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the file extensions to remove
-extensions=("*.js" "*.d.ts")
+extensions=("*.js", "*.d.ts")
 
 # Base directory to clean (current directory)
 base_dir=$(pwd)

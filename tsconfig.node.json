@@ -8,9 +8,13 @@
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": false,
+    "preserveSymlinks": false,
+    "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "moduleDetection": "force",
     "noEmit": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
 
     /* Linting */
     "strict": true,

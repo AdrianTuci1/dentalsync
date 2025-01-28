@@ -184,4 +184,8 @@ export const {
   resetAppointment,
 } = appointmentsSlice.actions;
 
+
+// Explicitly export the DrawerState type
+export type { AppointmentsState };
+
 export default appointmentsSlice.reducer;

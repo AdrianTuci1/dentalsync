@@ -99,6 +99,8 @@ const MedicDrawer: React.FC = () => {
     const token = useSelector((state: any) => state.auth.subaccountToken);
     const db = getSubdomain() + '_db'
     const medicService = new MedicService(token, db);
+
+    console.log(medicInfo)
   
     // Fetch or reset medic details on medicId change
     useEffect(() => {
@@ -175,8 +177,8 @@ const MedicDrawer: React.FC = () => {
       try {
         if (medicInfo.id) {
           await medicService.updateMedic(medicInfo.id, medicInfo);
-          eventEmitter.emit("medicUpdated", transformMedicInfoToTableFormat(medicInfo));
           console.log(medicInfo)
+          eventEmitter.emit("medicUpdated", transformMedicInfoToTableFormat(medicInfo));
         } else {
           const newMedic = await medicService.createMedic(medicInfo);
           eventEmitter.emit("medicCreated", transformMedicInfoToTableFormat(newMedic));

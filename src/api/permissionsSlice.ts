@@ -39,4 +39,8 @@ const permissionsSlice = createSlice({
   },
 });
 
+
+// Explicitly export the DrawerState type
+export type { PermissionsState };
+
 export default permissionsSlice.reducer;

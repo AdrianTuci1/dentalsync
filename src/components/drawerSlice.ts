@@ -25,4 +25,9 @@ const drawerSlice = createSlice({
 });
 
 export const { openDrawer, closeDrawer, closeAllDrawers } = drawerSlice.actions;
+
+
+// Explicitly export the DrawerState type
+export type { DrawerState };
+
 export default drawerSlice.reducer;

@@ -34,5 +34,9 @@ export const { addStock, updateStock, setStocks } = stockSlice.actions;
 // Selector to get stocks from state
 export const selectStocks = (state: any) => state.stocks.stocks;
 
+
+// Explicitly export the DrawerState type
+export type { StockState };
+
 // Export reducer
 export default stockSlice.reducer;

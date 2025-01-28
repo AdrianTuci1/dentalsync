@@ -109,4 +109,9 @@ export const { clinicLoginSuccess,
                switchAccount,
               } = authSlice.actions;
 
+
+
+// Explicitly export the DrawerState type
+export type { AuthState };
+
 export default authSlice.reducer;

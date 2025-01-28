@@ -109,6 +109,8 @@ const DetailsTab: React.FC = () => {
     return <div>Loading...</div>;
   }
 
+  console.log(appointmentDetails)
+
   return (
     <div className={styles['details-tab']}>
       <label>Date</label>
