@@ -14,51 +14,31 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import { useDispatch, useSelector } from 'react-redux';
 import { openDrawer } from '@/components/drawerSlice';
-import ComponentService from '@/api/componentService';
 import { Component } from '../types/componentType';
 import { getSubdomain } from '@/shared/utils/getSubdomains';
 import SearchInput from '../../../components/inputs/SearchInput';
-import { selectStocks, setStocks } from '@/api/stockSlice';
+import { fetchComponents, selectStockLoading, selectStocks} from '@/api/stockSlice';
 
 export const StocksTable: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [offset, setOffset] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const isSmallScreen = useMediaQuery('(max-width:800px)');
 
   const token = useSelector((state: any) => state.auth.subaccountToken);
-  const clinicDb = getSubdomain() // Hardcoded clinicDb
+  const clinicDb = getSubdomain() + '_db' // Hardcoded clinicDb
   const dispatch = useDispatch();
-  const componentService = new ComponentService(token, `${clinicDb}_db` );
 
     // Redux stocks state
     const stocks = useSelector(selectStocks);
-  
+    const isLoading = useSelector(selectStockLoading);
 
-  // Fetch Components
-  const fetchComponents = async (reset = false) => {
-    setIsLoading(true); // Start loading indicator
-    try {
-      const response = await componentService.getAllComponents(searchTerm, reset ? 0 : offset);
-
-      if (reset) {
-        dispatch(setStocks(response.components)); // Replace stocks in Redux
-      } else {
-        dispatch(setStocks([...stocks, ...response.components])); // Append to existing stocks
+    // Fetch Components using Redux Thunk
+    useEffect(() => {
+      if (token && clinicDb) {
+        dispatch(fetchComponents({ name: searchTerm, offset: 0, token, clinicDb }) as any);
       }
+    }, [dispatch, searchTerm, token, clinicDb]);
 
-      setOffset(response.offset); // Update offset for pagination
-    } catch (error) {
-      console.error('Failed to fetch components:', error);
-    } finally {
-      setIsLoading(false); // Stop loading indicator
-    }
-  };
-
-  // Fetch components on mount and when searchTerm changes
-  useEffect(() => {
-    fetchComponents(true); // Reset data when searchTerm changes
-  }, [searchTerm]);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -73,10 +53,13 @@ export const StocksTable: React.FC = () => {
     dispatch(openDrawer({ type: 'Stock', data: { stock: null } }));
   };
 
+  // Handle Load More for pagination
   const handleLoadMore = () => {
-    fetchComponents();
+    if (!isLoading && token && clinicDb) {
+      dispatch(fetchComponents({ name: searchTerm, offset, token, clinicDb }) as any);
+      setOffset((prevOffset) => prevOffset + 20); // Increment offset
+    }
   };
-
   return (
     <>
       <TableContainer component={Paper}>
@@ -93,6 +76,12 @@ export const StocksTable: React.FC = () => {
         </Box>
 
         {/* Table */}
+
+        {isLoading && stocks.length === 0 ? (
+          <p>Loading stocks...</p>
+        ): stocks.length === 0 ? (
+          <p>No stocks found</p>
+        ): (
         <Table aria-label="stocks table">
           {!isSmallScreen && (
             <TableHead>
@@ -136,6 +125,7 @@ export const StocksTable: React.FC = () => {
             )}
           </TableBody>
         </Table>
+        )}
       </TableContainer>
 
       {/* Load More Button */}

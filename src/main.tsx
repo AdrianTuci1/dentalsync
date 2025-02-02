@@ -1,21 +1,21 @@
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
 import App from '@/app/App'
 import { Provider } from 'react-redux'
-import store from '@/shared/services/store';
+import store, {persistor} from '@/shared/services/store';
 import 'leaflet/dist/leaflet.css';
 import { Workbox } from 'workbox-window';
-import { setupNetworkListener } from './shared/utils/networkListener';
+import ReactDOM from "react-dom/client";
+import { PersistGate } from "redux-persist/integration/react";
 
-const baseUrl = import.meta.env.VITE_SERVER;
 
-// Setup network listener for offline/online handling
-setupNetworkListener(baseUrl);
 
-createRoot(document.getElementById('root')!).render(
+
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <StrictMode>
     <Provider store={store}>
+    <PersistGate loading={null} persistor={persistor}>
     <App />
+    </PersistGate>
     </Provider>
   </StrictMode>,
 )

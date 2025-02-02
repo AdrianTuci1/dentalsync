@@ -7,16 +7,26 @@ import PatientDashboard from '@/features/patient/PatientDashboard';
 import SignIn from './SignIn'; // Import the SignIn component
 import { loadUserFromLocalStorage } from '@/api/authSlice';
 import { testValue } from '@/test';
+import { getOfflineQueue } from "@/api/syncQueue";
+import { setOfflineQueueCount } from "@/api/syncSlice";
+import useSync from "@/shared/utils/useSync";
+
 
 
 function App() {
   const dispatch = useDispatch();
   const authState = useSelector((state: any) => state.auth);
 
+  useSync(); 
+
   console.log(testValue);
 
   useEffect(() => {
     dispatch(loadUserFromLocalStorage());
+    const checkQueue = async () => {
+      const queue = await getOfflineQueue();
+      dispatch(setOfflineQueueCount(queue.length));}
+      checkQueue();
   }, [dispatch]);
 
   // Extract necessary state

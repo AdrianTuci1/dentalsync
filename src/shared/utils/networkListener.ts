@@ -1,12 +1,27 @@
-import { syncOfflineEdits } from '../services/syncService';
+import SyncService from "@/api/syncService";
 
-export function setupNetworkListener(baseUrl: string): void {
-  window.addEventListener('online', () => {
-    console.log('Back online. Syncing offline edits...');
-    syncOfflineEdits(baseUrl);
-  });
+class NetworkService {
+  constructor() {
+    this.init();
+  }
 
-  window.addEventListener('offline', () => {
-    console.log('App is offline.');
-  });
+  private init() {
+    window.addEventListener("online", this.handleOnline);
+    window.addEventListener("offline", this.handleOffline);
+  }
+
+  private handleOnline = async () => {
+    console.log("🌐 Internet reconnected. Attempting to sync offline data...");
+    await SyncService.syncToServer();
+  };
+
+  private handleOffline = () => {
+    console.log("⚠️ Internet disconnected. Queuing offline updates.");
+  };
+
+  public isOnline(): boolean {
+    return navigator.onLine;
+  }
 }
+
+export default new NetworkService();

@@ -11,180 +11,168 @@ import { Add, Close } from '@mui/icons-material';
 import { ChromePicker } from 'react-color';
 import { useDispatch, useSelector } from 'react-redux';
 import { closeDrawer } from '@/components/drawerSlice';
-import TreatmentService from '@/api/treatmentService';
+
 import CategoryInput from '@/components/inputs/CategoryInput';
 import ComponentInput from '@/components/inputs/ComponentInput';
 import { selectTopDrawer } from '@/shared/utils/selectors';
-import { getSubdomain } from '@/shared/utils/getSubdomains';
-import { createTreatmentThunk, updateTreatmentThunk } from '@/api/treatmentSlice';
-import { AppDispatch } from '@/shared/services/store';
 import { Treatment } from '@/features/clinic/types/treatmentType';
 
 import isEqual from 'lodash/isEqual'; // Ensure lodash is installed
+import { createTreatment, deleteTreatment, selectTreatments, updateTreatment } from '@/api/treatmentSlice';
+import { getSubdomain } from '@/shared/utils/getSubdomains';
 
 
 const TreatmentDrawer: React.FC = () => {
-    
-    const dispatch: AppDispatch = useDispatch();
-    const { drawerData } = useSelector(selectTopDrawer); // Get treatment data from Redux
-    const treatmentId = drawerData?.treatmentId || null; // Current treatment ID
-    const token = useSelector((state: any) => state.auth.subaccountToken); // Authentication token
-    const db = getSubdomain() + '_db'
+  const dispatch = useDispatch();
+  const { drawerData } = useSelector(selectTopDrawer);
+  const treatments = useSelector(selectTreatments);
+  const treatmentId = drawerData?.treatment?.id || null;
 
 
-    // Initialize services
-    const treatmentService = new TreatmentService(token, db);
+  // State for treatment details
+  const [name, setName] = useState('');
+  const [category, setCategory] = useState('');
+  const [price, setPrice] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [description, setDescription] = useState('');
+  const [color, setColor] = useState('#FF5733');
+  const [components, setComponents] = useState<
+  { id: string; componentName: string; unitPrice: number; componentUnits: number }[]
+>([]); // Selected components for the treatment
+  const [originalTreatment, setOriginalTreatment] = useState<Partial<Treatment> | null>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // Anchor for color picker menu
+  const [currentIndex, setCurrentIndex] = useState<number | null>(null); // Current focused component index
+
+    const token = useSelector((state: any) => state.auth.subaccountToken);
+    const clinicDb = getSubdomain() + '_db'; // Hardcoded clinicDb
+
+  // Load treatment data when the drawer opens
+  useEffect(() => {
+    if (treatmentId) {
+      const treatment = treatments.find((t: any) => t.id === treatmentId);
+      if (treatment) {
+        setName(treatment.name);
+        setCategory(treatment.category || '');
+        setPrice(treatment.price);
+        setDuration(treatment.duration);
+        setDescription(treatment.description || '');
+        setColor(treatment.color || '#FF5733');
+        setComponents(treatment.components || []);
+        setOriginalTreatment(treatment);
+      } else {
+        resetForm()
+        console.log('error occured')
+      }
+    } else {
+      resetForm();
+    }
+  }, [treatmentId]);
 
 
-      // Treatment details state
-      const [name, setName] = useState<string>(''); // Treatment name
-      const [category, setCategory] = useState<string>(''); // Treatment category
-      const [price, setPrice] = useState<number>(0); // Treatment price
-      const [duration, setDuration] = useState<number>(0); // Treatment duration in minutes
-      const [description, setDescription] = useState<string>(''); // Treatment description
-      const [color, setColor] = useState<string>('#FF5733'); // Treatment color
-      const [originalTreatment, setOriginalTreatment] = useState<Partial<Treatment> | null>(null);
+  // Normalize components for comparison
+  const normalizeComponents = (components: any[]) =>
+    components.map((component) => ({
+      id: component.id || '',
+      componentName: component.componentName || '',
+      unitPrice: Number(component.unitPrice || 0),
+      componentUnits: Number(component.componentUnits || 1),
+    }));
 
-      // Components state
-      const [components, setComponents] = useState<
-        { id: string; componentName: string; unitPrice: number; componentUnits: number }[]
-      >([]); // Selected components for the treatment
-
-      // UI state
-      const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // Anchor for color picker menu
-      const [currentIndex, setCurrentIndex] = useState<number | null>(null); // Current focused component index
-
-
-      // Fetch treatment data when the component mounts or treatmentId changes
-      useEffect(() => {
-        const fetchData = async () => {
-          try {
-            const fetchedTreatment = treatmentId
-              ? await treatmentService.getTreatmentById(treatmentId)
-              : null;
-      
-            if (fetchedTreatment) {
-              setName(fetchedTreatment.name || '');
-              setCategory(fetchedTreatment.category || '');
-              setPrice(fetchedTreatment.price || 0);
-              setDuration(fetchedTreatment.duration || 0);
-              setDescription(fetchedTreatment.description || '');
-              setColor(fetchedTreatment.color || '#FF5733');
-      
-              const loadedComponents =
-                fetchedTreatment.components?.map((component: any) => ({
-                  id: component.id,
-                  componentName: component.componentName || '',
-                  unitPrice: component.unitPrice || 0,
-                  componentUnits: component.componentUnits || 1,
-                  category: component.category || '',
-                })) || [];
-      
-              setComponents(loadedComponents);
-              setOriginalTreatment(fetchedTreatment); // Save the original treatment for comparison
-            } else {
-              resetForm();
-            }
-          } catch (error) {
-            console.error('Error fetching treatment data:', error);
-          }
-        };
-      
-        fetchData();
-      }, [treatmentId]);
-
-      const normalizeComponents = (components: any[]) =>
-        components.map((component) => ({
-          id: component.id || '',
-          componentName: component.componentName || '',
-          unitPrice: Number(component.unitPrice || 0),
-          componentUnits: Number(component.componentUnits || 1),
-        }));
-      
-      const normalizeData = (data: any) => ({
-        name: data.name || '',
-        category: data.category || '',
-        price: Number(data.price || 0),
-        duration: Number(data.duration || 0),
-        description: data.description || '',
-        color: data.color || '#FF5733',
-        components: normalizeComponents(data.components || []),
-      });
-
-
-      const handleSave = async () => {
-        const treatmentData = {
-          ...(treatmentId && { id: treatmentId }),
-          name,
-          category,
-          price,
-          duration,
-          description,
-          color,
-          components: normalizeComponents(components),
-        };
-      
-        const isModified = () => {
-          if (!originalTreatment) return false;
-      
-          const currentData = normalizeData({
-            name,
-            category,
-            price,
-            duration,
-            description,
-            color,
-            components,
-          });
-      
-          const originalData = normalizeData(originalTreatment);
-      
-          return !isEqual(currentData, originalData);
-        };
-      
-        try {
-          if (treatmentId) {
-            if (isModified()) {
-              console.log('Changes detected. Updating treatment...');
-              await dispatch(updateTreatmentThunk(treatmentData) as any);
-            } else {
-              console.log('No changes detected. Skipping update.');
-            }
-          } else {
-            console.log('Creating new treatment...');
-            await dispatch(createTreatmentThunk(treatmentData) as any);
-            resetForm();
-          }
-          dispatch(closeDrawer());
-        } catch (error) {
-          console.error('Error submitting treatment:', error);
-        }
-      };
-
-    // Reset the form to default values
-    const resetForm = () => {
-      setName('');
-      setCategory('');
-      setPrice(0);
-      setDuration(0);
-      setDescription('');
-      setColor('#FF5733');
-      setComponents([]);
-    };
-
-// Update a component's value in the components state
-const handleComponentChange = (index: number, field: string, value: string | number) => {
-  setComponents((prev) => {
-    const updatedComponents = [...prev];
-    updatedComponents[index] = { ...updatedComponents[index], [field]: value };
-    return updatedComponents;
+  // Normalize data for comparison
+  const normalizeData = (data: any) => ({
+    name: data.name || '',
+    category: data.category || '',
+    price: Number(data.price || 0),
+    duration: Number(data.duration || 0),
+    description: data.description || '',
+    color: data.color || '#FF5733',
+    components: normalizeComponents(data.components || []),
   });
-};
 
-// Remove a component from the components state
-const handleRemoveField = (index: number) => {
-  setComponents((prev) => prev.filter((_, i) => i !== index));
-};
+  // Check if the treatment has been modified
+  const isModified = () => {
+    if (!originalTreatment) return false;
+    const currentData = normalizeData({ name, category, price, duration, description, color, components });
+    const originalData = normalizeData(originalTreatment);
+    return !isEqual(currentData, originalData);
+  };
+
+
+  const handleSave = () => {
+  
+    const treatmentData = {
+      id: treatmentId,
+      name,
+      category,
+      price,
+      duration,
+      description,
+      color,
+      components: normalizeComponents(components),
+    };
+  
+    const isModified = () => {
+      if (!originalTreatment) return false;
+  
+      const currentData = normalizeData({
+        name,
+        category,
+        price,
+        duration,
+        description,
+        color,
+        components,
+      });
+  
+      const originalData = normalizeData(originalTreatment);
+  
+      return !isEqual(currentData, originalData);
+    };
+  
+    try {
+      if (treatmentId) {
+        if (isModified()) {
+          console.log('✅ Changes detected. Updating treatment...');
+          dispatch(updateTreatment({ id: treatmentId, treatment: treatmentData, token, clinicDb }) as any);
+        } else {
+          console.log('ℹ️ No changes detected. Skipping update.');
+        }
+      } else {
+        console.log('🆕 Creating new treatment...');
+        dispatch(createTreatment({ treatment: treatmentData, token, clinicDb }) as any);
+        resetForm();
+      }
+      dispatch(closeDrawer());
+    } catch (error) {
+      console.error('❌ Error submitting treatment:', error);
+    }
+  };
+
+
+  // Reset form fields
+  const resetForm = () => {
+    setName('');
+    setCategory('');
+    setPrice(0);
+    setDuration(0);
+    setDescription('');
+    setColor('#FF5733');
+    setComponents([]);
+  };
+
+  // Handle component field changes
+  const handleComponentChange = (index: number, field: string, value: string | number) => {
+    setComponents((prev) => {
+      const updatedComponents = [...prev];
+      updatedComponents[index] = { ...updatedComponents[index], [field]: value };
+      return updatedComponents;
+    });
+  };
+
+  // Remove a component
+  const handleRemoveField = (index: number) => {
+    setComponents((prev) => prev.filter((_, i) => i !== index));
+  };
 
 // Select a component from the dropdown and update the components state
 const handleComponentSelect = (selectedComponent: any, index: number) => {
@@ -202,22 +190,31 @@ const handleComponentSelect = (selectedComponent: any, index: number) => {
   setCurrentIndex(null);
 };
 
-// Handle color picker focus
-const handleColorChange = (newColor: any) => {
-  setColor(newColor.hex);
-};
 
 const handleInputFocus = (index: number) => {
   setCurrentIndex(index);
 };
 
-const handleClose = async () => {
-  if (treatmentId) {
-    await handleSave(); // Save updates if editing
-  }
-  dispatch(closeDrawer()); // Close the drawer
-};
 
+  // Handle color picker change
+  const handleColorChange = (newColor: any) => {
+    setColor(newColor.hex);
+  };
+
+  // Handle drawer close
+  const handleClose = async () => {
+    if (treatmentId && isModified()) {
+      await handleSave();
+    }
+    dispatch(closeDrawer());
+  };
+  
+
+  const handleDelete = async () => {
+    console.log(treatmentId)
+      await dispatch(deleteTreatment({ id: treatmentId, token, clinicDb }) as any);
+      dispatch(closeDrawer())
+  }
 
     return (
     <Drawer
@@ -334,6 +331,14 @@ const handleClose = async () => {
         <Box sx={{ p: 2, borderTop: '1px solid #e0e0e0', textAlign: 'right' }}>
           <Button variant="contained" color="primary" onClick={handleSave}>
             Save Treatment
+          </Button>
+        </Box>
+      )}
+
+      {treatmentId && (
+        <Box sx={{ p: 2, borderTop: '1px solid #e0e0e0', textAlign: 'right'}}>
+          <Button variant="contained" color="primary" onClick={handleDelete}>
+            Delete Treatment
           </Button>
         </Box>
       )}

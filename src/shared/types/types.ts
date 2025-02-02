@@ -6,6 +6,7 @@ import { StockState } from '@/api/stockSlice';
 import { TreatmentState } from '@/api/treatmentSlice';
 import { PatientUserState } from '@/api/patientUserSlice';
 import { PermissionsState } from '@/api/permissionsSlice';
+import { SyncState } from '@/api/syncSlice';
 
 export interface RootState {
   auth: AuthState;
@@ -15,4 +16,5 @@ export interface RootState {
   treatments: TreatmentState;
   patientUser: PatientUserState;
   permissions: PermissionsState;
+  sync: SyncState;
 }

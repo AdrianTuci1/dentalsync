@@ -18,44 +18,48 @@ import { openDrawer } from '@/components/drawerSlice';
 import { Treatment } from '../types/treatmentType';
 import generateInitials from '@/shared/utils/generateInitials';
 import SearchInput from '../../../components/inputs/SearchInput';
-import { fetchTreatments, selectTreatments, selectLoading} from '@/api/treatmentSlice';
-import { AppDispatch } from '@/shared/services/store';
+import { fetchTreatments, selectTreatments, selectTreatmentLoading} from '@/api/treatmentSlice';
+
+import { getSubdomain } from '@/shared/utils/getSubdomains';
 
 export const Treatments: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const treatments = useSelector(selectTreatments); // Select treatments from Redux
-  const loading = useSelector(selectLoading); // Select loading state
+  const isLoading = useSelector(selectTreatmentLoading); // Select loading state
   const isSmallScreen = useMediaQuery('(max-width:800px)'); // Responsive check
+  const token = useSelector((state: any) => state.auth.subaccountToken);
+  const clinicDb = getSubdomain() + '_db'; // Hardcoded clinicDb
+
 
   const [searchTerm, setSearchTerm] = useState(''); // Local state for search term
-  const [offset, setOffset] = useState(0); // Pagination offset
 
-  // Fetch treatments on mount or when searchTerm changes
+
+  // Fetch all treatments on mount or when searchTerm changes
   useEffect(() => {
-    dispatch(fetchTreatments({ searchTerm, offset: 0 }) as any); // Reset to fetch from the beginning
-    setOffset(0); // Reset offset
-  }, [dispatch, searchTerm]);
+    if (token && clinicDb) {
+      dispatch(fetchTreatments({ token, clinicDb, name: searchTerm }) as any);
+    }
+  }, [dispatch, token, clinicDb, searchTerm]);
 
   // Handle search input changes
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value); // Update search term
+    setSearchTerm(event.target.value);
   };
 
   // Handle adding a new treatment
   const handleAddNew = () => {
-    dispatch(openDrawer({ type: 'Treatment', data: { treatmentId: null } })); // Open drawer for new treatment
+    dispatch(openDrawer({ type: 'Treatment', data: { treatment: null } })); // Open drawer for new treatment
   };
 
-  // Handle editing a treatment
   const handleRowClick = (treatmentId: string) => {
-    dispatch(openDrawer({ type: 'Treatment', data: { treatmentId } })); // Open drawer for editing
-  };
-
-  // Handle loading more treatments
-  const handleLoadMore = () => {
-    const newOffset = offset + 20; // Increment offset (assume 20 items per page)
-    setOffset(newOffset);
-    dispatch(fetchTreatments({ searchTerm, offset: newOffset }) as any); // Fetch more treatments
+    const selectedTreatment: Treatment | undefined = treatments.find((t: Treatment) => t.id === treatmentId);
+  
+    if (!selectedTreatment) {
+      console.error(`Treatment with ID ${treatmentId} not found.`);
+      return;
+    }
+  
+    dispatch(openDrawer({ type: 'Treatment', data: { treatment: selectedTreatment } })); // ✅ Pass the full treatment object
   };
 
   return (
@@ -129,18 +133,6 @@ export const Treatments: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* Load More Button */}
-      <Box display="flex" justifyContent="center" margin="20px 0">
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleLoadMore}
-          disabled={loading}
-        >
-          {loading ? 'Loading...' : 'Load More'}
-        </Button>
-      </Box>
     </>
   );
 };

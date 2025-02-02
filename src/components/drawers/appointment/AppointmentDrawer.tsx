@@ -58,17 +58,17 @@ const AppointmentDrawer: React.FC = () => {
     }
   }, [appointmentId, dispatch]);
 
-  const handleClose = async () => {
+  const handleClose = () => {
+    console.log('handle close called')
     try {
       if (!isNewAppointment && appointmentId && appointmentDetails) {
-        await dispatch(updateAppointment(appointmentDetails)).unwrap();
+        dispatch(updateAppointment(appointmentDetails)).unwrap();
         console.log('Appointment successfully updated before closing drawer.');
       }
     } catch (error) {
       console.error('Error updating appointment before closing:', error);
     } finally {
       dispatch(closeDrawer());
-      dispatch(resetAppointment());
     }
   };
 

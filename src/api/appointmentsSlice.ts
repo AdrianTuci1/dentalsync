@@ -44,6 +44,7 @@ export const fetchAppointmentById = createAsyncThunk<
     const token = state.auth.subaccountToken;
     const database = 'demo_db';
 
+
     const appointmentService = new AppointmentService(token || '', database);
 
     try {

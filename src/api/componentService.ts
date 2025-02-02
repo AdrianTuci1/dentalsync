@@ -1,8 +1,4 @@
 import { Component } from '@/features/clinic/types/componentType'; // Import the Component type
-import { saveOfflineData, getOfflineData } from '@/shared/utils/localForage';
-import { queueOfflineEdit } from '@/shared/services/syncService';
-
-const COMPONENTS_CACHE_KEY = 'components_cache';
 
 class ComponentService {
   private token: string;
@@ -24,164 +20,72 @@ class ComponentService {
     };
   }
 
-  /**
-   * Create components (single or batch) with offline support.
-   */
-  async createComponents(componentsData: Partial<Component>[]): Promise<Component[]> {
-    try {
-      const response = await fetch(`${this.baseUrl}/api/components`, {
-        method: 'POST',
+  // Create a new component
+  async createComponent(componentData: Partial<Component>): Promise<Component> {
+    const response = await fetch(`${this.baseUrl}/api/components`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(componentData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create component');
+    }
+
+    const data = await response.json();
+    return data;
+  }
+
+    // Fetch components with optional search and pagination
+    async getAllComponents(name: string = '', offset: number = 0): Promise<{ components: Component[]; offset: number }> {
+      const query = new URLSearchParams({
+        name,
+        offset: offset.toString(), // Convert offset to string for query params
+      }).toString();
+
+      const response = await fetch(`${this.baseUrl}/api/components?${query}`, {
+        method: 'GET',
         headers: this.getHeaders(),
-        body: JSON.stringify(componentsData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create components');
+        throw new Error('Failed to fetch components');
       }
 
-      const createdComponents = await response.json();
-
-      // Update the cache with the new components
-      const cachedComponents = (await getOfflineData<Component[]>(COMPONENTS_CACHE_KEY)) || [];
-      await saveOfflineData(COMPONENTS_CACHE_KEY, [...cachedComponents, ...createdComponents]);
-
-      return createdComponents;
-    } catch (error) {
-      console.warn('Offline: Queuing component creation for sync');
-      await queueOfflineEdit({
-        endpoint: '/api/components',
-        method: 'POST',
-        data: componentsData,
-      });
-      throw error;
+      const data = await response.json();
+      return { components: data.components, offset: data.offset };
     }
-  }
 
-  /**
-   * Fetch all components with offline caching.
-   */
-  async getAllComponents(
-    name: string = '',
-    offset: number = 0
-  ): Promise<{ components: Component[]; offset: number }> {
-    try {
-      const data = await this.fetchAndCacheComponents(name, offset);
-      return data;
-    } catch (fetchError) {
-      console.warn('Error fetching components, falling back to cached data', fetchError);
 
-      // Serve cached data as a fallback
-      const cachedComponents = await getOfflineData<Component[]>(COMPONENTS_CACHE_KEY);
-      if (cachedComponents) {
-        console.log('Serving cached components');
-        return { components: cachedComponents.slice(offset, offset + 20), offset };
-      }
-
-      throw new Error('Failed to fetch components, and no cached data available.');
-    }
-  }
-
-  /**
-   * Update components (single or batch) with offline support.
-   */
+  // Update a component by ID
   async updateComponent(
     componentId: string,
     componentData: Partial<Component>
   ): Promise<Component> {
-    try {
-      const response = await fetch(`${this.baseUrl}/api/components/${componentId}`, {
-        method: 'PUT',
-        headers: this.getHeaders(),
-        body: JSON.stringify(componentData),
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to update component');
-      }
-  
-      const updatedComponent = await response.json();
-  
-      // Update the cache with the updated component
-      const cachedComponents = (await getOfflineData<Component[]>(COMPONENTS_CACHE_KEY)) || [];
-      const updatedCache = cachedComponents.map((comp) =>
-        comp.id === componentId ? updatedComponent : comp
-      );
-      await saveOfflineData(COMPONENTS_CACHE_KEY, updatedCache);
-  
-      return updatedComponent;
-    } catch (error) {
-      console.warn('Offline: Queuing component update for sync');
-      await queueOfflineEdit({
-        endpoint: `/api/components/${componentId}`,
-        method: 'PUT',
-        data: componentData,
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Delete components (single or batch) with offline support.
-   */
-  async deleteComponents(componentIds: string[]): Promise<void> {
-    try {
-      const response = await fetch(`${this.baseUrl}/api/components`, {
-        method: 'DELETE',
-        headers: this.getHeaders(),
-        body: JSON.stringify(componentIds),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete components');
-      }
-
-      // Remove the components from the cache
-      const cachedComponents = (await getOfflineData<Component[]>(COMPONENTS_CACHE_KEY)) || [];
-      const updatedCache = cachedComponents.filter(
-        (comp) => !componentIds.includes(comp.id)
-      );
-      await saveOfflineData(COMPONENTS_CACHE_KEY, updatedCache);
-    } catch (error) {
-      console.warn('Offline: Queuing component deletion for sync');
-      await queueOfflineEdit({
-        endpoint: '/api/components',
-        method: 'DELETE',
-        data: componentIds,
-      });
-      throw error;
-    }
-  }
-
-  /**
-   * Fetch components from the server and update the cache.
-   */
-  private async fetchAndCacheComponents(
-    name: string,
-    offset: number
-  ): Promise<{ components: Component[]; offset: number }> {
-    const response = await fetch(
-      `${this.baseUrl}/api/components?name=${encodeURIComponent(name)}&offset=${offset}`,
-      {
-        method: 'GET',
-        headers: this.getHeaders(),
-      }
-    );
+    const response = await fetch(`${this.baseUrl}/api/components/${componentId}`, {
+      method: 'PUT',
+      headers: this.getHeaders(),
+      body: JSON.stringify(componentData),
+    });
 
     if (!response.ok) {
-      throw new Error('Failed to fetch components');
+      throw new Error('Failed to update component');
     }
 
     const data = await response.json();
+    return data;
+  }
 
-    // Update the cache by merging fetched data with cached data
-    const cachedComponents = (await getOfflineData<Component[]>(COMPONENTS_CACHE_KEY)) || [];
-    const updatedCache = cachedComponents
-      .concat(data.components)
-      .filter((comp, index, self) => index === self.findIndex((c) => c.id === comp.id));
+  // Delete a component by ID
+  async deleteComponent(componentId: string): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/api/components/${componentId}`, {
+      method: 'DELETE',
+      headers: this.getHeaders(),
+    });
 
-    await saveOfflineData(COMPONENTS_CACHE_KEY, updatedCache);
-
-    return { components: data.components, offset: data.offset };
+    if (!response.ok) {
+      throw new Error('Failed to delete component');
+    }
   }
 }
 
