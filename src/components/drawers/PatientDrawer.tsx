@@ -15,81 +15,69 @@ import DeleteTab from './patient/DeleteTab';
 import { closeDrawer } from '@/components/drawerSlice';
 import styles from '@styles-cl/drawers/PatientDrawer.module.scss'; // Import CSS module for styling
 import { selectTopDrawer } from '@/shared/utils/selectors';
-import { createPatientUser, fetchPatientUser, updatePatientUser } from '@/api/patientUserSlice';
-import { PatientProfile } from '@/features/clinic/types/patient';
+import { createPatient, fetchPatientById, setDetailedPatient, updatePatient} from '@/api/patientUserSlice';
+import { getSubdomain } from '@/shared/utils/getSubdomains';
+import { AppDispatch } from '@/shared/services/store';
 
 const PatientDrawer: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
-  // Access drawer data from Redux
+  // ✅ Get drawer data from Redux
   const { drawerData } = useSelector(selectTopDrawer);
   const patientId = drawerData?.patientId || null;
 
+  // ✅ Get detailed patient from Redux
+  const patientUser = useSelector((state: any) =>
+    state.patients.detailedPatients.find((p: any) => p.id === patientId) || null
+  );
+
   const [activeTab, setActiveTab] = useState(0);
+  const token = useSelector((state: any) => state.auth.subaccountToken);
+  const clinicDb = `${getSubdomain()}_db`;
 
-  const [patientUser, setPatientUser] = useState<any>(null);
-
-
+  // ✅ Fetch patient details if not in Redux cache
   useEffect(() => {
-    if (patientId) {
-      dispatch(fetchPatientUser(patientId) as any)
-        .unwrap()
-        .then((data: PatientProfile) => setPatientUser(data))
-        .catch(console.error);
+    if (patientId && !patientUser) {
+      dispatch(fetchPatientById({ id: patientId, token, clinicDb }) as any);
     }
-  }, [dispatch, patientId]);
+  }, [dispatch, patientId, patientUser, token, clinicDb]);
 
+  // ✅ Handle form changes dynamically
   const handleInputChange = (field: string, value: any) => {
-    setPatientUser((prev: any) => ({
-      ...prev,
-      [field.includes('.') ? field.split('.')[0] : field]: field.includes('.')
-        ? {
-            ...prev[field.split('.')[0]],
-            [field.split('.')[1]]: value,
-          }
-        : value,
-    }));
+    dispatch(setDetailedPatient({ ...patientUser, [field]: value }));
   };
 
-  const handleSave = () => {
-    if (patientUser) {
-      // Prepare payload to match the server's expectations
-      const sanitizedPayload = {
-        email: patientUser.email,
-        name: patientUser.name,
-        age: parseInt(patientUser.patientProfile?.age, 10) || 0, // Ensure age is a number
-        gender: patientUser.patientProfile?.gender || 'Other',
-        phone: patientUser.patientProfile?.phone || '',
-        address: patientUser.patientProfile?.address || '',
-        labels: Array.isArray(patientUser.patientProfile?.labels)
-          ? patientUser.patientProfile.labels
-          : [],
-        notes: patientUser.patientProfile?.notes || '',
-      };
-  
+  // ✅ Save Patient (Optimistic Update)
+  const handleSave = async () => {
+    if (!patientUser) return;
+
+    const sanitizedPayload = {
+      email: patientUser.email,
+      name: patientUser.name,
+      age: parseInt(patientUser.patientProfile?.age, 10) || 0,
+      gender: patientUser.patientProfile?.gender || "Other",
+      phone: patientUser.patientProfile?.phone || "",
+      address: patientUser.patientProfile?.address || "",
+      labels: Array.isArray(patientUser.patientProfile?.labels) ? patientUser.patientProfile.labels : [],
+      notes: patientUser.patientProfile?.notes || "",
+    };
+
+    try {
       if (patientId) {
-        // Update existing patient
-        dispatch(updatePatientUser({ id: patientId, data: sanitizedPayload }) as any)
-          .unwrap()
-          .then(() => console.log('Patient updated successfully'))
-          .catch(console.error);
+        // ✅ Update existing patient
+        await dispatch(updatePatient({ id: patientId, patient: sanitizedPayload, token, clinicDb }) as any);
       } else {
-        // Create new patient
-        dispatch(createPatientUser(sanitizedPayload) as any)
-          .unwrap()
-          .then(() => console.log('Patient created successfully'))
-          .catch(console.error);
+        // ✅ Create new patient
+        await dispatch(createPatient({ patient: sanitizedPayload, token, clinicDb }) as any);
       }
+      dispatch(closeDrawer());
+    } catch (error) {
+      console.error("❌ Error saving patient:", error);
     }
-    console.log(patientUser)
-  };
-  const handleTabChange = (index: number) => {
-    setActiveTab(index);
   };
 
-  const handleClose = () => {
-    dispatch(closeDrawer());
-  };
+  const handleTabChange = (index: number) => setActiveTab(index);
+  const handleClose = () => dispatch(closeDrawer());
 
   const tabs = [
     { label: 'Details', icon: <img src="/info.png" alt="Details" /> },

@@ -7,6 +7,7 @@ import { TreatmentState } from '@/api/treatmentSlice';
 import { PatientUserState } from '@/api/patientUserSlice';
 import { PermissionsState } from '@/api/permissionsSlice';
 import { SyncState } from '@/api/syncSlice';
+import { MedicState } from '@/api/medicSlice';
 
 export interface RootState {
   auth: AuthState;
@@ -17,4 +18,5 @@ export interface RootState {
   patientUser: PatientUserState;
   permissions: PermissionsState;
   sync: SyncState;
+  medic: MedicState;
 }

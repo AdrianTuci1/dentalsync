@@ -11,48 +11,49 @@ import { useDispatch, useSelector } from 'react-redux';
 import { closeDrawer } from '../drawerSlice';
 import { Component } from '@/features/clinic/types/componentType';
 import { selectTopDrawer } from '@/shared/utils/selectors';
-import ComponentService from '@/api/componentService';
 import { getSubdomain } from '@/shared/utils/getSubdomains';
-import { addStock, updateStock } from '@/api/stockSlice';
+import { createComponent, updateComponent } from '@/api/stockSlice';
 
-const StockDrawer: React.FC = () => {
+
+export const StockDrawer: React.FC = () => {
   const dispatch = useDispatch();
-
-  const token = useSelector((state: any) => state.auth.subaccountToken); // Authentication token
-  const db = getSubdomain() + '_db'
-  const stockService = new ComponentService(token, db)
+  const token = useSelector((state: any) => state.auth.subaccountToken);
+  const db = getSubdomain() + "_db";
 
   const { drawerData } = useSelector(selectTopDrawer);
   const stock = drawerData?.stock || null;
 
   const [newStock, setNewStock] = useState<Partial<Component>>({
-    componentName: '',
+    componentName: "",
     unitPrice: 0,
-    vendor: '',
+    vendor: "",
     quantity: 0,
   });
 
+  /** ✅ Prefill form when opening the drawer */
   useEffect(() => {
     if (stock) {
       setNewStock(stock);
     } else {
       setNewStock({
-        componentName: '',
+        componentName: "",
         unitPrice: 0,
-        vendor: '',
+        vendor: "",
         quantity: 0,
       });
     }
   }, [stock]);
 
+  /** ✅ Handle input change */
   const handleNewStockChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setNewStock((prevStock) => ({
       ...prevStock,
-      [name]: name === 'quantity' || name === 'unitPrice' ? parseFloat(value) || 0 : value,
+      [name]: name === "quantity" || name === "unitPrice" ? parseFloat(value) || 0 : value,
     }));
   };
 
+  /** ✅ Check if stock is modified */
   const isModified = () => {
     if (!stock) return true; // Always proceed for new stocks
     return (
@@ -62,42 +63,35 @@ const StockDrawer: React.FC = () => {
       stock.quantity !== newStock.quantity
     );
   };
-
   const handleSave = async () => {
     if (!isModified()) {
-      console.log('No changes detected. Skipping save.');
+      console.log("ℹ️ No changes detected. Skipping save.");
       return;
     }
 
     const savedStock: Component = {
-      id: newStock.id || '', // Ensure ID is present for updates
-      componentName: newStock.componentName || '',
+      id: newStock.id || "", // Ensure ID is present for updates
+      componentName: newStock.componentName || "",
       unitPrice: newStock.unitPrice || 0,
-      vendor: newStock.vendor || '',
+      vendor: newStock.vendor || "",
       quantity: newStock.quantity || 0,
       createdAt: newStock.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    try {
-      if (stock) {
-        // Update existing stock
-        await stockService.updateComponent(savedStock.id, savedStock);
-        dispatch(updateStock(savedStock)); // Dispatch update action
-        console.log('Stock updated successfully:', savedStock);
-      } else {
-        // Create new stock
-        const createdStock = await stockService.createComponent(savedStock);
-        dispatch(addStock(createdStock)); // Dispatch add action
-        console.log('Stock created successfully:', createdStock);
-      }
-      dispatch(closeDrawer());
-    } catch (error) {
-      console.error('Error saving stock:', error);
-      alert('Failed to save stock. Please try again.');
+    if (stock) {
+      // ✅ Update existing stock
+      dispatch(updateComponent({ id: savedStock.id, component: savedStock, token, clinicDb: db }) as any);
+    } else {
+      // ✅ Create new stock
+      dispatch(createComponent({ component: savedStock, token, clinicDb: db }) as any);
     }
+
+    dispatch(closeDrawer());
   };
 
+
+  /** ✅ Handle Drawer Close */
   const handleClose = () => {
     if (stock && isModified()) {
       handleSave();

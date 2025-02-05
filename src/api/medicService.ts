@@ -1,95 +1,97 @@
+import { ApiMedicData, MedicInfo, MedicsListItem } from "@/features/clinic/types/Medic";
+
 class MedicService {
-    private subaccountToken: string;
-    private database: string;
-    private BASE_URL = import.meta.env.VITE_SERVER;
-  
-    constructor(subaccountToken: string, database: string) {
-      this.subaccountToken = subaccountToken;
-      this.database = database;
+  private static instance: MedicService;
+  private token: string;
+  private clinicDb: string;
+  private baseUrl: string;
+
+  private constructor(token: string, clinicDb: string) {
+    this.token = token;
+    this.clinicDb = clinicDb;
+    this.baseUrl = import.meta.env.VITE_SERVER;
+  }
+
+  public static getInstance(token: string, clinicDb: string): MedicService {
+    if (!MedicService.instance) {
+      MedicService.instance = new MedicService(token, clinicDb);
     }
-  
-    // Helper method to configure headers
-    private getHeaders() {
-      return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.subaccountToken}`,
-        'x-clinic-db': this.database,
-      };
-    }
-  
-    // Create Medic
-    async createMedic(medicData: object) {
-      try {
-        const response = await fetch(`${this.BASE_URL}/api/medics`, {
-          method: 'POST',
-          headers: this.getHeaders(),
-          body: JSON.stringify(medicData),
-        });
-        return await response.json();
-      } catch (error) {
-        console.error('Error creating medic:', error);
-        throw error;
-      }
-    }
-  
-    // View Medic
-    async viewMedic(medicId: string) {
-      try {
-        const response = await fetch(`${this.BASE_URL}/api/medics/${medicId}`, {
-          method: 'GET',
-          headers: this.getHeaders(),
-        });
-        return await response.json();
-      } catch (error) {
-        console.error('Error retrieving medic details:', error);
-        throw error;
-      }
-    }
-  
-    // Update Medic
-    async updateMedic(medicId: string, medicData: object) {
-      try {
-        const response = await fetch(`${this.BASE_URL}/api/medics/${medicId}`, {
-          method: 'PUT',
-          headers: this.getHeaders(),
-          body: JSON.stringify(medicData),
-        });
-        return await response.json();
-      } catch (error) {
-        console.error('Error updating medic:', error);
-        throw error;
-      }
-    }
-  
-    // Delete Medic
-    async deleteMedic(medicId: string) {
-      try {
-        const response = await fetch(`${this.BASE_URL}/api/medics/${medicId}`, {
-          method: 'DELETE',
-          headers: this.getHeaders(),
-        });
-        return await response.json();
-      } catch (error) {
-        console.error('Error deleting medic:', error);
-        throw error;
-      }
+    return MedicService.instance;
+  }
+
+  private getHeaders() {
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${this.token}`,
+      "x-clinic-db": this.clinicDb,
+    };
+  }
+
+  async fetchMedics(): Promise<MedicsListItem[]> {
+    const response = await fetch(`${this.baseUrl}/api/medics`, {
+      method: "GET",
+      headers: this.getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch medics");
     }
 
+    return response.json();
+  }
 
-      // Get Medics with Working Days
-  async getMedicsWithWorkingDays() {
-    try {
-      const response = await fetch(`${this.BASE_URL}/api/medics`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching medics with working days:', error);
-      throw error;
+  async fetchMedicById(medicId: string): Promise<ApiMedicData> {
+    const response = await fetch(`${this.baseUrl}/api/medics/${medicId}`, {
+      method: "GET",
+      headers: this.getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch medic details");
+    }
+
+    return response.json();
+  }
+
+  async createMedic(medicData: Partial<MedicInfo>): Promise<MedicInfo> {
+    const response = await fetch(`${this.baseUrl}/api/medics`, {
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify(medicData),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to create medic");
+    }
+
+    return response.json();
+  }
+
+  async updateMedic(id: string, medicData: Partial<MedicInfo>): Promise<MedicInfo> {
+    const response = await fetch(`${this.baseUrl}/api/medics/${id}`, {
+      method: "PUT",
+      headers: this.getHeaders(),
+      body: JSON.stringify(medicData),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to update medic");
+    }
+
+    return response.json();
+  }
+
+  async deleteMedic(id: string): Promise<void> {
+    const response = await fetch(`${this.baseUrl}/api/medics/${id}`, {
+      method: "DELETE",
+      headers: this.getHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to delete medic");
     }
   }
-  }
-  
-  export default MedicService;
-  
+
+}
+
+export default MedicService;

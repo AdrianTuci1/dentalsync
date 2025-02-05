@@ -7,7 +7,7 @@ export interface MedicsListItem {
   contact: string;
   email: string;
   workingDays: string[];
-  type: 'FULL-TIME' | 'PART-TIME';
+  employmentType: 'FULL-TIME' | 'PART-TIME';
 }
 
 

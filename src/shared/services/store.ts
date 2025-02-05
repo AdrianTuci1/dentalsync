@@ -3,10 +3,11 @@ import authReducer from '@/api/authSlice';
 import requestReducer from '@/api/requestSlice';
 import drawerReducer from '@/components/drawerSlice';
 import appointmentsReducer from '@/api/appointmentsSlice';
-import stockReducer, { initializeStocks } from '@/api/stockSlice';
+import stockReducer from '@/api/stockSlice';
 import treatmentReducer from '@/api/treatmentSlice';
 import patientUserReducer from '@/api/patientUserSlice'
 import permissionsReducer from "@/api/permissionsSlice";
+import medicReducer from "@/api/medicSlice"
 import { getSubdomain } from '../utils/getSubdomains';
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
@@ -18,10 +19,13 @@ import syncReducer from "@/api/syncSlice";
 const persistConfig = {
   key: "root",
   storage, // Uses local storage (you can change it to LocalForage if needed)
-  whitelist: ["treatments"], // Persist only treatments
+  whitelist: ["treatments", "stocks", "medics", "patients"], 
 };
 
 const persistedTreatmentReducer = persistReducer(persistConfig, treatmentReducer);
+const persistedComponentReducer = persistReducer(persistConfig, stockReducer);
+const persistedMedicReducer = persistReducer(persistConfig, medicReducer);
+const persistedPatientReducer = persistReducer(persistConfig, patientUserReducer)
 
 const extraArgument = {
   get token() {
@@ -38,9 +42,10 @@ const store = configureStore({
     request: requestReducer,
     drawer: drawerReducer,
     appointments: appointmentsReducer,
-    stocks: stockReducer,
+    stocks: persistedComponentReducer,
     treatments: persistedTreatmentReducer,
-    patientUser: patientUserReducer,
+    patients: persistedPatientReducer,
+    medics: persistedMedicReducer,
     permissions: permissionsReducer,
     sync: syncReducer,
   },
@@ -58,9 +63,6 @@ const store = configureStore({
 
 // Persistor for persisting the store
 export const persistor = persistStore(store);
-
-// Initialize stocks from LocalForage when the app starts
-store.dispatch(initializeStocks());
 
 
 

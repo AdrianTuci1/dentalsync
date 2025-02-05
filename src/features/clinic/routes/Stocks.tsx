@@ -25,41 +25,44 @@ export const StocksTable: React.FC = () => {
   const isSmallScreen = useMediaQuery('(max-width:800px)');
 
   const token = useSelector((state: any) => state.auth.subaccountToken);
-  const clinicDb = getSubdomain() + '_db' // Hardcoded clinicDb
+  const clinicDb = getSubdomain() + '_db';
   const dispatch = useDispatch();
 
-    // Redux stocks state
-    const stocks = useSelector(selectStocks);
-    const isLoading = useSelector(selectStockLoading);
+  // Redux stocks state
+  const stocks = useSelector(selectStocks);
+  const isLoading = useSelector(selectStockLoading);
 
-    // Fetch Components using Redux Thunk
-    useEffect(() => {
-      if (token && clinicDb) {
-        dispatch(fetchComponents({ name: searchTerm, offset: 0, token, clinicDb }) as any);
-      }
-    }, [dispatch, searchTerm, token, clinicDb]);
+  /** ✅ Fetch components on mount & when search term changes */
+  useEffect(() => {
+    if (token && clinicDb) {
+      dispatch(fetchComponents({ name: searchTerm, offset: 0, token, clinicDb }) as any);
+    }
+  }, [dispatch, searchTerm, token, clinicDb]);
 
-
+  /** ✅ Handle search input change */
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
     setOffset(0); // Reset offset when searching
   };
 
+  /** ✅ Handle row click (edit component) */
   const handleRowClick = (stock: Component) => {
     dispatch(openDrawer({ type: 'Stock', data: { stock } }));
   };
 
+  /** ✅ Handle adding a new component */
   const handleAddStockClick = () => {
     dispatch(openDrawer({ type: 'Stock', data: { stock: null } }));
   };
 
-  // Handle Load More for pagination
+  /** ✅ Handle Load More for pagination */
   const handleLoadMore = () => {
     if (!isLoading && token && clinicDb) {
-      dispatch(fetchComponents({ name: searchTerm, offset, token, clinicDb }) as any);
-      setOffset((prevOffset) => prevOffset + 20); // Increment offset
+      dispatch(fetchComponents({ name: searchTerm, offset: offset + 20, token, clinicDb }) as any);
+      setOffset((prevOffset) => prevOffset + 20);
     }
   };
+
   return (
     <>
       <TableContainer component={Paper}>

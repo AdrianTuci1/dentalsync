@@ -14,111 +14,55 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { blue, green, orange } from '@mui/material/colors';
-import MedicService from '@/api/medicService';
 import { useDispatch, useSelector } from 'react-redux';
 import { openDrawer } from '@/components/drawerSlice';
-import { MedicsListItem } from '../types/Medic';
 import SearchInput from '../../../components/inputs/SearchInput';
 import { getSubdomain } from '@/shared/utils/getSubdomains';
-import eventEmitter from '@/shared/utils/events';
+import { fetchMedics, selectMedicLoading, selectMedics } from '@/api/medicSlice';
 
 const Medics: React.FC = () => {
-  const [medics, setMedics] = useState<MedicsListItem[]>([]);
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const isSmallScreen = useMediaQuery('(max-width:800px)');
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const isSmallScreen = useMediaQuery("(max-width:800px)");
+
   const token = useSelector((state: any) => state.auth.subaccountToken);
+  const db = getSubdomain() + "_db";
   const dispatch = useDispatch();
-  const db = getSubdomain() + '_db'
 
+  // Redux state selectors
+  const medics = useSelector(selectMedics);
+  const isLoading = useSelector(selectMedicLoading);
 
-  // Fetch medics from API
+  console.log(medics)
+
+  // Fetch medics from API on mount
   useEffect(() => {
-    const fetchMedics = async () => {
-      if (!token || !db) {
-        console.error('Missing token or database');
-        return;
-      }
-
-      const medicService = new MedicService(token, db);
-
-      try {
-        const medicsData = await medicService.getMedicsWithWorkingDays();
-        const formattedMedics = medicsData.map((medic: any) => ({
-          id: medic.id,
-          name: medic.name,
-          specialty: medic.specialization || 'Unknown',
-          contact: medic.phone || 'No contact',
-          email: medic.email || 'No email',
-          workingDays: medic.workingDays || [],
-          type: medic.employmentType === 'full-time' ? 'FULL-TIME' : 'PART-TIME',
-        }));
-        setMedics(formattedMedics);
-      } catch (error) {
-        console.error('Failed to fetch medics:', error);
-      }
-    };
-
-    fetchMedics();
-  }, [token, db]);
-
-  useEffect(() => {
-    const handleMedicUpdated = (updatedMedic: MedicsListItem) => {
-  
-      setMedics((prevMedics) => {
-        const updatedMedics = prevMedics.map((medic) => {
-          if (String(medic.id) === String(updatedMedic.id)) {
-            return { ...updatedMedic }; // Replace with a new object
-          }
-          return medic;
-        });
-  
-        return updatedMedics;
-      });
-    };
-  
-    const handleMedicCreated = (newMedic: MedicsListItem) => {
-  
-      setMedics((prevMedics) => {
-        const newMedics = [...prevMedics, { ...newMedic }];
-        return newMedics;
-      });
-    };
-  
-    eventEmitter.on('medicUpdated', handleMedicUpdated);
-    eventEmitter.on('medicCreated', handleMedicCreated);
-  
-    return () => {
-      eventEmitter.off('medicUpdated', handleMedicUpdated);
-      eventEmitter.off('medicCreated', handleMedicCreated);
-    };
-  }, []);
+    if (token && db) {
+      dispatch(fetchMedics({ token, clinicDb: db }) as any);
+    }
+  }, [dispatch, token, db]);
 
 
-    // Filtered medics based on search term
-    const filteredMedics = useMemo(() => {
-      if (!searchTerm.trim()) {
-        return medics; // If searchTerm is empty, return all medics
-      }
-  
-      const lowercasedSearch = searchTerm.toLowerCase();
-      return medics.filter(
-        (medic) =>
-          medic.name.toLowerCase().includes(lowercasedSearch) ||
-          medic.specialty.toLowerCase().includes(lowercasedSearch) ||
-          medic.contact.toLowerCase().includes(lowercasedSearch)
-      );
-    }, [medics, searchTerm]);
+  // ✅ Fix filtering logic
+  const filteredMedics = useMemo(() => {
+    if (!searchTerm.trim()) return medics;
 
-  // Dispatch openDrawer action for adding or editing a medic
-  const handleOpenDrawer = (medicId: string | null) => {
-    dispatch(
-      openDrawer({
-        type: 'Medic',
-        data: { medicId },
-      })
+    const lowercasedSearch = searchTerm.toLowerCase();
+    return medics.filter(
+      (medic: any) =>
+        (medic.name?.toLowerCase() || "").includes(lowercasedSearch) ||
+        (medic.specialty?.toLowerCase() || "").includes(lowercasedSearch) ||
+        (medic.contact?.toLowerCase() || "").includes(lowercasedSearch)
     );
+  }, [medics, searchTerm]);
+
+  // **Dispatch openDrawer action for adding or editing a medic**
+  const handleOpenDrawer = (medicId: string | null) => {
+    dispatch(openDrawer({ type: "Medic", data: { medicId } }));
   };
 
+  if(isLoading) {
+    return <div>Loading data....</div>
+  }
 
   return (
     <>
@@ -183,7 +127,7 @@ const Medics: React.FC = () => {
                   </TableHead>
                 )}
                 <TableBody>
-                  {filteredMedics.map((medic, index) => (
+                  {filteredMedics.map((medic: any, index: any) => (
                     <TableRow
                       key={index}
                       onClick={() => handleOpenDrawer(medic.id)}
@@ -206,8 +150,8 @@ const Medics: React.FC = () => {
                           </TableCell>
                           <TableCell>
                             {medic.workingDays
-                              .filter((day) => day !== '')
-                              .map((day, idx) => (
+                              .filter((day: any) => day !== '')
+                              .map((day: any, idx: any) => (
                                 <Chip
                                   key={idx}
                                   label={day}
@@ -220,7 +164,7 @@ const Medics: React.FC = () => {
                           </TableCell>
                           <TableCell>
                             <Chip
-                              label={medic.type}
+                              label={medic.employmentType}
                               style={{
                                 backgroundColor:
                                   medic.type === 'FULL-TIME' ? green[100] : orange[100],

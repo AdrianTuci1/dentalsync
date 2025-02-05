@@ -1,7 +1,9 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Component } from '@/features/clinic/types/componentType';
-import localforage from 'localforage';
-import ComponentService from '@/api/componentService';
+import { createComponentFactory } from "@/factories/componentFactory";
+import { cache } from '@/shared/utils/localForage';
+import { queueOfflineUpdate } from '@/api/syncQueue';
+import { ComponentUpdater } from '@/shared/utils/ComponentUpdater';
 
 interface StockState {
   stocks: Component[];
@@ -17,54 +19,115 @@ const initialState: StockState = {
   offset: 0,
 };
 
-// Load stocks from LocalForage asynchronously
-const loadStocksFromStorage = async (): Promise<Component[]> => {
-  const storedStocks = await localforage.getItem<Component[]>('stocks');
-  return storedStocks || [];
-};
+// Factory-based Thunks
 
-
-// Async Thunk to fetch stocks from API
+/** ✅ Fetch components from API or cache */
 export const fetchComponents = createAsyncThunk(
-  'stocks/fetchComponents',
-  async ({ name = '', offset = 0, token, clinicDb }: { name?: string; offset?: number; token: string; clinicDb: string }, { rejectWithValue }) => {
+  "stocks/fetch",
+  async (
+    { token, clinicDb, name = "", offset = 0 }: { token: string; clinicDb: string; name?: string; offset?: number },
+    { rejectWithValue }
+  ) => {
+    const factory = createComponentFactory(token, clinicDb);
     try {
-      const componentService = new ComponentService(token, clinicDb); // ✅ Create an instance
-      const { components, offset: newOffset } = await componentService.getAllComponents(name, offset);
-
-      // Store the new data in LocalForage
-      await localforage.setItem('stocks', components);
-      await localforage.setItem('stocks_timestamp', Date.now());
-
+      const { components, offset: newOffset } = await factory.fetchComponents(name, offset);
+      await cache.set("stocks", components);
       return { components, offset: newOffset };
     } catch (error) {
-      return rejectWithValue(error instanceof Error ? error.message : 'Failed to fetch components');
+      return rejectWithValue(error instanceof Error ? error.message : "Failed to fetch components");
     }
   }
 );
 
+/** ✅ Optimistic Creation of Component */
+export const createComponent = createAsyncThunk(
+  "stocks/create",
+  async (
+    { component, token, clinicDb }: { component: Partial<Component>; token: string; clinicDb: string },
+    { rejectWithValue, dispatch }
+  ) => {
+    const factory = createComponentFactory(token, clinicDb);
+    try {
+      const newComponent = await factory.createComponent(component);
+      const cachedComponents = await cache.get("stocks");
+      const updatedComponents = [...cachedComponents, newComponent];
+      await cache.set("stocks", updatedComponents);
+      dispatch(setStocks(updatedComponents)); // Update Redux state
+      return newComponent;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : "Failed to create component");
+    }
+  }
+);
 
+/** ✅ Optimistic Update of Component */
+export const updateComponent = createAsyncThunk(
+  "stocks/update",
+  async (
+    { id, component, token, clinicDb }: { id: string; component: Partial<Component>; token: string; clinicDb: string },
+    { rejectWithValue, dispatch, getState }
+  ) => {
+    // Get current state
+    const state: any = getState();
+    const existingComponents: Component[] = state.stocks.stocks || [];
+
+    // Optimistic update
+    const optimisticComponents = ComponentUpdater.mergeComponent(existingComponents, id, component);
+    await cache.set("stocks", optimisticComponents);
+    dispatch(setStocks(optimisticComponents));
+
+    // If online, attempt to update in the background
+    if (navigator.onLine) {
+      try {
+        const factory = createComponentFactory(token, clinicDb);
+        const confirmedComponent = await factory.updateComponent(id, component);
+        const finalComponents = ComponentUpdater.mergeComponent(optimisticComponents, id, confirmedComponent);
+        await cache.set("stocks", finalComponents);
+        dispatch(setStocks(finalComponents));
+        return confirmedComponent;
+      } catch (error) {
+        console.error("API update failed:", error);
+        return rejectWithValue(error instanceof Error ? error.message : "Failed to update component");
+      }
+    } else {
+      // If offline, queue update for later sync
+      await queueOfflineUpdate({ type: "component", action: "update", data: { id, ...component } });
+      return optimisticComponents.find((c) => c.id === id);
+    }
+  }
+);
+
+/** ✅ Optimistic Deletion of Component */
+export const deleteComponent = createAsyncThunk(
+  "stocks/delete",
+  async (
+    { id, token, clinicDb }: { id: string; token: string; clinicDb: string },
+    { rejectWithValue }
+  ) => {
+    const factory = createComponentFactory(token, clinicDb);
+    try {
+      await factory.deleteComponent(id);
+      const cachedComponents = await cache.get("stocks");
+      const updatedList = cachedComponents.filter((c: Component) => c.id !== id);
+      await cache.set("stocks", updatedList);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : "Failed to delete component");
+    }
+  }
+);
+
+// Slice
 const stockSlice = createSlice({
-  name: 'stocks',
+  name: "stocks",
   initialState,
   reducers: {
-    addStock: (state, action: PayloadAction<Component>) => {
-      state.stocks.push(action.payload);
-      localforage.setItem('stocks', state.stocks);
-    },
-    updateStock: (state, action: PayloadAction<Component>) => {
-      const index = state.stocks.findIndex(stock => stock.id === action.payload.id);
-      if (index !== -1) {
-        state.stocks[index] = action.payload;
-        localforage.setItem('stocks', state.stocks);
-      }
-    },
     setStocks: (state, action: PayloadAction<Component[]>) => {
       state.stocks = action.payload;
-      localforage.setItem('stocks', state.stocks);
+      cache.set("stocks", state.stocks);
     },
-    loadStocks: (state, action: PayloadAction<Component[]>) => {
-      state.stocks = action.payload;
+    addStock: (state, action: PayloadAction<Component>) => {
+      state.stocks.push(action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -81,26 +144,30 @@ const stockSlice = createSlice({
       .addCase(fetchComponents.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(createComponent.fulfilled, (state, action) => {
+        state.stocks.push(action.payload);
+      })
+      .addCase(deleteComponent.fulfilled, (state, action) => {
+        state.stocks = state.stocks.filter((c) => c.id !== action.payload);
       });
   },
 });
 
-// Export actions
-export const { addStock, updateStock, setStocks, loadStocks } = stockSlice.actions;
-
-// Selectors
+// Export actions and selectors
+export const { setStocks, addStock } = stockSlice.actions;
 export const selectStocks = (state: any) => state.stocks.stocks;
 export const selectStockLoading = (state: any) => state.stocks.loading;
 export const selectStockError = (state: any) => state.stocks.error;
-
-// Explicitly export StockState type
-export type { StockState };
 
 // Export reducer
 export default stockSlice.reducer;
 
 // Function to load stocks from LocalForage and dispatch them
 export const initializeStocks = () => async (dispatch: any) => {
-  const storedStocks = await loadStocksFromStorage();
-  dispatch(loadStocks(storedStocks));
+  const storedStocks = await cache.get("stocks");
+  dispatch(setStocks(storedStocks));
 };
+
+// Explicitly export StockState type
+export type { StockState };

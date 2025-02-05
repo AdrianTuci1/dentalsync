@@ -1,6 +1,7 @@
 import { Component } from '@/features/clinic/types/componentType'; // Import the Component type
 
 class ComponentService {
+  private static instance: ComponentService;
   private token: string;
   private clinicDb: string;
   private baseUrl: string;
@@ -10,6 +11,16 @@ class ComponentService {
     this.clinicDb = clinicDb;
     this.baseUrl = import.meta.env.VITE_SERVER; // Base server URL from Vite environment variable
   }
+
+
+  // Singleton getter: returns the same instance if it exists
+  public static getInstance(token: string, clinicDb: string): ComponentService {
+    if (!ComponentService.instance) {
+      ComponentService.instance = new ComponentService(token, clinicDb);
+    }
+    return ComponentService.instance;
+  }
+
 
   // Get headers for requests
   private getHeaders() {

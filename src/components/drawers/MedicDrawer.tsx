@@ -12,140 +12,59 @@ import DaysOffStep from './addMedic/DaysOffStep';
 import PermissionsStep from './addMedic/PermissionsStep';
 import InfoTab from './addMedic/StaffInfoStep';
 import TreatmentAccordion from './addMedic/TreatmentAccordion';
-import MedicService from '@/api/medicService';
 import { useDispatch, useSelector } from 'react-redux';
 import { closeDrawer } from '../drawerSlice';
 
 import {
   MedicInfo,
-  ApiMedicData,
-  ApiWorkingDayHour,
+  MedicsListItem,
 } from '@/features/clinic/types/Medic';
 
 import styles from '@styles-cl/drawers/MedicDrawer.module.scss'
 import { selectTopDrawer } from '@/shared/utils/selectors';
-import eventEmitter from '@/shared/utils/events';
 import { getSubdomain } from '@/shared/utils/getSubdomains';
+import { createMedic, fetchMedicById, setUpdatedMedicInTable, updateMedic } from '@/api/medicSlice';
+import { transformMedicInfoToTableFormat } from '@/shared/utils/medicTransform';
 
 
-const transformMedicInfoToTableFormat = (medicInfo: any) => {
-
-
-  // Explicitly type dayAbbreviations
-  const dayAbbreviations: Record<"Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun", string> = {
-    Mon: "M",
-    Tue: "T",
-    Wed: "W",
-    Thu: "T",
-    Fri: "F",
-    Sat: "S",
-    Sun: "S",
-  };
-
-  // Initialize all days in order with empty strings by default
-  const weekDaysOrder: Array<keyof typeof dayAbbreviations> = [
-    "Mon",
-    "Tue",
-    "Wed",
-    "Thu",
-    "Fri",
-    "Sat",
-    "Sun",
-  ];
-
-  const transformedWorkingDays = weekDaysOrder.map((day) => {
-    const hours = medicInfo.workingHours?.[day]?.trim();
-    return hours ? dayAbbreviations[day] : ""; // Add abbreviation if hours exist, otherwise empty string
-  });
-
-  const transformedData = {
-    id: medicInfo.id,
-    name: medicInfo.name || medicInfo.info?.name || "Unknown",
-    specialty: medicInfo.specialization || medicInfo.info?.specialization || "Unknown",
-    contact: medicInfo.phone || medicInfo.info?.phone || "No contact",
-    email: medicInfo.email || medicInfo.info?.email || "No email",
-    workingDays: transformedWorkingDays, // Transformed array of working days
-    type: medicInfo.info.employmentType === "full-time" ? "FULL-TIME" : "PART-TIME",
-  };
-
-  return transformedData;
-};
 
 const MedicDrawer: React.FC = () => {
-    const dispatch = useDispatch();
-    const { drawerData, isOpen } = useSelector(selectTopDrawer);
-    const medicId = drawerData?.medicId || null;
-  
-    const [activeTab, setActiveTab] = useState<string>("info");
-    const [medicInfo, setMedicInfo] = useState<MedicInfo>({
-      id: undefined,
-      info: {
-        name: "",
-        email: "",
-        employmentType: "",
-        specialization: "",
-        phone: "",
-        address: "",
-        photo: "",
-      },
-      assignedServices: {
-        assignedTreatments: [],
-      },
-      workingHours: {},
-      daysOff: [],
-      permissions: [],
-    });
-  
-    const token = useSelector((state: any) => state.auth.subaccountToken);
-    const db = getSubdomain() + '_db'
-    const medicService = new MedicService(token, db);
+  const dispatch = useDispatch();
+  const { drawerData, isOpen } = useSelector(selectTopDrawer);
+  const medicId = drawerData?.medicId || null;
 
-    console.log(medicInfo)
-  
-    // Fetch or reset medic details on medicId change
-    useEffect(() => {
-      const fetchMedic = async () => {
-        if (medicId) {
-          try {
-            const data: ApiMedicData = await medicService.viewMedic(medicId);
-            setMedicInfo({
-              id: data.id.toString(),
-              info: {
-                name: data.name || "",
-                email: data.email || "",
-                employmentType: data.medicProfile.employmentType || "",
-                specialization: data.medicProfile.specialization || "",
-                phone: data.medicProfile.phone || "",
-                address: data.medicProfile.address || "",
-                photo: data.photo || "",
-              },
-              assignedServices: {
-                assignedTreatments: data.medicProfile.assignedTreatments || [],
-              },
-              workingHours: data.medicProfile.workingDaysHours.reduce(
-                (acc: { [day: string]: string }, curr: ApiWorkingDayHour) => {
-                  acc[curr.day] = `${curr.startTime}-${curr.endTime}`;
-                  return acc;
-                },
-                {}
-              ),
-              daysOff: data.medicProfile.daysOff || [],
-              permissions: data.permissions || [],
-            });
-          } catch (error) {
-            console.error("Error fetching medic:", error);
-          }
-        } else {
-          resetMedicInfo();
-        }
-      };
-  
-      fetchMedic();
-    }, [medicId]);
+  const [activeTab, setActiveTab] = useState<string>("info");
 
-    
-  
-    const resetMedicInfo = () => {
+  const token = useSelector((state: any) => state.auth.subaccountToken);
+  const clinicDb = `${getSubdomain()}_db`;
+
+
+  // ✅ Fetch medic when drawer opens
+  useEffect(() => {
+    if (medicId) {
+      dispatch(fetchMedicById({ id: medicId, token, clinicDb }) as any);
+    }
+  }, [medicId, dispatch, token, clinicDb]);
+
+  // ✅ Extract medic from Redux state (ENSURE RE-RENDER)
+  const medic = useSelector((state: any) => {
+    return state.medics.detailedMedics.find((m: MedicInfo) => String(m.id) === String(medicId));
+  });
+
+  // ✅ Local state for form data
+  const [medicInfo, setMedicInfo] = useState<MedicInfo | null>(null);
+
+  // ✅ Sync local state WHEN Redux medic updates
+  useEffect(() => {
+    if (medicId && medic) {
+      setMedicInfo(medic);
+    }
+  }, [medic]); // ✅ Runs whenever `medic` updates in Redux
+
+  // ✅ Initialize form when creating a new medic
+  useEffect(() => {
+    if (!medicId) {
+      console.log("📌 Initializing Empty Medic Form");
       setMedicInfo({
         id: undefined,
         info: {
@@ -164,30 +83,54 @@ const MedicDrawer: React.FC = () => {
         daysOff: [],
         permissions: [],
       });
-    };
-  
-    const handleChange = (field: string, value: any) => {
-      setMedicInfo((prevInfo) => ({
-        ...prevInfo,
-        [field]: value,
-      }));
-    };
-  
-    const handleSubmit = async () => {
-      try {
-        if (medicInfo.id) {
-          await medicService.updateMedic(medicInfo.id, medicInfo);
-          console.log(medicInfo)
-          eventEmitter.emit("medicUpdated", transformMedicInfoToTableFormat(medicInfo));
-        } else {
-          const newMedic = await medicService.createMedic(medicInfo);
-          eventEmitter.emit("medicCreated", transformMedicInfoToTableFormat(newMedic));
-        }
-        dispatch(closeDrawer());
-      } catch (error) {
-        console.error("Error saving medic:", error);
+    }
+  }, [medicId]);
+
+  // ✅ Ensure Redux Data Exists Before Rendering
+  if (medicId && !medic) {
+    return <div>Loading medic details...</div>;
+  }
+
+  // ✅ Prevent rendering until state is ready
+  if (!medicInfo) {
+    return <div>Loading medic details...</div>;
+  }
+
+
+  // 📝 Handle input changes
+  const handleChange = (field: keyof MedicInfo, value: any) => {
+    setMedicInfo((prevInfo) =>
+      prevInfo ? { ...prevInfo, [field]: value } : null
+    );
+  };
+
+
+  // 💾 Save or update medic
+  const handleSubmit = async () => {
+    if (!medicInfo) return;
+
+    try {
+      let updatedMedic: MedicInfo;
+
+      if (medicInfo.id) {
+        await dispatch(updateMedic({ id: medicInfo.id, medic: medicInfo, token, clinicDb }) as any);
+        updatedMedic = medicInfo; // Redux will update this eventually
+      } else {
+        await dispatch(createMedic({ medic: medicInfo, token, clinicDb }) as any);
+        updatedMedic = medicInfo;
       }
-    };
+
+      // ✅ Transform the updated medic data to match the table format
+      const updatedTableFormat: MedicsListItem = transformMedicInfoToTableFormat(updatedMedic);
+
+      // ✅ Update only the Redux table state
+      dispatch(setUpdatedMedicInTable(updatedTableFormat));
+
+      dispatch(closeDrawer());
+    } catch (error) {
+      console.error("❌ Error saving medic:", error);
+    }
+  };
 
 
   const tabs = [
@@ -224,10 +167,11 @@ const MedicDrawer: React.FC = () => {
                   ))}
                 </div>
 
-
         <Box className={styles.tabContent}>
           {tabs.find((tab) => tab.key === activeTab)?.component}
         </Box>
+
+        
 
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
           <Button variant="contained" color="primary" onClick={handleSubmit}>Save</Button>
