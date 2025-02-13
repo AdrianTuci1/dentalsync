@@ -32,7 +32,6 @@ const Medics: React.FC = () => {
   const medics = useSelector(selectMedics);
   const isLoading = useSelector(selectMedicLoading);
 
-  console.log(medics)
 
   // Fetch medics from API on mount
   useEffect(() => {

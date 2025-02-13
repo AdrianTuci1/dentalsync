@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import '../styles/pages/treatments.scss';
+import styles from '../styles/pages/TreatmentsPage.module.scss';
 import { Chip } from '@mui/material';
 
 const treatmentsData = [
@@ -37,132 +37,102 @@ const treatmentsData = [
     ],
   },
 ];
+ 
+
+
 
 const TreatmentsPage: React.FC = () => {
-  const { state } = useLocation();
-  const [categories, setCategories] = useState<typeof treatmentsData>([]);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState(treatmentsData[0]?.category || "");
+  const contentRef = useRef<HTMLDivElement>(null);
+  const isMobile = window.innerWidth <= 768;
 
-  // Scroll to a specific category and adjust for sticky elements
+  // Scroll to the selected category container
   const scrollToCategory = (category: string) => {
     const targetElement = document.getElementById(category);
     if (targetElement) {
-      const yOffset = -100; // Adjust for sticky headers
-      const yPosition = targetElement.getBoundingClientRect().top + window.scrollY + yOffset;
-
-      // Scroll to the calculated position
-      window.scrollTo({ top: yPosition, behavior: 'smooth' });
+      const yOffset = 0; // offset to compensate for sticky headers
+      const targetPosition = targetElement.getBoundingClientRect().top + window.scrollY - yOffset;
+      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      const finalPosition = Math.min(targetPosition, maxScroll);
+      window.scrollTo({ top: finalPosition, behavior: "smooth" });
+      setActiveCategory(category);
     }
   };
 
-  useEffect(() => {
-    setCategories(treatmentsData);
-
-    // Add dynamic padding to ensure the last category can scroll to the top
-    const lastCategoryHeight = document.getElementById(
-      treatmentsData[treatmentsData.length - 1].category
-    )?.offsetHeight || 0;
-
-    const viewportHeight = window.innerHeight;
-    const additionalPadding = Math.max(0, viewportHeight - lastCategoryHeight - 100);
-
-    document.documentElement.style.setProperty('--dynamic-padding', `${additionalPadding}px`);
-
-    // Handle navigation state for initial scroll
-    if (state?.selectedCategory) {
-      const selectedCategory = state.selectedCategory;
-      setActiveCategory(selectedCategory);
-
-      // Delay to ensure DOM is rendered before scrolling
-      setTimeout(() => {
-        scrollToCategory(selectedCategory);
-      }, 100);
-    } else {
-      // Default to the first category
-      const defaultCategory = treatmentsData[0]?.category || null;
-      setActiveCategory(defaultCategory);
-
-      if (defaultCategory) {
-        setTimeout(() => {
-          scrollToCategory(defaultCategory);
-        }, 100);
-      }
-    }
-  }, [state]);
-
-  // Update activeCategory based on the currently visible category
+  // Update active category on manual scroll
   useEffect(() => {
     const handleScroll = () => {
-      let currentCategory = activeCategory;
-
-      for (const category of categories) {
+      // Loop through categories and find the one that is near the top of viewport
+      for (const category of treatmentsData) {
         const element = document.getElementById(category.category);
         if (element) {
           const rect = element.getBoundingClientRect();
-          if (rect.top <= 100 && rect.bottom > 100) {
-            currentCategory = category.category;
+          // When the top of the element is near 100px from top,
+          // we consider that category active.
+          if (rect.top <= 0 && rect.bottom > 100) {
+            if (activeCategory !== category.category) {
+              setActiveCategory(category.category);
+            }
             break;
           }
         }
       }
-
-      if (currentCategory !== activeCategory) {
-        setActiveCategory(currentCategory);
-      }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [categories, activeCategory]);
-
-  const handleCategoryClick = (selectedCategory: string) => {
-    setActiveCategory(selectedCategory);
-    scrollToCategory(selectedCategory);
-  };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [activeCategory]);
 
   return (
-    <div className="treatments-page">
-      {/* Navigation Menu */}
-      <div className="navigation-menu">
-        {categories.map((cat, index) => (
-          <div
-            key={index}
-            className={`nav-item ${activeCategory === cat.category ? 'active' : ''}`}
-            onClick={() => handleCategoryClick(cat.category)}
-          >
-            {cat.category}
+    <div className={styles.pageContainer}>
+      {/* Sidebar Navigation (Desktop) */}
+      {!isMobile && (
+        <aside className={styles.sidebar}>
+          <h3 className={styles.sidebarTitle}>Categorii</h3>
+          <div className={styles.sidebarList}>
+            {treatmentsData.map((cat, index) => (
+              <button
+                key={index}
+                className={`${styles.navItem} ${activeCategory === cat.category ? styles.active : ""}`}
+                onClick={() => scrollToCategory(cat.category)}
+              >
+                {cat.category}
+              </button>
+            ))}
           </div>
-        ))}
-      </div>
+        </aside>
+      )}
 
-      {/* Chips for Mobile/Compact View */}
-      <div className="categories-chips">
-        {categories.map((cat, index) => (
-          <Chip
-            key={index}
-            label={cat.category}
-            onClick={() => handleCategoryClick(cat.category)}
-            className={`chip ${activeCategory === cat.category ? 'active' : ''}`}
-          />
-        ))}
-      </div>
+      {/* Mobile Navigation */}
+      {isMobile && (
+        <div className={styles.mobileNav}>
+          {treatmentsData.map((cat, index) => (
+            <Chip
+              key={index}
+              label={cat.category}
+              onClick={() => scrollToCategory(cat.category)}
+              className={`${styles.chip} ${activeCategory === cat.category ? styles.activeChip : ""}`}
+            />
+          ))}
+        </div>
+      )}
 
-      {/* Categories and Treatments */}
-      <div className="categories-list" style={{ paddingBottom: 'var(--dynamic-padding)' }}>
-        {categories.map((cat, index) => (
-          <div key={index} id={cat.category} className="category-box">
-            <h2 className="category-name">{cat.category}</h2>
-            <div className="treatments-list">
+      {/* Treatments List (Each Category in Its Own Container) */}
+      <main className={styles.contentContainer} ref={contentRef}>
+        {treatmentsData.map((cat, index) => (
+          <section key={index} id={cat.category} className={styles.categorySection}>
+            <h2 className={styles.categoryTitle}>{cat.category}</h2>
+            <div className={styles.treatmentList}>
               {cat.treatments.map((treatment, i) => (
-                <div key={i} className="treatment-item">
-                  <span className="treatment-name">{treatment.name}</span>
-                  <span className="treatment-price">{treatment.price}</span>
+                <div key={i} className={styles.treatmentCard}>
+                  <span className={styles.treatmentName}>{treatment.name}</span>
+                  <span className={styles.treatmentPrice}>{treatment.price}</span>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
         ))}
-      </div>
+      </main>
     </div>
   );
 };

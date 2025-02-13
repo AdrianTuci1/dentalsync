@@ -1,31 +1,12 @@
+@use '../components/styles/colors' as *;
+
 .dashboard {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  .desktop-navbar,
-  .mobile-navbar {
-    position: fixed;
-    width: 100%;
-    z-index: 1000;
-  }
 
-  .desktop-navbar {
-    top: 0;
-    height: 60px; // Height of top navbar
-  }
-
-  .mobile-navbar {
-    bottom: 0;
-    height: 60px; // Height of bottom navbar
-  }
-
-  .dash__nav{
-    flex: 1;
-  }
   .dashboard__content {
-    flex: 1;
-    display: flex;
-    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background-color: $background;
+    color: white;
+    margin: 0;
   }
 
 

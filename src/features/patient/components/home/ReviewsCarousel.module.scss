@@ -1,0 +1,108 @@
+@use '../styles/_colors.scss' as *;
+
+.reviewsContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  padding-block: 50px;
+  margin-block: 70px;
+}
+
+.carousel {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  justify-content: center;
+  transform: translateX(20%);
+}
+
+
+/* Review Box Styling */
+.reviewBox {
+  flex: 0 0 80%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px;
+  background: $primary;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  transition: transform 0.4s ease, opacity 0.4s ease;
+  color: $text;
+}
+
+/* Centered Review */
+.centered {
+  flex: 0 0 60%;
+  opacity: 1;
+}
+
+/* Partially Visible Reviews */
+.partial {
+  flex: 0 0 30%;
+  opacity: 0.6;
+}
+
+/* Hidden Reviews */
+.hidden {
+  display: none;
+}
+
+/* Navigation Buttons */
+.navBtn {
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  font-size: 2rem;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 12px;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: background 0.3s ease;
+}
+
+.navBtn:disabled {
+  background: rgba(0, 0, 0, 0.2);
+  cursor: not-allowed;
+}
+
+.navBtn.left {
+  left: 10px;
+}
+
+.navBtn.right {
+  right: 10px;
+}
+
+.navBtn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+
+
+.reviewsStatic{
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  justify-content: center;
+  width: 100%;
+  padding-block: 50px;
+
+  .reviewBoxStatic{
+    background: $primary;
+    color: $text;
+    outline: 2px solid $secondary;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 15px;
+    width: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+}

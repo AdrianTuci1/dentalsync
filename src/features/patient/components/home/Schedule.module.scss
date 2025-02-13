@@ -1,0 +1,47 @@
+@use '../styles/colors' as *;
+
+.schedule {
+    padding: 16px;
+    border-radius: 10px;
+    min-width: 180px;
+    text-align: left;
+  }
+  
+  .schedule h4 {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: whitesmoke;
+  }
+  
+  .schedule ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .schedule li {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 1rem;
+    border-bottom: 1px solid whitesmoke;
+  }
+  
+  .schedule li:last-child {
+    border-bottom: none;
+  }
+  
+  /* 🟠 Closed Day Styling */
+  .closed {
+    color: #d32f2f;
+    font-weight: bold;
+  }
+  
+  .day {
+    font-weight: bold;
+    color: whitesmoke;
+  }
+  
+  .hours {
+    color: whitesmoke;
+  }

@@ -1,0 +1,124 @@
+@use './styles/colors' as *;
+
+.navbar {
+  top: 0;
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 12px 0px;
+  color: white;
+  width: 100%;
+  z-index: 999;
+}
+
+.navbarWrapper{
+  padding: 12px 20px;
+  border-radius: 24px;
+  background: $primary;
+}
+
+
+/* ✅ Menu Items */
+.menu {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ✅ Individual Nav Item */
+.navItem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  color: #004aad;
+  font-size: 1.4rem;
+  font-weight: bold;
+  width: 60px;
+  height: 40px;
+  border-radius: 8px;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  padding: 0 15px;
+}
+
+/* ✅ Keep Icon Always Visible */
+.navItem svg {
+  transition: all 0.3s ease-in-out;
+}
+
+/* ✅ Expanding Effect (Only on Desktop) */
+@media (min-width: 1025px) {
+  .menu {
+    padding: 0 0px; /* Adds spacing between first items and last two items */
+  }
+
+  .navItem:hover:not(.fixedSize),
+  .active:not(.fixedSize) {
+    width: auto;
+    padding: 0 20px;
+  }
+
+  .navItem:hover .label,
+  .active .label {
+    display: inline-block;
+    margin-left: 10px;
+  }
+
+  /* ✅ Separator Only on Desktop */
+  .separator {
+    width: 2px;
+    height: 30px;
+    background: white;
+    margin-left: auto;
+  }
+}
+
+/* ✅ Hide Text on Non-Active & Non-Hovered Items */
+.label {
+  display: none;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* 🚫 Fixed Size for User Role & Sign-In */
+.fixedSize {
+  width: 60px;
+  height: 40px;
+}
+
+/* 🟡 Mobile: Remove Separator & Center Items */
+@media (max-width: 1024px) {
+  .menu {
+    padding: 0;
+    justify-content: center;
+  }
+
+  .separator {
+    display: none;
+  }
+
+  .navItem {
+    width: 60px;
+    padding: 0;
+  }
+
+  .navItem .label {
+    display: none;
+  }
+
+  .active {
+    background: #ffcc00;
+  }
+
+  /* ❌ Prevent Expansion on Mobile */
+  .navItem:hover:not(.fixedSize),
+  .active:not(.fixedSize) {
+    width: 60px;
+    padding: 0;
+  }
+}

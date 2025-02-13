@@ -1,36 +1,25 @@
-import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import DesktopNavbar from './components/DesktopNavbar';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import HomePage from './routes/HomePage';
 import TreatmentsPage from './routes/TreatmentsPage';
 import MedicsPage from './routes/MedicsPage';
 import ConsultationsPage from './routes/ConsultationsPage';
 import SettingsPage from './routes/SettingsPage';
 import './styles/dashboard.scss';
+import './styles/fonts.css'
+import Navbar from './components/Navbar';
 
 function PatientDashboard() {
   const authState = useSelector((state: any) => state.auth); // Access auth state
   const user = authState?.clinicUser; // Get authenticated user
-  const [availablePages, setAvailablePages] = useState<string[]>(['home', 'treatments', 'medics']);
-  const location = useLocation();
+
   
-
-  useEffect(() => {
-    if (user?.role === 'patient') {
-      setAvailablePages((prev) => [...prev, 'consultations', 'settings']);
-    } else if (user?.role === 'clinic') {
-      setAvailablePages((prev) => [...prev, 'dashboard', 'settings']);
-    }
-  }, [user]);
-
-  const activePage = location.pathname.replace('/', '') || 'home';
 
   return (
     <div className="dashboard">
       {/* Navbar */}
       <div className="dash__nav">
-        <DesktopNavbar activePage={activePage} availablePages={availablePages} />
+        <Navbar />
       </div>
 
       {/* Content under Navbar */}

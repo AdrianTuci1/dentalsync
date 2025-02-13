@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Table,
   TableBody,
@@ -24,42 +24,53 @@ import { getSubdomain } from '@/shared/utils/getSubdomains';
 
 export const Treatments: React.FC = () => {
   const dispatch = useDispatch();
-  const treatments = useSelector(selectTreatments); // Select treatments from Redux
-  const isLoading = useSelector(selectTreatmentLoading); // Select loading state
-  const isSmallScreen = useMediaQuery('(max-width:800px)'); // Responsive check
+  const treatments = useSelector(selectTreatments) || []; // ✅ Ensure it's always an array
+  const isLoading = useSelector(selectTreatmentLoading);
+  const isSmallScreen = useMediaQuery("(max-width:800px)");
   const token = useSelector((state: any) => state.auth.subaccountToken);
-  const clinicDb = getSubdomain() + '_db'; // Hardcoded clinicDb
+  const clinicDb = getSubdomain() + "_db";
 
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [searchTerm, setSearchTerm] = useState(''); // Local state for search term
-
-
-  // Fetch all treatments on mount or when searchTerm changes
+  // ✅ Fetch all treatments once when component mounts
   useEffect(() => {
     if (token && clinicDb) {
-      dispatch(fetchTreatments({ token, clinicDb, name: searchTerm }) as any);
+      dispatch(fetchTreatments({ token, clinicDb }) as any);
     }
-  }, [dispatch, token, clinicDb, searchTerm]);
+  }, [dispatch, token, clinicDb]);
 
-  // Handle search input changes
+  // ✅ Local filtering (Runs only when `searchTerm` or `treatments` changes)
+  const filteredTreatments = useMemo(() => {
+    if (!searchTerm.trim()) return treatments;
+
+    const lowercasedSearch = searchTerm.toLowerCase();
+    return treatments.filter(
+      (treatment: Treatment) =>
+        treatment.name.toLowerCase().includes(lowercasedSearch) ||
+        treatment.description?.toLowerCase().includes(lowercasedSearch)
+    );
+  }, [searchTerm, treatments]);
+
+  // ✅ Handle search input changes
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
   };
 
-  // Handle adding a new treatment
+  // ✅ Handle adding a new treatment
   const handleAddNew = () => {
-    dispatch(openDrawer({ type: 'Treatment', data: { treatment: null } })); // Open drawer for new treatment
+    dispatch(openDrawer({ type: "Treatment", data: { treatment: null } }));
   };
 
+  // ✅ Handle row click (Ensure treatment exists)
   const handleRowClick = (treatmentId: string) => {
-    const selectedTreatment: Treatment | undefined = treatments.find((t: Treatment) => t.id === treatmentId);
-  
+    const selectedTreatment = treatments.find((t: Treatment) => t.id === treatmentId);
+
     if (!selectedTreatment) {
       console.error(`Treatment with ID ${treatmentId} not found.`);
       return;
     }
-  
-    dispatch(openDrawer({ type: 'Treatment', data: { treatment: selectedTreatment } })); // ✅ Pass the full treatment object
+
+    dispatch(openDrawer({ type: "Treatment", data: { treatment: selectedTreatment } }));
   };
 
   return (
@@ -88,7 +99,7 @@ export const Treatments: React.FC = () => {
             </TableHead>
           )}
           <TableBody>
-            {treatments.map((treatment: Treatment) => (
+            {filteredTreatments.map((treatment: Treatment) => (
               <TableRow
                 key={treatment.id}
                 hover

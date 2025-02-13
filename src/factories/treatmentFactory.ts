@@ -6,7 +6,7 @@ export const createTreatmentFactory = (token: string, clinicDb: string) => {
   const service = TreatmentService.getInstance(token, clinicDb);
 
   return {
-    fetchTreatments: async (name: string = "") => service.getAllTreatments(name),
+    fetchTreatments: async () => service.getAllTreatments(),
     createTreatment: async (treatment: Partial<Treatment>) =>
       service.createTreatment(treatment),
     updateTreatment: async (id: string, treatment: Partial<Treatment>) =>

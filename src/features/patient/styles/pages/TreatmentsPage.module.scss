@@ -1,0 +1,158 @@
+/* Main Page Container */
+.pageContainer {
+  display: flex;
+  height: 100vh;
+  background: #f4f4f4;
+}
+
+/* Sidebar (Desktop Only) */
+.sidebar {
+  width: 260px;
+  height: calc(100vh - 200px);
+  margin-top: 100px;
+  margin-bottom: 100px;
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  left: 20px;
+  overflow-y: auto;
+}
+
+.sidebarTitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #444;
+}
+
+.sidebarList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.navItem {
+  background: transparent;
+  border: none;
+  padding: 10px 14px;
+  text-align: left;
+  width: 100%;
+  font-size: 16px;
+  color: #666;
+  cursor: pointer;
+  transition: 0.3s;
+  border-radius: 8px;
+}
+
+.navItem:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Active Sidebar Item */
+.active {
+  background: #007bff;
+  color: white;
+  font-weight: 600;
+}
+
+/* Mobile Navigation */
+.mobileNav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  padding: 12px;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  z-index: 1000;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chip {
+  transition: background 0.3s ease-in-out;
+}
+
+.activeChip {
+  background: #007bff !important;
+  color: white !important;
+}
+
+/* Content Container */
+.contentContainer {
+  flex-grow: 1;
+  margin-top: 100px;
+  padding-left: 300px; /* Leave space for the sidebar */
+  padding-right: 40px;
+  overflow-y: auto;
+  height: calc(100vh - 100px);
+  scroll-behavior: smooth;
+}
+
+/* Category Section Container */
+.categorySection {
+  margin-bottom: 20px;
+  /* The padding-top creates a gap so that when scrolled to, the title isn't hidden */
+}
+
+.categoryTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 14px;
+}
+
+/* Treatment List Styles */
+.treatmentList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.treatmentCard {
+  display: flex;
+  justify-content: space-between;
+  background: white;
+  padding: 14px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: background 0.3s ease;
+}
+
+.treatmentCard:hover {
+  background: #f0f0f0;
+}
+
+.treatmentName {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.treatmentPrice {
+  font-size: 14px;
+  font-weight: 500;
+  color: #007bff;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .pageContainer {
+    flex-direction: column;
+  }
+  .sidebar {
+    display: none;
+  }
+  .contentContainer {
+    padding-left: 20px;
+    padding-right: 20px;
+    margin-top: 70px;
+  }
+  .categoryTitle {
+    font-size: 20px;
+  }
+}

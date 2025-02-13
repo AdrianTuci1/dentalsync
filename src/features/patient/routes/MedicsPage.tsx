@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/pages/medicsPage.scss";
+import styles from "../styles/pages/medicsPage.module.scss";
 import { Divider } from "@mui/material";
 import { MdMedicalServices, MdFavorite } from "react-icons/md";
 
@@ -35,8 +35,8 @@ const medicsData = [
 
 const MedicsPage: React.FC = () => {
   return (
-    <div className="outer-layer">
-      <div className="medics-page">
+    <div className={styles.outerLayer}>
+      <div className={styles.medicsPage}>
         {medicsData.map((medic, index) => (
           <MedicCard key={index} medic={medic} colorIndex={index % lightColors.length} />
         ))}
@@ -51,32 +51,32 @@ const MedicCard: React.FC<{ medic: typeof medicsData[0]; colorIndex: number }> =
   const darkColor = darkColors[colorIndex];
 
   return (
-    <div className="medic-card">
-      <div className="medic-header">
-        <img src={medic.photo} alt={medic.name} className="medic-photo" />
-        <div className="medic-info">
-          <h3 className="medic-name">{medic.name}</h3>
-          <div className="medic-speciality-chip" style={{ backgroundColor: lightColor, color: darkColor }}>
+    <div className={styles.medicCard}>
+      <div className={styles.medicHeader}>
+        <img src={medic.photo} alt={medic.name} className={styles.medicPhoto} />
+        <div className={styles.medicInfo}>
+          <h3 className={styles.medicName}>{medic.name}</h3>
+          <div className={styles.medicSpecialityChip} style={{ backgroundColor: lightColor, color: darkColor }}>
             {medic.speciality}
           </div>
-          <p className="medic-experience">
-            <MdMedicalServices className="icon" /> {medic.experience} years
+          <p className={styles.medicExperience}>
+            <MdMedicalServices className={styles.icon} /> {medic.experience} years
           </p>
-          <p className="medic-likes">
-            <MdFavorite className="icon" /> {medic.likes}% likes
+          <p className={styles.medicLikes}>
+            <MdFavorite className={styles.icon} /> {medic.likes}% likes
           </p>
-          <div className="working-days">
-          {daysOfWeek.map((day, index) => (
-            <div key={index} className={`working-day-circle ${medic.workingDays.includes(day) ? "active" : ""}`}>
-              {day}
-            </div>
-          ))}
-        </div>
+          <div className={styles.workingDays}>
+            {daysOfWeek.map((day, index) => (
+              <div key={index} className={`${styles.workingDayCircle} ${medic.workingDays.includes(day) ? styles.active : ""}`}>
+                {day}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       <Divider />
-      <div className="medic-details">
-        <button className="appointment-button">Make an Appointment</button>
+      <div className={styles.medicDetails}>
+        <button className={styles.appointmentButton}>Make an Appointment</button>
       </div>
     </div>
   );

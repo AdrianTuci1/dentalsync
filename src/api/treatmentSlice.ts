@@ -21,12 +21,12 @@ const initialState: TreatmentState = {
 export const fetchTreatments = createAsyncThunk(
   "treatments/fetch",
   async (
-    { token, clinicDb, name }: { token: string; clinicDb: string; name: string },
+    { token, clinicDb }: { token: string; clinicDb: string; },
     { rejectWithValue }
   ) => {
     const factory = createTreatmentFactory(token, clinicDb);
     try {
-      const treatments = await factory.fetchTreatments(name);
+      const treatments = await factory.fetchTreatments();
       await cache.set("treatments", treatments);
       return treatments;
     } catch (error) {

@@ -1,0 +1,160 @@
+/* Page Wrapper */
+.outerLayer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Cards Grid */
+.medicsPage {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); /* Grid Layout */
+  gap: 20px;
+  width: 100%;
+  max-width: 1280px;
+  margin-top: 100px;
+  margin-inline: 50px;
+  padding-block: 30px;
+
+  @media (max-width: 1024px) {
+    margin-inline: 20px; /* 20px on small devices */
+  }
+}
+
+/* Individual Medic Card */
+.medicCard {
+  background: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  min-width: 300px; /* Minimum width constraint */
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Card Header */
+.medicHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.medicPhoto {
+  min-width: 80px;
+  height: 80px;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Card Content */
+.medicInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.medicName {
+  font-size: 1.4rem;
+  font-weight: bold;
+  margin: 0;
+  color: #333;
+}
+
+.medicSpecialityChip {
+  display: inline-block;
+  font-size: 0.9rem;
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 15px;
+  text-align: center;
+  margin-top: 5px;
+}
+
+.medicExperience,
+.medicLikes {
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #555;
+  .icon {
+    color: #ff6f61;
+  }
+}
+
+/* Working Days */
+.workingDays {
+  display: flex;
+  gap: 5px;
+}
+
+.workingDayCircle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #eaeaea;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #999;
+  transition: background-color 0.3s, color 0.3s;
+
+  &.active {
+    background: #007bff;
+    color: #ffffff;
+  }
+}
+
+/* Appointment Button */
+.medicDetails {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+}
+
+.appointmentButton {
+  max-width: fit-content;
+  background: #007bff;
+  color: #ffffff;
+  border: none;
+  width: fit-content;
+  border-radius: 8px;
+  padding: 10px 10px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+
+  &:hover {
+    background-color: #0056b3;
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .medicsPage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .medicCard {
+    width: 100%;
+    max-width: 400px; /* Limit max width on small screens */
+  }
+
+  .appointmentButton {
+    width: 100%;
+  }
+}

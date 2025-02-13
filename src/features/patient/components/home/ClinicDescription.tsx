@@ -1,19 +1,11 @@
-import React from 'react';
+const clinicDescription = `
+🦷 **Un zâmbet sănătos începe aici!** ✨  
 
-const ClinicDescription: React.FC = () => {
-  return (
-    <div className="clinic-description" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontFamily:'Roboto' }}>
-      <h2 style={{fontSize:'2rem'}}>Despre Noi</h2>
-      <p style={{fontSize:'1rem'}}>
-        Bine ați venit la Demo Clinic! Misiunea noastră este să oferim îngrijire stomatologică 
-        excepțională într-un mediu confortabil și prietenos.
-        Oferim o gamă variată de tratamente, de la îngrijirea preventivă până la proceduri 
-        restaurative avansate.
-        Ne găsiți pe Bulevardul Dacia Nr. 84 și suntem deschiși de luni până vineri, între 
-        orele 9:00 și 18:00. Contactați-ne pentru întrebări sau pentru a programa o consultație.
-      </p>
-    </div>
-  );
-};
+La clinica noastră, punem preț pe confortul și siguranța ta. Cu o echipă de specialiști prietenoși și tehnologii moderne, îți oferim o experiență fără griji, indiferent de nevoile tale dentare.  
 
-export default ClinicDescription;
+Fie că vrei să îți îmbunătățești zâmbetul sau să ai grijă de sănătatea dinților tăi, suntem aici pentru tine!  
+
+😊 **Zâmbește cu încredere, noi ne ocupăm de restul!**  
+`;
+
+export default clinicDescription;
