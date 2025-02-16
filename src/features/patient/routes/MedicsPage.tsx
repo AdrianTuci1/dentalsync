@@ -35,11 +35,13 @@ const medicsData = [
 
 const MedicsPage: React.FC = () => {
   return (
-    <div className={styles.outerLayer}>
-      <div className={styles.medicsPage}>
-        {medicsData.map((medic, index) => (
-          <MedicCard key={index} medic={medic} colorIndex={index % lightColors.length} />
-        ))}
+    <div className={styles.outerContainer}>
+      <div className={styles.outerLayer}>
+        <div className={styles.medicsPage}>
+          {medicsData.map((medic, index) => (
+            <MedicCard key={index} medic={medic} colorIndex={index % lightColors.length} />
+          ))}
+        </div>
       </div>
     </div>
   );

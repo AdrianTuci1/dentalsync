@@ -63,15 +63,17 @@
 
     .btn-img {
       display: flex;
+      align-self: center;
       width: 27px;
       height: 27px;
-      margin-left: 12px;
+      margin-inline-start: 2px;
       margin-block: 5px;
     }
 
     .btn-label {
       margin-left: 10px;
       font-size: 16px;
+      font-weight: 300;
     }
   }
 }

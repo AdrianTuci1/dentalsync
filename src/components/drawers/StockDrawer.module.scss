@@ -1,0 +1,73 @@
+/* Drawer Container */
+.drawer {
+    width: 400px;
+    padding: 20px;
+    background: white;
+    height: 100%;
+    box-shadow: -4px 0px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  /* Form Section */
+  .form {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  
+  /* Each Input Group */
+  .inputGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  /* Input Fields */
+  .input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #f9f9f9;
+    box-sizing: border-box;
+  }
+  
+  .input:focus {
+    border-color: #007bff;
+    outline: none;
+    background: white;
+  }
+  
+  /* Footer Button */
+  .footer {
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: auto;
+  }
+  
+  /* Responsive Fixes */
+  @media (max-width: 500px) {
+    .drawer {
+      width: 100vw;
+    }
+  
+    .input {
+      font-size: 13px;
+      padding: 10px;
+    }
+  }

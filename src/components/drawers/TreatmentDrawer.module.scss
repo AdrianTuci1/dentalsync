@@ -1,0 +1,112 @@
+/* Drawer Container */
+.drawer {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 400px;
+    height: 100%;
+    background: white;
+    box-shadow: -4px 0px 10px rgba(0, 0, 0, 0.1);
+    transition: right 0.3s ease-in-out;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .open {
+    right: 0;
+  }
+  
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  /* Drawer Content */
+  .content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  
+  /* Labels */
+  label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 6px;
+    display: block;
+  }
+  
+  /* Inputs */
+  .input,
+  .textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #f9f9f9;
+    box-sizing: border-box;
+  }
+  
+  .input:focus,
+  .textarea:focus {
+    border-color: #007bff;
+    outline: none;
+    background: white;
+  }
+  
+  /* Textarea */
+  .textarea {
+    resize: none;
+    height: 80px;
+  }
+  
+  /* Color Button */
+  .colorButton {
+    width: 100%;
+    color: #fff !important;
+    border-radius: 6px;
+    text-transform: none !important;
+    font-weight: bold;
+    padding: 8px;
+  }
+  
+  /* Section Title */
+  .sectionTitle {
+    margin-top: 20px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  /* Add Component Button */
+  .addComponentButton {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+  }
+  
+  /* Footer Buttons */
+  .footer {
+    padding: 16px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 500px) {
+    .drawer {
+      width: 100vw;
+    }
+  
+    .input,
+    .textarea {
+      font-size: 13px;
+      padding: 10px;
+    }
+  }

@@ -20,12 +20,6 @@
   overflow-y: auto;
 }
 
-.sidebarTitle {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: #444;
-}
 
 .sidebarList {
   display: flex;
@@ -102,6 +96,7 @@
 .categoryTitle {
   font-size: 22px;
   font-weight: 700;
+  text-align: left;
   color: #222;
   margin-bottom: 14px;
 }

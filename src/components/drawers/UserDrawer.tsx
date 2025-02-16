@@ -19,6 +19,7 @@ import SmallAppointmentCard from "@/features/clinic/components/SmallAppointmentC
 import styles from "@styles-cl/drawers/UserDrawer.module.scss";
 import { logout, switchAccount } from "@/api/authSlice";
 import { selectTopDrawer } from "@/shared/utils/selectors";
+import { getSubdomain } from "@/shared/utils/getSubdomains";
 
 const UserDrawer: React.FC = () => {
   const dispatch = useDispatch();
@@ -27,29 +28,34 @@ const UserDrawer: React.FC = () => {
   const { isOpen, drawerType} = useSelector(selectTopDrawer);
   const profile = useSelector((state: any) => state.auth.subaccountUser);
   const token = useSelector((state: any) => state.auth.subaccountToken);
-  const database = "demo_db";
+  const database = getSubdomain() + "_db";
 
+  
   // Local state
   const [appointments, setAppointments] = useState<any[]>([]);
   const [personalNotes, setPersonalNotes] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [selectedMenu, setSelectedMenu] = useState<"notes" | "upcoming" | "actions">("notes");
 
-  // Fetch appointments if the drawer is opened and `UserDrawer` is active
+  const [offset, setOffset] = useState(0);
+  const limit = 10;
+  
+  const fetchAppointments = async () => {
+    setLoading(true);
+    try {
+      const appointmentService = new AppointmentService(token, database);
+      const data = await appointmentService.fetchMedicAppointments(profile.id, limit, offset);
+      setAppointments((prev) => [...prev, ...data.appointments]); // Append new results
+      setOffset((prev) => prev + limit); // Increase offset for next request
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Fetch appointments when drawer opens
   useEffect(() => {
-    const fetchAppointments = async () => {
-      setLoading(true);
-      try {
-        const appointmentService = new AppointmentService(token, database);
-        const data = await appointmentService.fetchMedicAppointments(profile.id);
-        setAppointments(data.appointments);
-      } catch (error) {
-        console.error("Error fetching appointments:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (drawerType === "User" && isOpen) {
       fetchAppointments();
     }
@@ -119,13 +125,17 @@ const UserDrawer: React.FC = () => {
               <CircularProgress />
             </Box>
           ) : appointments.length > 0 ? (
-            appointments.map((appointment) => (
+            <>
+            {appointments.map((appointment) => (
               <SmallAppointmentCard
                 key={appointment.appointmentId}
                 role="medic"
                 appointment={appointment}
-              />
-            ))
+              />))}
+              <button className={styles.loadMoreButton} onClick={() => fetchAppointments()}>
+              Load More
+            </button>
+            </>
           ) : (
             <Typography>No upcoming appointments.</Typography>
           )}

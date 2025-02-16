@@ -11,6 +11,8 @@ import SwipeableCarousel from '../components/home/SwipeableCarousel'
 import { LuCalendarPlus } from "react-icons/lu";
 import Footer from '../components/home/Footer'
 import Categories from '../components/home/Categories'
+import AppointmentCard from '../components/home/AppointmentCard'
+import NoAppointmentCard from '../components/home/NoAppointmentCard'
 
 const categories = [
   { name: 'Preventive Care', color: '#FFEBE0' }, // Light peach
@@ -46,7 +48,9 @@ function HomePage() {
             <h3>Baicului</h3>
           </div>
           <div className={styles.clinicDescription}>
-            <ClinicPresentation />
+             {/*  <ClinicPresentation />  */}
+             {/* <AppointmentCard /> */}
+             <NoAppointmentCard />
           </div>
         </div>
         <div className={styles.map}>

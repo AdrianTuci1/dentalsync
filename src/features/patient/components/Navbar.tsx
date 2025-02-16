@@ -5,13 +5,23 @@ import {
   HiOutlineUserGroup, 
   HiOutlineClipboardList, 
   HiOutlineUserCircle, 
-  HiOutlineLogin 
 } from "react-icons/hi";
+import { GoHistory } from "react-icons/go";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const Navbar: React.FC = () => {
+  const navigate = useNavigate();
   const [activeItem, setActiveItem] = useState<string>("home");
   const [isMobile, setIsMobile] = useState<boolean>(window.innerWidth < 1024);
-  const userRole = "admin"; // Simulated user role ("admin" = dashboard, "user" = history)
+
+  // Get authenticated user from Redux store
+  const authState = useSelector((state: any) => state.auth);
+  const user = authState?.clinicUser;
+  const isAuthenticated = !!user;
+  const userRole = user?.role; // Can be "admin" or "patient"
+
+
 
   // Detect screen width changes
   useEffect(() => {
@@ -20,43 +30,56 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Define menu items
   const menuItems = [
-    { id: "home", icon: <HiOutlineHome />, label: "Acasa" },
-    { id: "treatments", icon: <HiOutlineClipboardList />, label: "Tratamente" },
-    { id: "medics", icon: <HiOutlineUserGroup />, label: "Medici" },
+    { id: "home", icon: <HiOutlineHome />, label: "Acasa", route: "/" },
+    { id: "treatments", icon: <HiOutlineClipboardList />, label: "Tratamente", route: "/treatments" },
+    { id: "medics", icon: <HiOutlineUserGroup />, label: "Medici", route: "/medics" },
   ];
 
   return (
     <nav className={styles.navbar}>
       <div className={styles.navbarWrapper}>
-      <div className={styles.menu}>
-        {menuItems.map((item) => (
+        <div className={styles.menu}>
+          {menuItems.map((item) => (
+            <div
+              key={item.id}
+              className={`${styles.navItem} ${activeItem === item.id ? styles.active : ""}`}
+              onClick={() => {
+                setActiveItem(item.id);
+                navigate(item.route);
+              }}
+            >
+              {item.icon}
+              {!isMobile && <span className={styles.label}>{item.label}</span>}
+            </div>
+          ))}
+
+          {/* Separator */}
+          <div className={styles.separator}></div>
+
+          {/* Role-Based Item (Only if authenticated) */}
+          {isAuthenticated && (
+            <div
+              className={`${styles.navItem} ${styles.fixedSize}`}
+              onClick={() => navigate(userRole === "clinic" ? "/dashboard" : "/consultations")}
+            >
+              {userRole === "clinic" ? <HiOutlineClipboardList /> : <GoHistory />}
+            </div>
+          )}
+
+          {/* Sign In/Settings Button */}
           <div
-            key={item.id}
-            className={`${styles.navItem} ${activeItem === item.id ? styles.active : ""}`}
-            onClick={() => setActiveItem(item.id)}
+            className={`${styles.navItem} ${styles.fixedSize}`}
+            onClick={() => navigate(isAuthenticated ? "/settings" : "/login")}
           >
-            {item.icon}
-            {!isMobile && <span className={styles.label}>{item.label}</span>}
+            <HiOutlineUserCircle />
           </div>
-        ))}
-
-        {/* Separator */}
-        <div className={styles.separator}></div>
-
-        {/* User Role-Based Item (Fixed Size) */}
-        <div className={`${styles.navItem} ${styles.fixedSize}`}>
-          {userRole === "admin" ? <HiOutlineUserCircle /> : <HiOutlineClipboardList />}
         </div>
-
-        {/* Sign In Button (Fixed Size) */}
-        <div className={`${styles.navItem} ${styles.fixedSize}`}>
-          <HiOutlineLogin />
-        </div>
-      </div>
       </div>
     </nav>
   );
 };
+
 
 export default Navbar;

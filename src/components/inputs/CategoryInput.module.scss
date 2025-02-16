@@ -1,0 +1,79 @@
+.categoryContainer {
+    position: relative;
+    width: 100%;
+  }
+  
+  /* Input Wrapper for Proper Positioning */
+  .inputWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+  
+  /* Main Input Styling */
+  .input {
+    width: 100%;
+    padding: 12px; /* Matches other inputs */
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #f9f9f9;
+    box-sizing: border-box;
+  }
+  
+  .input:focus {
+    border-color: #007bff;
+    outline: none;
+    background: white;
+  }
+  
+  /* Clear Button (X) */
+  .clearButton {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 4px;
+  }
+  
+  /* Dropdown List */
+  .dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1500;
+    border-radius: 6px;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* List Items */
+  .listItem {
+    cursor: pointer;
+    padding: 10px;
+    transition: background 0.2s ease-in-out;
+  }
+  
+  .listItem:hover {
+    background: #f0f0f0;
+  }
+  
+  /* Loading & No Categories Text */
+  .loadingText {
+    padding: 12px;
+    color: #666;
+    font-size: 14px;
+    text-align: center;
+  }
+  
+  /* Mobile Responsive */
+  @media (max-width: 500px) {
+    .input {
+      font-size: 13px;
+      padding: 10px;
+    }
+  }

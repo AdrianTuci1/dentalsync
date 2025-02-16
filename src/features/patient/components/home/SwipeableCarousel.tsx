@@ -55,7 +55,7 @@ function SwipeableCarousel() {
           <div
             key={index}
             className="slide"
-            style={{ width: slideWidth, marginRight: `${gap}px` }} // Apply gap
+            style={{ width: slideWidth, marginRight: `${gap}px`, }} // Apply gap
           >
             <img src={img} alt={`Slide ${index}`} />
           </div>

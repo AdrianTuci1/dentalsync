@@ -100,10 +100,11 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
           alignItems: 'center',
           padding: '10px',
           border: '1px solid #ccc',
+          fontWeight:'100',
         }}
         onClick={() => setShowCalendar(!showCalendar)}
       >
-        <span style={{ marginRight: '8px' }}>📅</span>
+        <span style={{ marginRight: '8px'}}>📅</span>
         {selectedDate.toDateString()}
       </button>
 
@@ -130,12 +131,12 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
                 marginBottom: '10px',
               }}
             >
-              <button onClick={handlePrevMonth}>◀</button>
-              <span>
+              <button onClick={handlePrevMonth} style={{border:'1px solid #fff'}}>◀</button>
+              <span style={{display:'flex', alignItems:'center', justifyContent:'center'}}>
                 {currentMonth.toLocaleString('default', { month: 'long' })}{' '}
                 {currentMonth.getFullYear()}
               </span>
-              <button onClick={handleNextMonth}>▶</button>
+              <button onClick={handleNextMonth} style={{border:'1px solid #fff'}}>▶</button>
             </div>
 
             {/* Days of the week starting from Monday */}
@@ -180,6 +181,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
                         : 'transparent',
                       border: 'none',
                       cursor: day ? 'pointer' : 'default',
+                      fontWeight:'300'
                     }}
                     disabled={!day}
                   >
@@ -219,6 +221,7 @@ const CustomDatePicker: React.FC<CustomDatePickerProps> = ({
                         : '#000',
                     border: 'none',
                     cursor: 'pointer',
+                    fontWeight:'300'
                   }}
                 >
                   {month.toLocaleString('default', { month: 'short' })}

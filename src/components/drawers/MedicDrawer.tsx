@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Drawer,
-  Box,
-  Button,
-  IconButton,
-  Typography,
-} from '@mui/material';
+
 import { AccessTimeOutlined, AdminPanelSettingsOutlined, Close as CloseIcon, EditCalendar, InfoOutlined, MedicalServices } from '@mui/icons-material';
 import WorkingHoursStep from './addMedic/WorkingHoursStep';
 import DaysOffStep from './addMedic/DaysOffStep';
@@ -20,7 +14,7 @@ import {
   MedicsListItem,
 } from '@/features/clinic/types/Medic';
 
-import styles from '@styles-cl/drawers/MedicDrawer.module.scss'
+import styles from '@/features/clinic/styles/drawers/MedicDrawer.module.scss'
 import { selectTopDrawer } from '@/shared/utils/selectors';
 import { getSubdomain } from '@/shared/utils/getSubdomains';
 import { createMedic, fetchMedicById, setUpdatedMedicInTable, updateMedic } from '@/api/medicSlice';
@@ -144,40 +138,38 @@ const MedicDrawer: React.FC = () => {
 
 
   return (
-    <Drawer anchor="right" open={isOpen} onClose={() => dispatch(closeDrawer())}>
-      <Box className={styles.drawerContainer}>
-        <Box sx={{ p: 2, display: 'flex', alignItems: 'center' }}>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>{medicId ? 'Edit Medic' : 'Add Medic'}</Typography>
-          <IconButton edge="end" onClick={() => dispatch(closeDrawer())}>
-            <CloseIcon />
-          </IconButton>
-        </Box>
+    <div className={`${styles.drawer} ${isOpen ? styles.open : ""}`}>
+      {/* Header */}
+      <div className={styles.drawerHeader}>
+        <h2 className={styles.drawerTitle}>{medicId ? "Edit Medic" : "Add Medic"}</h2>
+        <button className={styles.closeButton} onClick={() => dispatch(closeDrawer())}>
+          <CloseIcon />
+        </button>
+      </div>
 
-                <div className={styles.tabRow}>
-                  {tabs.map((tab) => (
-                    <div
-                      key={tab.key}
-                      className={`${styles.tabItem} ${
-                        activeTab === tab.key ? styles.activeTabItem : ''
-                      }`}
-                      onClick={() => setActiveTab(tab.key)}
-                    >
-                      {tab.icon}
-                    </div>
-                  ))}
-                </div>
+      {/* Tabs Row */}
+      <div className={styles.tabRow}>
+        {tabs.map((tab) => (
+          <div
+            key={tab.key}
+            className={`${styles.tabItem} ${activeTab === tab.key ? styles.activeTabItem : ""}`}
+            onClick={() => setActiveTab(tab.key)}
+          >
+            {tab.icon}
+          </div>
+        ))}
+      </div>
 
-        <Box className={styles.tabContent}>
-          {tabs.find((tab) => tab.key === activeTab)?.component}
-        </Box>
+      {/* Content */}
+      <div className={styles.tabContent}>
+        {tabs.find((tab) => tab.key === activeTab)?.component}
+      </div>
 
-        
-
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
-          <Button variant="contained" color="primary" onClick={handleSubmit}>Save</Button>
-        </Box>
-      </Box>
-    </Drawer>
+      {/* Footer */}
+      <div className={styles.drawerFooter}>
+        <button className={styles.saveButton} onClick={handleSubmit}>Save</button>
+      </div>
+    </div>
   );
 };
 

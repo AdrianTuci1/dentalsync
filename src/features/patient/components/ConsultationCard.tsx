@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, Typography, IconButton, Avatar, Box, Divider } from '@mui/material';
 import { ArrowForward, CalendarToday, AccessTime } from '@mui/icons-material';
-import '../styles/appointmentCard.scss';
+import '../styles/ConsultationCard.scss';
 
 interface Consultation {
   id: string;

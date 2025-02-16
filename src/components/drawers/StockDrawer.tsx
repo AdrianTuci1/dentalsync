@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Drawer,
-  Box,
   Typography,
   IconButton,
   Button,
@@ -13,6 +12,8 @@ import { Component } from '@/features/clinic/types/componentType';
 import { selectTopDrawer } from '@/shared/utils/selectors';
 import { getSubdomain } from '@/shared/utils/getSubdomains';
 import { createComponent, updateComponent } from '@/api/stockSlice';
+
+import styles from "./StockDrawer.module.scss";
 
 
 export const StockDrawer: React.FC = () => {
@@ -101,76 +102,74 @@ export const StockDrawer: React.FC = () => {
 
   return (
     <Drawer anchor="right" open={true} onClose={handleClose}>
-      <div
-                style={{
-                  width: window.innerWidth <= 500 ? "100vw" : "400px", // Full screen on small devices
-                  maxWidth: "100vw", // Prevent overflow
-                  margin: "0 auto", // Center on larger screens
-                  padding:'10px'
-                }}
-          >
-        <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Typography variant="h6">{stock ? 'Edit Stock' : 'Add New Stock'}</Typography>
+      <div className={styles.drawer}>
+        {/* Header */}
+        <div className={styles.header}>
+          <Typography variant="h6">{stock ? "Edit Stock" : "Add New Stock"}</Typography>
           <IconButton onClick={handleClose}>
             <CloseIcon />
           </IconButton>
-        </Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2, }}>
-          <label>
+        </div>
+
+        {/* Form Inputs */}
+        <div className={styles.form}>
+          <label className={styles.inputGroup}>
             <Typography variant="body2">Component Name</Typography>
             <input
               name="componentName"
-              value={newStock.componentName || ''}
+              value={newStock.componentName || ""}
               onChange={handleNewStockChange}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              className={styles.input}
             />
           </label>
-          <label>
+
+          <label className={styles.inputGroup}>
             <Typography variant="body2">Unit Price</Typography>
             <input
               name="unitPrice"
               type="number"
-              value={newStock.unitPrice?.toString() || '0'}
+              value={newStock.unitPrice?.toString() || "0"}
               onChange={handleNewStockChange}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              className={styles.input}
             />
           </label>
-          <label>
+
+          <label className={styles.inputGroup}>
             <Typography variant="body2">Vendor</Typography>
             <input
               name="vendor"
-              value={newStock.vendor || ''}
+              value={newStock.vendor || ""}
               onChange={handleNewStockChange}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              className={styles.input}
             />
           </label>
-          <label>
+
+          <label className={styles.inputGroup}>
             <Typography variant="body2">Quantity</Typography>
             <input
               name="quantity"
               type="number"
-              value={newStock.quantity?.toString() || '0'}
+              value={newStock.quantity?.toString() || "0"}
               onChange={handleNewStockChange}
-              style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
+              className={styles.input}
             />
           </label>
-        </Box>
+        </div>
+
+        {/* Save Button */}
         {!stock && (
-          <Box display="flex" justifyContent="flex-end" marginTop={2}>
+          <div className={styles.footer}>
             <Button
               variant="contained"
               color="primary"
               onClick={handleSave}
               disabled={
-                !newStock.componentName ||
-                !newStock.vendor ||
-                newStock.quantity === 0 ||
-                newStock.unitPrice === 0
+                !newStock.componentName || !newStock.vendor || newStock.quantity === 0 || newStock.unitPrice === 0
               }
             >
               Save
             </Button>
-          </Box>
+          </div>
         )}
       </div>
     </Drawer>

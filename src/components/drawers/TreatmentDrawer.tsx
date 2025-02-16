@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box,
   Button,
   Typography,
   IconButton,
   Menu,
-  Drawer,
 } from '@mui/material';
 import { Add, Close } from '@mui/icons-material';
 import { ChromePicker } from 'react-color';
@@ -21,6 +19,7 @@ import isEqual from 'lodash/isEqual'; // Ensure lodash is installed
 import { createTreatment, deleteTreatment, selectTreatments, updateTreatment } from '@/api/treatmentSlice';
 import { getSubdomain } from '@/shared/utils/getSubdomains';
 
+import styles from "./TreatmentDrawer.module.scss";
 
 const TreatmentDrawer: React.FC = () => {
   const dispatch = useDispatch();
@@ -217,79 +216,35 @@ const handleInputFocus = (index: number) => {
   }
 
     return (
-    <Drawer
-        anchor="right" 
-        open={true} 
-        onClose={handleClose}
-        ModalProps={{
-        BackdropProps: {
-          style: { 
-            backgroundColor: 'transparent',
-           },
-        },}}
-        >
-    <div
-          style={{
-            width: window.innerWidth <= 500 ? "100vw" : "400px", // Full screen on small devices
-            maxWidth: "100vw", // Prevent overflow
-            margin: "0 auto", // Center on larger screens
-          }}
-    >
+    <div className={`${styles.drawer} ${styles.open}`}>
       {/* Header */}
-      <Box sx={{ p: 2, borderBottom: '1px solid #e0e0e0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <Typography variant="h6">{treatmentId ? 'Edit Treatment' : 'Create Treatment'}</Typography>
-      <IconButton onClick={handleClose}>
-        <Close />
-      </IconButton>
-    </Box>
-      {/* Form Content */}
-      <Box sx={{ p: 2 }}>
-        {/* Treatment Name */}
+      <div className={styles.header}>
+        <h3>{treatmentId ? "Edit Treatment" : "Create Treatment"}</h3>
+        <IconButton onClick={handleClose}>
+          <Close />
+        </IconButton>
+      </div>
+
+      {/* Form */}
+      <div className={styles.content}>
         <label>Treatment Name:</label>
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          style={{ width: '100%', padding: '8px', marginTop: '8px', marginBottom: '16px' }}
-        />
+        <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={styles.input} />
 
-        {/* Category */}
         <label>Category:</label>
-        <CategoryInput value={category} onChange={setCategory} clinicDbName={'demo_db'} />
+        <CategoryInput value={category} onChange={setCategory} clinicDbName={"demo_db"} />
 
-        {/* Price */}
         <label>Price:</label>
-        <input
-          type="number"
-          value={price}
-          onChange={(e) => setPrice(parseFloat(e.target.value))}
-          style={{ width: '100%', padding: '8px', marginTop: '8px', marginBottom: '16px' }}
-        />
+        <input type="number" value={price} onChange={(e) => setPrice(parseFloat(e.target.value))} className={styles.input} />
 
-        {/* Duration */}
         <label>Duration (minutes):</label>
-        <input
-          type="number"
-          value={duration}
-          onChange={(e) => setDuration(parseInt(e.target.value, 10))}
-          style={{ width: '100%', padding: '8px', marginTop: '8px', marginBottom: '16px' }}
-        />
+        <input type="number" value={duration} onChange={(e) => setDuration(parseInt(e.target.value, 10))} className={styles.input} />
 
-        {/* Description */}
         <label>Description:</label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={3}
-          style={{ width: '100%', padding: '8px', marginTop: '8px', marginBottom: '16px' }}
-        />
+        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={styles.textarea} />
 
         {/* Color Picker */}
         <label>Color:</label>
-        <Button
-          onClick={(e) => setAnchorEl(e.currentTarget)}
-          style={{ backgroundColor: color, color: '#fff', width: '100%' }}
-        >
+        <Button onClick={(e) => setAnchorEl(e.currentTarget)} className={styles.colorButton} style={{ backgroundColor: color }}>
           {color}
         </Button>
         <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
@@ -297,7 +252,7 @@ const handleInputFocus = (index: number) => {
         </Menu>
 
         {/* Components Section */}
-        <Typography variant="subtitle1" marginTop={2}>
+        <Typography variant="subtitle1" className={styles.sectionTitle}>
           Components
         </Typography>
         {components.map((component, index) => (
@@ -310,40 +265,36 @@ const handleInputFocus = (index: number) => {
             onInputFocus={handleInputFocus}
             onComponentSelect={handleComponentSelect}
             currentIndex={currentIndex}
-
           />
         ))}
 
         {/* Add Component Button */}
-        <Box display="flex" justifyContent="center" mt={2}>
+        <div className={styles.addComponentButton}>
           <IconButton
             onClick={() =>
-              setComponents([...components, { id: '', componentName: '', unitPrice: 0, componentUnits: 1 }])
+              setComponents([...components, { id: "", componentName: "", unitPrice: 0, componentUnits: 1 }])
             }
           >
             <Add />
           </IconButton>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
-      {/* Create Button */}
-      {!treatmentId && (
-        <Box sx={{ p: 2, borderTop: '1px solid #e0e0e0', textAlign: 'right' }}>
+      {/* Footer Buttons */}
+      <div className={styles.footer}>
+        {!treatmentId && (
           <Button variant="contained" color="primary" onClick={handleSave}>
             Save Treatment
           </Button>
-        </Box>
-      )}
+        )}
 
-      {treatmentId && (
-        <Box sx={{ p: 2, borderTop: '1px solid #e0e0e0', textAlign: 'right'}}>
-          <Button variant="contained" color="primary" onClick={handleDelete}>
+        {treatmentId && (
+          <Button variant="contained" color="secondary" onClick={handleDelete}>
             Delete Treatment
           </Button>
-        </Box>
-      )}
+        )}
+      </div>
     </div>
-    </Drawer>
   )};
 
 export default TreatmentDrawer;

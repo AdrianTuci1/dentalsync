@@ -12,7 +12,7 @@ const NavBar: React.FC<NavBarProps> = ({ activeTab }) => {
         <img src="/logoclinic.png" alt="Clinic Logo" className="navbar-logo" />
       </div>
       <div className="navbar-center">
-        <h2>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h2>
+        <span>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</span>
       </div>
       <div className="navbar-end">
         <UserCard />

@@ -54,6 +54,8 @@ const SmallAppointmentCard: React.FC<SmallAppointmentCardProps> = ({
     dispatch(openDrawer({ type: "Appointment", data: { appointment } }));
   };
 
+  console.log(appointment)
+
   return (
     <div className="appointment-card" onClick={handleAppointmentClick}>
       <div className="card-header">

@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Box, Paper, List, ListItem, IconButton, Typography } from '@mui/material';
+import { Paper, List, ListItem, IconButton, Typography } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import CategoryService from '@/api/categoryService';
+
+import styles from "./CategoryInput.module.scss";
 
 interface CategoryInputProps {
   value: string;
@@ -77,8 +79,8 @@ const CategoryInput: React.FC<CategoryInputProps> = ({ value, onChange, clinicDb
   }, [isDropdownOpen]);
 
   return (
-    <Box position="relative" width="100%">
-      <Box position="relative">
+    <div className={styles.categoryContainer}>
+      <div className={styles.inputWrapper}>
         <input
           ref={inputRef}
           type="text"
@@ -86,67 +88,37 @@ const CategoryInput: React.FC<CategoryInputProps> = ({ value, onChange, clinicDb
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           placeholder="Search or select a category"
-          style={{
-            width: '100%',
-            padding: '8px',
-            border: '1px solid #ccc',
-            borderRadius: '4px',
-          }}
+          className={styles.input}
         />
         {value && (
-          <IconButton
-            onClick={() => onChange('')}
-            style={{
-              position: 'absolute',
-              right: '10px',
-              top: '50%',
-              transform: 'translateY(-50%)',
-            }}
-          >
+          <IconButton onClick={() => onChange("")} className={styles.clearButton}>
             <Close />
           </IconButton>
         )}
-      </Box>
+      </div>
+
       {isDropdownOpen && (
-        <Paper
-          ref={dropdownRef}
-          style={{
-            position: 'absolute',
-            top: '100%',
-            left: 0,
-            width: '100%',
-            maxHeight: '200px',
-            overflowY: 'auto',
-            zIndex: 1500,
-            borderRadius: '4px',
-            backgroundColor: '#fff',
-            boxShadow: '0 2px 5px rgba(0, 0, 0, 0.15)',
-          }}
-        >
+        <Paper ref={dropdownRef} className={styles.dropdown}>
           <List>
             {loading ? (
-              <Typography align="center" padding="8px">
+              <Typography align="center" className={styles.loadingText}>
                 Loading...
               </Typography>
             ) : filteredCategories.length > 0 ? (
               filteredCategories.map((cat) => (
-                <ListItem
-                  key={cat}
-                  onClick={() => handleCategorySelect(cat)}
-                  style={{ cursor: 'pointer' }}
-                >
+                <ListItem key={cat} onClick={() => handleCategorySelect(cat)} className={styles.listItem}>
                   {cat}
                 </ListItem>
               ))
             ) : (
-              <Typography align="center" padding="8px">
+              <Typography align="center" className={styles.loadingText}>
                 No categories found
               </Typography>
             )}
           </List>
         </Paper>
       )}
-    </Box>
+    </div>
   );
 };
 

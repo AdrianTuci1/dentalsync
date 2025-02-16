@@ -88,7 +88,6 @@ const TreatmentsPage: React.FC = () => {
       {/* Sidebar Navigation (Desktop) */}
       {!isMobile && (
         <aside className={styles.sidebar}>
-          <h3 className={styles.sidebarTitle}>Categorii</h3>
           <div className={styles.sidebarList}>
             {treatmentsData.map((cat, index) => (
               <button

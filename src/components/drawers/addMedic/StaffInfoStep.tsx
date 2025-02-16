@@ -1,4 +1,5 @@
-import React from 'react';
+import React from "react";
+import styles from "./StaffInfoStep.module.scss"; // Import the CSS module
 
 interface InfoTabProps {
   info: {
@@ -20,107 +21,63 @@ const InfoTab: React.FC<InfoTabProps> = ({ info, onInfoChange }) => {
   };
 
   const handleEmploymentTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onInfoChange('employmentType', e.target.value);
+    onInfoChange("employmentType", e.target.value);
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    onInfoChange('photo', file); // Pass the file directly through onInfoChange
+    onInfoChange("photo", file);
   };
 
   return (
-    <div>
-      <div style={{ marginBottom: '1rem' }}>
-        <label>
-          Name:
-          <input
-            type="text"
-            name="name"
-            value={info.name}
-            onChange={handleChange}
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-          />
-        </label>
+    <div className={styles.container}>
+      {/* Name */}
+      <div className={styles.inputGroup}>
+        <label htmlFor="name">Name:</label>
+        <input id="name" type="text" name="name" value={info.name} onChange={handleChange} className={styles.input} />
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label>
-          Employment Type:
-          <select
-            name="employmentType"
-            value={info.employmentType}
-            onChange={handleEmploymentTypeChange}
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-          >
-            <option value="">Select Employment Type</option>
-            <option value="full-time">Full-time</option>
-            <option value="part-time">Part-time</option>
-          </select>
-        </label>
+      {/* Employment Type */}
+      <div className={styles.inputGroup}>
+        <label htmlFor="employmentType">Employment Type:</label>
+        <select id="employmentType" name="employmentType" value={info.employmentType} onChange={handleEmploymentTypeChange} className={styles.input}>
+          <option value="">Select Employment Type</option>
+          <option value="full-time">Full-time</option>
+          <option value="part-time">Part-time</option>
+        </select>
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label>
-          Specialist:
-          <input
-            type="text"
-            name="specialization"
-            value={info.specialization}
-            onChange={handleChange}
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-          />
-        </label>
+      {/* Specialization */}
+      <div className={styles.inputGroup}>
+        <label htmlFor="specialization">Specialization:</label>
+        <input id="specialization" type="text" name="specialization" value={info.specialization} onChange={handleChange} className={styles.input} />
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label>
-          Phone:
-          <input
-            type="tel"
-            name="phone"
-            value={info.phone}
-            onChange={handleChange}
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-          />
-        </label>
+      {/* Phone */}
+      <div className={styles.inputGroup}>
+        <label htmlFor="phone">Phone:</label>
+        <input id="phone" type="tel" name="phone" value={info.phone} onChange={handleChange} className={styles.input} />
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label>
-          Email:
-          <input
-            type="email"
-            name="email"
-            value={info.email}
-            onChange={handleChange}
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-          />
-        </label>
+      {/* Email */}
+      <div className={styles.inputGroup}>
+        <label htmlFor="email">Email:</label>
+        <input id="email" type="email" name="email" value={info.email} onChange={handleChange} className={styles.input} />
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label>
-          Address:
-          <input
-            type="text"
-            name="address"
-            value={info.address}
-            onChange={handleChange}
-            style={{ width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-          />
-        </label>
+      {/* Address */}
+      <div className={styles.inputGroup}>
+        <label htmlFor="address">Address:</label>
+        <input id="address" type="text" name="address" value={info.address} onChange={handleChange} className={styles.input} />
       </div>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <label>
-          Upload Photo:
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoUpload}
-            style={{ width: '100%', marginTop: '0.25rem' }}
-          />
-        </label>
+      {/* Photo Upload */}
+      <div className={styles.photoUpload}>
+        <label htmlFor="photo">Upload Photo:</label>
+        {info.photo && (
+          <img src={typeof info.photo === "string" ? info.photo : URL.createObjectURL(info.photo)} alt="Staff Photo" className={styles.photoPreview} />
+        )}
+        <input id="photo" type="file" accept="image/*" onChange={handlePhotoUpload} className={styles.fileInput} />
       </div>
     </div>
   );

@@ -1,3 +1,8 @@
+.outerContainer{
+  height: 100vh;
+}
+
+
 /* Page Wrapper */
 .outerLayer {
   width: 100%;
@@ -8,7 +13,7 @@
 /* Cards Grid */
 .medicsPage {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); /* Grid Layout */
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); /* Grid Layout */
   gap: 20px;
   width: 100%;
   max-width: 1280px;
@@ -73,7 +78,7 @@
   display: inline-block;
   font-size: 0.9rem;
   font-weight: bold;
-  padding: 5px 10px;
+  padding: 5px 5px;
   border-radius: 15px;
   text-align: center;
   margin-top: 5px;

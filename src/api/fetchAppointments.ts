@@ -59,13 +59,14 @@ class AppointmentService {
     return await this.request(`${BASE_URL}/patient/${patientId}?limit=${limit}&offset=${offset}`, 'GET');
   }
 
-  // Fetch appointments for a medic (or all if no medicId is passed)
-  async fetchMedicAppointments(medicId?: string) {
-    const url = medicId
-      ? `${BASE_URL}/medic/${medicId}`
-      : `${BASE_URL}/medic`; // No medicId provided, fetch all appointments
-    return await this.request(url, 'GET');
-  }
+// Fetch appointments for a medic (or all if no medicId is passed)
+async fetchMedicAppointments(medicId?: string, limit = 20, offset = 0) {
+  const url = medicId
+    ? `${BASE_URL}/medic/${medicId}?limit=${limit}&offset=${offset}`
+    : `${BASE_URL}/medic?limit=${limit}&offset=${offset}`; // No medicId provided, fetch all appointments
+
+  return await this.request(url, "GET");
+}
 
 }
 
