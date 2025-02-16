@@ -10,6 +10,7 @@ import { testValue } from '@/test';
 import { getOfflineQueue } from "@/api/syncQueue";
 import { setOfflineQueueCount } from "@/api/syncSlice";
 import useSync from "@/shared/utils/useSync";
+import DebugLocalForage from '@/features/clinic/DebugLocalForage';
 
 
 
@@ -75,6 +76,8 @@ function App() {
 
         {/* Fallback for unknown routes */}
         <Route path="*" element={<Navigate to="/" replace />} />
+
+        <Route path="/debug" element={<DebugLocalForage />} />
       </Routes>
     </Router>
   );
