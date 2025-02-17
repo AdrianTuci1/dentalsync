@@ -1,9 +1,9 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Treatment } from '@/features/clinic/types/treatmentType';
-import { createTreatmentFactory } from "@/factories/treatmentFactory";
+import { createTreatmentFactory } from "@/api/factories/treatmentFactory";
 import { cache } from '@/shared/utils/localForage';
 import { TreatmentUpdater } from '@/shared/utils/TreatmentUpdater';
-import { queueOfflineUpdate } from './syncQueue';
+import { queueOfflineUpdate } from '../syncQueue';
 
 interface TreatmentState {
   treatments: Treatment[];

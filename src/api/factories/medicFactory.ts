@@ -1,4 +1,4 @@
-import MedicService from "@/api/medicService";
+import MedicService from "@/api/services/medicService";
 import { ApiMedicData, MedicInfo, MedicsListItem } from "@/features/clinic/types/Medic";
 
 export const createMedicFactory = (token: string, clinicDb: string) => {

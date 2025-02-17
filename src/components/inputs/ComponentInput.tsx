@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Box, Paper, List, ListItem, IconButton, CircularProgress } from '@mui/material';
 import { Remove } from '@mui/icons-material';
-import ComponentService from '@/api/componentService';
+import ComponentService from '@/api/services/componentService';
 import { useSelector } from 'react-redux';
 
 interface ComponentInputProps {

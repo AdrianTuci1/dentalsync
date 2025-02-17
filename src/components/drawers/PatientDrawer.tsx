@@ -15,7 +15,7 @@ import DeleteTab from './patient/DeleteTab';
 import { closeDrawer } from '@/components/drawerSlice';
 import styles from '@styles-cl/drawers/PatientDrawer.module.scss'; // Import CSS module for styling
 import { selectTopDrawer } from '@/shared/utils/selectors';
-import { createPatient, fetchPatientById, setDetailedPatient, updatePatient} from '@/api/patientUserSlice';
+import { createPatient, fetchPatientById, setDetailedPatient, updatePatient} from '@/api/slices/patientUserSlice';
 import { getSubdomain } from '@/shared/utils/getSubdomains';
 import { AppDispatch } from '@/shared/services/store';
 

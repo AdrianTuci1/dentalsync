@@ -11,7 +11,7 @@ import { closeDrawer } from '../drawerSlice';
 import { Component } from '@/features/clinic/types/componentType';
 import { selectTopDrawer } from '@/shared/utils/selectors';
 import { getSubdomain } from '@/shared/utils/getSubdomains';
-import { createComponent, updateComponent } from '@/api/stockSlice';
+import { createComponent, updateComponent } from '@/api/slices/stockSlice';
 
 import styles from "./StockDrawer.module.scss";
 

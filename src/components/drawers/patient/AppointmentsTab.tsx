@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Box, CircularProgress, Button, Typography } from "@mui/material";
-import AppointmentService from "@/api/fetchAppointments"; // Assuming the path to the service is correct
+import AppointmentService from "@/api/services/fetchAppointments"; // Assuming the path to the service is correct
 import { useSelector } from "react-redux";
 import SmallAppointmentCard from "@/features/clinic/components/SmallAppointmentCard";
 

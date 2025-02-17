@@ -1,4 +1,4 @@
-import TreatmentService from "@/api/treatmentService";
+import TreatmentService from "@/api/services/treatmentService";
 import { Treatment } from "@/features/clinic/types/treatmentType";
 
 export const createTreatmentFactory = (token: string, clinicDb: string) => {

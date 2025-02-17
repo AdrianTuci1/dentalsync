@@ -1,9 +1,10 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Component } from '@/features/clinic/types/componentType';
-import { createComponentFactory } from "@/factories/componentFactory";
+import { createComponentFactory } from "@/api/factories/componentFactory";
 import { cache } from '@/shared/utils/localForage';
 import { queueOfflineUpdate } from '@/api/syncQueue';
 import { ComponentUpdater } from '@/shared/utils/ComponentUpdater';
+import UnifiedDataService from '../services/unifiedDataService';
 
 interface StockState {
   stocks: Component[];
@@ -19,25 +20,24 @@ const initialState: StockState = {
   offset: 0,
 };
 
-// Factory-based Thunks
 
-/** ✅ Fetch components from API or cache */
+
 export const fetchComponents = createAsyncThunk(
   "stocks/fetch",
   async (
     { token, clinicDb, name = "", offset = 0 }: { token: string; clinicDb: string; name?: string; offset?: number },
     { rejectWithValue }
   ) => {
-    const factory = createComponentFactory(token, clinicDb);
     try {
-      const { components, offset: newOffset } = await factory.fetchComponents(name, offset);
-      await cache.set("stocks", components);
-      return { components, offset: newOffset };
+      const service = new UnifiedDataService(token, clinicDb);
+      const result = await service.getResources("components", { name, offset: String(offset) });
+      return result; // normalized shape { data, offset, limit }
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : "Failed to fetch components");
     }
   }
 );
+
 
 /** ✅ Optimistic Creation of Component */
 export const createComponent = createAsyncThunk(
@@ -138,7 +138,23 @@ const stockSlice = createSlice({
       })
       .addCase(fetchComponents.fulfilled, (state, action) => {
         state.loading = false;
-        state.stocks = action.payload.components;
+        
+        // Ensure action.payload.data is an array.
+        const newComponents: Component[] = Array.isArray(action.payload.data)
+          ? action.payload.data
+          : [];
+        
+        // Merge arrays: if offset is 0, use newComponents; otherwise, combine with existing stocks.
+        const combined = action.payload.offset === 0 
+          ? newComponents 
+          : [...state.stocks, ...newComponents];
+        
+        // Deduplicate using a Map keyed by the component's unique id.
+        const deduplicated = Array.from(
+          new Map(combined.map((comp) => [comp.id, comp])).values()
+        );
+        
+        state.stocks = deduplicated;
         state.offset = action.payload.offset;
       })
       .addCase(fetchComponents.rejected, (state, action) => {

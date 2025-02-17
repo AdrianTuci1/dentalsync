@@ -16,7 +16,7 @@ import { selectTopDrawer } from '@/shared/utils/selectors';
 import { Treatment } from '@/features/clinic/types/treatmentType';
 
 import isEqual from 'lodash/isEqual'; // Ensure lodash is installed
-import { createTreatment, deleteTreatment, selectTreatments, updateTreatment } from '@/api/treatmentSlice';
+import { createTreatment, deleteTreatment, selectTreatments, updateTreatment } from '@/api/slices/treatmentSlice';
 import { getSubdomain } from '@/shared/utils/getSubdomains';
 
 import styles from "./TreatmentDrawer.module.scss";

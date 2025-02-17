@@ -7,7 +7,7 @@ import ToothDrawer from "@teeth/ToothDrawer";
 import Accordion from "@teeth/Accordion";
 import { Tooth } from "@teeth/Tooth"; // Import the Tooth class
 import { ToothCondition } from "@teeth/utils/toothCondition";
-import DentalHistoryService from "@/api/dentalHistoryService";
+import DentalHistoryService from "@/api/services/dentalHistoryService";
 import { getSubdomain } from "@/shared/utils/getSubdomains";
 
 const DentalHistoryTab: React.FC<{ patientId: string }> = ({ patientId }) => {

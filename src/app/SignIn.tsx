@@ -1,7 +1,7 @@
 import React, { useState, useEffect, startTransition } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { clinicLoginSuccess, logout, subaccountLoginSuccess } from '@/api/authSlice';
-import AuthService from '@/api/AuthService';
+import { clinicLoginSuccess, logout, subaccountLoginSuccess } from '@/api/slices/authSlice';
+import AuthService from '@/api/services/AuthService';
 import { getSubdomain } from '@/shared/utils/getSubdomains';
 import './signin.scss';
 

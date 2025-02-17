@@ -1,7 +1,7 @@
 import { ToothCondition } from "./utils/toothCondition";
 import { ToothSchema } from "./utils/schema";
 import { convert } from "./utils/teeth-numbering-system";
-import  patientService  from "@/api/patientService"; // Import patient service
+import  patientService  from "@/api/services/patientService"; // Import patient service
 
 export class Tooth {
   ISO: number = 11; // Default ISO for a tooth

@@ -18,7 +18,7 @@ import { openDrawer } from '@/components/drawerSlice';
 import { Treatment } from '../types/treatmentType';
 import generateInitials from '@/shared/utils/generateInitials';
 import SearchInput from '../../../components/inputs/SearchInput';
-import { fetchTreatments, selectTreatments, selectTreatmentLoading} from '@/api/treatmentSlice';
+import { fetchTreatments, selectTreatments, selectTreatmentLoading} from '@/api/slices/treatmentSlice';
 
 import { getSubdomain } from '@/shared/utils/getSubdomains';
 

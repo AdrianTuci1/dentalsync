@@ -1,9 +1,9 @@
 import React from 'react';
 import { useAppSelector, useAppDispatch } from '@/shared/services/hooks';
 import { RootState } from '@/shared/services/store';
-import AppointmentService from '@/api/fetchAppointments';
+import AppointmentService from '@/api/services/fetchAppointments';
 import { closeDrawer } from '@/components/drawerSlice';
-import { resetAppointment } from '@/api/appointmentsSlice';
+import { resetAppointment } from '@/api/slices/appointmentsSlice';
 
 const DeleteTab: React.FC = () => {
   const dispatch = useAppDispatch();

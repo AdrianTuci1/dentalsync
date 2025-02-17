@@ -5,11 +5,11 @@ import { useSelector, useDispatch } from 'react-redux';
 import Dashboard from '@/features/clinic/Dashboard';
 import PatientDashboard from '@/features/patient/PatientDashboard';
 import SignIn from './SignIn'; // Import the SignIn component
-import { loadUserFromLocalStorage } from '@/api/authSlice';
+import { loadUserFromLocalStorage } from '@/api/slices/authSlice';
 import { testValue } from '@/test';
 import { getOfflineQueue } from "@/api/syncQueue";
 import { setOfflineQueueCount } from "@/api/syncSlice";
-import useSync from "@/shared/utils/useSync";
+import useSync from "@/api/hooks/useSync";
 import DebugLocalForage from '@/features/clinic/DebugLocalForage';
 
 

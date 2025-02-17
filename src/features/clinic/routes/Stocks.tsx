@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -12,55 +12,33 @@ import {
   TableHead,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { openDrawer } from '@/components/drawerSlice';
 import { Component } from '../types/componentType';
-import { getSubdomain } from '@/shared/utils/getSubdomains';
 import SearchInput from '../../../components/inputs/SearchInput';
-import { fetchComponents, selectStockLoading, selectStocks} from '@/api/stockSlice';
+import useStocks from '@/api/hooks/useComponents';
 
 export const StocksTable: React.FC = () => {
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [offset, setOffset] = useState<number>(0);
-  const isSmallScreen = useMediaQuery('(max-width:800px)');
-
-  const token = useSelector((state: any) => state.auth.subaccountToken);
-  const clinicDb = getSubdomain() + '_db';
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const isSmallScreen = useMediaQuery("(max-width:800px)");
   const dispatch = useDispatch();
 
-  // Redux stocks state
-  const stocks = useSelector(selectStocks);
-  const isLoading = useSelector(selectStockLoading);
+  // Use the custom hook to retrieve stocks, loading status, error, and loadMore callback.
+  const { stocks, loading, error, loadMore } = useStocks(searchTerm);
 
-  /** ✅ Fetch components on mount & when search term changes */
-  useEffect(() => {
-    if (token && clinicDb) {
-      dispatch(fetchComponents({ name: searchTerm, offset: 0, token, clinicDb }) as any);
-    }
-  }, [dispatch, searchTerm, token, clinicDb]);
-
-  /** ✅ Handle search input change */
+  /** Handle search input change */
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setOffset(0); // Reset offset when searching
   };
 
-  /** ✅ Handle row click (edit component) */
+  /** Handle row click (edit component) */
   const handleRowClick = (stock: Component) => {
-    dispatch(openDrawer({ type: 'Stock', data: { stock } }));
+    dispatch(openDrawer({ type: "Stock", data: { stock } }));
   };
 
-  /** ✅ Handle adding a new component */
+  /** Handle adding a new component */
   const handleAddStockClick = () => {
-    dispatch(openDrawer({ type: 'Stock', data: { stock: null } }));
-  };
-
-  /** ✅ Handle Load More for pagination */
-  const handleLoadMore = () => {
-    if (!isLoading && token && clinicDb) {
-      dispatch(fetchComponents({ name: searchTerm, offset: offset + 20, token, clinicDb }) as any);
-      setOffset((prevOffset) => prevOffset + 20);
-    }
+    dispatch(openDrawer({ type: "Stock", data: { stock: null } }));
   };
 
   return (
@@ -80,7 +58,7 @@ export const StocksTable: React.FC = () => {
 
         {/* Table */}
 
-        {isLoading && stocks.length === 0 ? (
+        {loading && stocks.length === 0 ? (
           <p>Loading stocks...</p>
         ): stocks.length === 0 ? (
           <p>No stocks found</p>
@@ -136,10 +114,10 @@ export const StocksTable: React.FC = () => {
         <Button
           variant="contained"
           color="primary"
-          onClick={handleLoadMore}
-          disabled={isLoading}
+          onClick={loadMore}
+          disabled={loading}
         >
-          {isLoading ? 'Loading...' : 'Load More'}
+          {loading ? 'Loading...' : 'Load More'}
         </Button>
       </Box>
     </>

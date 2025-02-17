@@ -14,10 +14,10 @@ import EventIcon from "@mui/icons-material/Upcoming";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useDispatch, useSelector } from "react-redux";
 import { closeDrawer } from "@/components/drawerSlice";
-import AppointmentService from "@/api/fetchAppointments";
+import AppointmentService from "@/api/services/fetchAppointments";
 import SmallAppointmentCard from "@/features/clinic/components/SmallAppointmentCard";
 import styles from "@styles-cl/drawers/UserDrawer.module.scss";
-import { logout, switchAccount } from "@/api/authSlice";
+import { logout, switchAccount } from "@/api/slices/authSlice";
 import { selectTopDrawer } from "@/shared/utils/selectors";
 import { getSubdomain } from "@/shared/utils/getSubdomains";
 

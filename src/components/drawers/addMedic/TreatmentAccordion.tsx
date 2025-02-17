@@ -7,7 +7,7 @@ import {
   FormControlLabel,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import CategoryService from '@/api/categoryService';
+import CategoryService from '@/api/services/categoryService';
 import { getSubdomain } from '@/shared/utils/getSubdomains';
 
 interface Treatment {

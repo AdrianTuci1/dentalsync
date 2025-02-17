@@ -1,13 +1,13 @@
 // src/types.ts
-import { AuthState } from '@/api/authSlice';
+import { AuthState } from '@/api/slices/authSlice';
 import { DrawerState } from '@/components/drawerSlice';
-import { AppointmentsState } from '@/api/appointmentsSlice';
-import { StockState } from '@/api/stockSlice';
-import { TreatmentState } from '@/api/treatmentSlice';
-import { PatientUserState } from '@/api/patientUserSlice';
-import { PermissionsState } from '@/api/permissionsSlice';
+import { AppointmentsState } from '@/api/slices/appointmentsSlice';
+import { StockState } from '@/api/slices/stockSlice';
+import { TreatmentState } from '@/api/slices/treatmentSlice';
+import { PatientUserState } from '@/api/slices/patientUserSlice';
+import { PermissionsState } from '@/api/slices/permissionsSlice';
 import { SyncState } from '@/api/syncSlice';
-import { MedicState } from '@/api/medicSlice';
+import { MedicState } from '@/api/slices/medicSlice';
 
 export interface RootState {
   auth: AuthState;

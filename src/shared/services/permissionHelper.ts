@@ -1,5 +1,5 @@
 import Cookies from "js-cookie";
-import PermissionService from "@/api/permissionService";
+import PermissionService from "@/api/services/permissionService";
 
 
 // Cache permissions in cookies

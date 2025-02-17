@@ -1,13 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
-import authReducer from '@/api/authSlice';
-import requestReducer from '@/api/requestSlice';
+import authReducer from '@/api/slices/authSlice';
+import requestReducer from '@/api/slices/requestSlice';
 import drawerReducer from '@/components/drawerSlice';
-import appointmentsReducer from '@/api/appointmentsSlice';
-import stockReducer from '@/api/stockSlice';
-import treatmentReducer from '@/api/treatmentSlice';
-import patientUserReducer from '@/api/patientUserSlice'
-import permissionsReducer from "@/api/permissionsSlice";
-import medicReducer from "@/api/medicSlice"
+import appointmentsReducer from '@/api/slices/appointmentsSlice';
+import stockReducer from '@/api/slices/stockSlice';
+import treatmentReducer from '@/api/slices/treatmentSlice';
+import patientUserReducer from '@/api/slices/patientUserSlice'
+import permissionsReducer from "@/api/slices/permissionsSlice";
+import medicReducer from "@/api/slices/medicSlice"
 import { getSubdomain } from '../utils/getSubdomains';
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";

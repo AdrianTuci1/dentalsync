@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Table,
   TableBody,
@@ -14,31 +14,18 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { blue, green, orange } from '@mui/material/colors';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { openDrawer } from '@/components/drawerSlice';
 import SearchInput from '../../../components/inputs/SearchInput';
-import { getSubdomain } from '@/shared/utils/getSubdomains';
-import { fetchMedics, selectMedicLoading, selectMedics } from '@/api/medicSlice';
+import useMedics from '@/api/hooks/useMedics';
 
 const Medics: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const isSmallScreen = useMediaQuery("(max-width:800px)");
-
-  const token = useSelector((state: any) => state.auth.subaccountToken);
-  const db = getSubdomain() + "_db";
   const dispatch = useDispatch();
 
-  // Redux state selectors
-  const medics = useSelector(selectMedics);
-  const isLoading = useSelector(selectMedicLoading);
-
-
-  // Fetch medics from API on mount
-  useEffect(() => {
-    if (token && db) {
-      dispatch(fetchMedics({ token, clinicDb: db }) as any);
-    }
-  }, [dispatch, token, db]);
+  // Use the custom hook to retrieve medics.
+  const { medics, loading, error } = useMedics(searchTerm);
 
 
   // ✅ Fix filtering logic
@@ -59,7 +46,7 @@ const Medics: React.FC = () => {
     dispatch(openDrawer({ type: "Medic", data: { medicId } }));
   };
 
-  if(isLoading) {
+  if(loading) {
     return <div>Loading data....</div>
   }
 

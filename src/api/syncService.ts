@@ -1,59 +1,43 @@
-import localforage from "localforage";
-import { getOfflineQueue, clearOfflineQueue } from "./syncQueue";
+// src/api/services/syncService.ts
+import { cache } from "./cacheService";
+import ApiService from "./apiService";
 
-class SyncService {
-  private baseUrl: string = import.meta.env.VITE_SERVER;
+export type SyncAction = {
+  type: "CREATE" | "UPDATE" | "DELETE" | "PATCH";
+  resource: "patients" | "medics" | "treatments" | "appointments" | "components";
+  payload: any;
+};
 
-  private async getHeaders() {
-    const token = await localforage.getItem<string>("authToken");
-    const clinicDb = await localforage.getItem<string>("clinicDb");
+const SYNC_QUEUE_KEY = "syncQueue";
 
-    if (!token || !clinicDb) {
-      throw new Error("🔴 Missing authentication or clinic database information.");
-    }
+export const syncService = {
+  async addAction(action: SyncAction): Promise<void> {
+    const queue: SyncAction[] = (await cache.get(SYNC_QUEUE_KEY)) || [];
+    queue.push(action);
+    await cache.set(SYNC_QUEUE_KEY, queue);
+  },
 
-    return {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      "x-clinic-db": clinicDb,
-    };
-  }
+  async getQueue(): Promise<SyncAction[]> {
+    return (await cache.get(SYNC_QUEUE_KEY)) || [];
+  },
 
-  /** ✅ Send all queued offline updates to `/api/sync` */
-  async syncToServer(): Promise<{ success: boolean; message?: string }> {
+  async clearQueue(): Promise<void> {
+    await cache.remove(SYNC_QUEUE_KEY);
+  },
+
+  // Sync offline actions to the server
+  async syncOfflineActions(token: string, clinicDb: string): Promise<void> {
+    if (!navigator.onLine) return;
+    const queue = await this.getQueue();
+    if (queue.length === 0) return;
+    
+    const api = ApiService.getInstance(token, clinicDb);
     try {
-      const queuedUpdates = await getOfflineQueue();
-
-      if (queuedUpdates.length === 0) {
-        console.log("✅ No offline updates to sync.");
-        return { success: true };
-      }
-
-      console.log("🔄 Sending batch sync request to server:", queuedUpdates);
-
-      const headers = await this.getHeaders();
-      const response = await fetch(`${this.baseUrl}/api/sync`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ updates: queuedUpdates }),
-      });
-
-      if (!response.ok) {
-        const errorMsg = await response.text();
-        throw new Error(`❌ Failed to sync offline updates: ${errorMsg}`);
-      }
-
-      // Clear queue after successful sync
-      await clearOfflineQueue();
-
-      const data = await response.json();
-      console.log("✅ Sync successful:", data);
-      return { success: true };
+      await api.post("sync", { actions: queue });
+      await this.clearQueue();
+      console.log("Offline actions synced successfully");
     } catch (error) {
-      console.error("❌ Error in syncToServer:", error);
-      return { success: false, message: error instanceof Error ? error.message : "Unknown error" };
+      console.error("Sync failed:", error);
     }
-  }
-}
-
-export default new SyncService();
+  },
+};

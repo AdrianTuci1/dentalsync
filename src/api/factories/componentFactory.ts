@@ -1,4 +1,4 @@
-import ComponentService from "@/api/componentService";
+import ComponentService from "@/api/services/componentService";
 import { Component } from "@/features/clinic/types/componentType";
 
 export const createComponentFactory = (token: string, clinicDb: string) => {

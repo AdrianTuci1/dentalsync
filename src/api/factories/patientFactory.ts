@@ -1,4 +1,4 @@
-import PatientService from "@/api/patientService";
+import PatientService from "@/api/services/patientService";
 
 export const createPatientFactory = (token: string, clinicDb: string) => {
   const service = PatientService.getInstance(token, clinicDb); // ✅ Singleton pattern

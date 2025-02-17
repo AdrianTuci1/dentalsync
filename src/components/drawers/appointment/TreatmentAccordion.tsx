@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import SearchService from '@/api/searchService';
+import SearchService from '@/api/services/searchService';
 import { AppointmentTreatment } from '@/features/clinic/types/appointmentEvent';
 import '@styles-cl/components/TreatmentsTab.scss';
 import { getSubdomain } from '@/shared/utils/getSubdomains';

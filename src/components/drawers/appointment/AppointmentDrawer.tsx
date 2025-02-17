@@ -17,7 +17,7 @@ import {
   resetAppointment,
   fetchAppointmentById,
   updateAppointment,
-} from '@/api/appointmentsSlice';
+} from '@/api/slices/appointmentsSlice';
 import styles from '@styles-cl/drawers/AppointmentDrawer.module.scss'; // Import CSS file for styling
 import { RootState } from '@/shared/services/store';
 

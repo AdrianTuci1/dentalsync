@@ -4,7 +4,7 @@ import { AppointmentTreatment } from '@/features/clinic/types/appointmentEvent';
 import '@styles-cl/components/TreatmentsTab.scss';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/shared/services/store';
-import { updateAppointmentField } from '@/api/appointmentsSlice';
+import { updateAppointmentField } from '@/api/slices/appointmentsSlice';
 import { v4 as uuidv4 } from 'uuid';
 
 const TreatmentsTab: React.FC = () => {

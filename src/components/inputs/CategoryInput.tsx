@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Paper, List, ListItem, IconButton, Typography } from '@mui/material';
 import { Close } from '@mui/icons-material';
-import CategoryService from '@/api/categoryService';
+import CategoryService from '@/api/services/categoryService';
 
 import styles from "./CategoryInput.module.scss";
 

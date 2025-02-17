@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/shared/services/store';
-import { updateAppointmentField } from '@/api/appointmentsSlice';
+import { updateAppointmentField } from '@/api/slices/appointmentsSlice';
 import styles from '@styles-cl/drawers/PriceTab.module.scss'
 
 const PriceTab: React.FC = () => {

@@ -17,7 +17,7 @@ import {
 import styles from '@/features/clinic/styles/drawers/MedicDrawer.module.scss'
 import { selectTopDrawer } from '@/shared/utils/selectors';
 import { getSubdomain } from '@/shared/utils/getSubdomains';
-import { createMedic, fetchMedicById, setUpdatedMedicInTable, updateMedic } from '@/api/medicSlice';
+import { createMedic, fetchMedicById, setUpdatedMedicInTable, updateMedic } from '@/api/slices/medicSlice';
 import { transformMedicInfoToTableFormat } from '@/shared/utils/medicTransform';
 
 

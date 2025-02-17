@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Appointment } from '@/features/clinic/types/appointmentEvent';
-import SearchService from '@/api/searchService';
-import AppointmentService from '@/api/fetchAppointments'; // Make sure this path is correct
+import SearchService from '@/api/services/searchService';
+import AppointmentService from '@/api/services/fetchAppointments'; // Make sure this path is correct
 import styles from '@styles-cl/drawers/InitialAppointmentTab.module.scss';
 import { useAppDispatch, useAppSelector } from '@/shared/services/hooks';
 import { RootState } from '@/shared/services/store';
-import { updateAppointmentField, resetAppointment } from '@/api/appointmentsSlice';
+import { updateAppointmentField, resetAppointment } from '@/api/slices/appointmentsSlice';
 import { closeDrawer } from '@/components/drawerSlice';
 
 const InitialAppointmentTab: React.FC = () => {
