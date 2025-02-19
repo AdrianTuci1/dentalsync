@@ -9,6 +9,7 @@ import {
 import { GoHistory } from "react-icons/go";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { MdDashboard } from "react-icons/md";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ const Navbar: React.FC = () => {
               className={`${styles.navItem} ${styles.fixedSize}`}
               onClick={() => navigate(userRole === "clinic" ? "/dashboard" : "/consultations")}
             >
-              {userRole === "clinic" ? <HiOutlineClipboardList /> : <GoHistory />}
+              {userRole === "clinic" ? <MdDashboard /> : <GoHistory />}
             </div>
           )}
 

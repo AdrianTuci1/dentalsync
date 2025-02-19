@@ -170,7 +170,6 @@ const patientSlice = createSlice({
         );
       
         state.patientsList = deduplicated;
-        state.offset = action.payload.offset;
       })
       .addCase(fetchPatients.rejected, (state, action) => {
         state.loading = false;

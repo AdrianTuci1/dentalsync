@@ -62,7 +62,7 @@ class ComponentService {
       if (!response.ok) {
         throw new Error('Failed to fetch components');
       }
-
+      
       const data = await response.json();
       return { components: data.components, offset: data.offset };
     }

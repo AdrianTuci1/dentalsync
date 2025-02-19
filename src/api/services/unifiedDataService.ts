@@ -51,48 +51,89 @@ export class UnifiedDataService {
    * @param resource - The resource key (e.g., "patients", "components")
    * @param params - Query parameters, e.g. { name: "John", offset: "0" }
    */
-  async getResources(
+  async getResources<T = any>(
     resource: keyof DemoData,
     params: Record<string, string> = {},
     id?: string
-  ): Promise<ResourceResponse> {
-    
-    // Demo mode: fetch all demo data and then extract the resource.
+  ): Promise<{ data: T[]; limit?: number; offset?: number }> {
+    console.log("UnifiedDataService.getResources called with:", resource, params);
+  
+    // **1️⃣ Handle Demo Mode**
     if (DEMO_MODE) {
       const demoData: DemoData = await this.getAllDemoData();
       if (id) {
-        const item = (demoData[resource] || []).find((item) => item.id === id);
-        return { data: item ? [item] : [], limit: 0, offset: 0 };
+        const item = (demoData[resource] as T[] | undefined)?.find((item) => (item as any).id === id);
+        return { data: item ? [item] : [] };
       }
-      const offset = Number(params.offset) || 0;
-      const resourceData: any[] = demoData[resource] || [];
-      const slicedData = resourceData.slice(0, offset + this.batchSize);
-      return { data: slicedData, limit: this.batchSize, offset };
+      return { data: (demoData[resource] as T[]) || [] };
     }
   
-    // If offline, use cached data.
+    // ✅ **Handle Offline Mode - Use Cached Data if No Internet**
     if (!navigator.onLine) {
-      console.log(`Offline: Using cached data for ${resource}`);
-      const cached: any[] = (await cache.get(resource)) as any[];
-      const offset = Number(params.offset) || 0;
-      return { data: cached.slice(0, offset + this.batchSize), limit: this.batchSize, offset };
+      console.log(`🔌 Offline mode: Using cached data for '${resource}'`);
+  
+      const cachedData: T[] = (await cache.get(resource)) ?? [];
+      if (!cachedData.length) {
+        console.warn(`⚠️ No cached data found for '${resource}' while offline.`);
+      }
+      
+      return { data: cachedData };
     }
   
-    // Production mode online:
-    const endpoint = id ? `${resource}/${id}` : resource;
-    // Expect the API to return an object with { data: any[], limit: number, offset: number }
-    const result = await this.api.get<ResourceResponse>(endpoint, params);
-    
-    // Determine the data to cache:
-    const dataToCache = result.data !== undefined ? result.data : (result as any).components;
-    if (dataToCache === undefined) {
-      console.warn("No data found in API response for caching.");
-    } else {
-      await cache.set(resource, JSON.parse(JSON.stringify(dataToCache)));
+    // **3️⃣ Fetch Data from API**
+    try {
+      const endpoint = id ? `${resource}/${id}` : resource;
+      const result = await this.api.get<{ data?: T[]; limit?: number; offset?: number } | T[]>(endpoint, params);
+      console.log("✅ API result received:", result);
+  
+      // **4️⃣ Determine API Response Format**
+      let responseData: T[];
+      if (Array.isArray(result)) {
+        responseData = result; // Direct array response
+      } else if (Array.isArray(result.data)) {
+        responseData = result.data; // Object with "data" key
+      } else if (Array.isArray((result as any)[resource])) {
+        responseData = (result as any)[resource]; // Object with resource key
+      } else {
+        throw new Error(`Invalid API response structure for ${resource}`);
+      }
+  
+      // ✅ **Determine if this resource is paginated or full-set**
+      const isPaginated = params.hasOwnProperty("offset"); // Checks if request had "offset"
+  
+      if (isPaginated) {
+        console.log(`📄 Paginated data detected for '${resource}'`);
+  
+        // 🔹 Merge with previously cached data to prevent duplicates
+        const existingCache: T[] = (await cache.get(resource)) ?? [];
+        const mergedData = [...existingCache, ...responseData].reduce(
+          (acc, item) => acc.find((i) => (i as any).id === (item as any).id) ? acc : [...acc, item], 
+          [] as T[]
+        );
+  
+        await cache.set(resource, mergedData);
+      } else {
+        console.log(`📦 Full dataset detected for '${resource}', caching all.`);
+        await cache.set(resource, responseData);
+      }
+  
+      return {
+        data: responseData,
+        limit: (result as any).limit ?? undefined,
+        offset: (result as any).offset ?? undefined,
+      };
+    } catch (error) {
+      console.error(`❌ Error fetching '${resource}':`, error);
+  
+      // Load from cache in case of API failure
+      const cachedData: T[] = (await cache.get(resource)) ?? [];
+      console.log(`📂 Using cached data for '${resource}' due to API failure (${cachedData.length} records)`);
+  
+      return { data: cachedData };
     }
-    
-    return result;
   }
+
+
   /**
    * Fetch a single resource by its id.
    *

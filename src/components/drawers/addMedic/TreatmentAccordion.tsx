@@ -30,14 +30,20 @@ const TreatmentAccordion: React.FC<TreatmentAccordionProps> = ({
   const [selectedTreatments, setSelectedTreatments] = useState<string[]>(assignedTreatments || []);
 
   // Persistent instance of CategoryService
-  const categoryServiceRef = useRef(new CategoryService(`${getSubdomain()}_db`));
+  const categoryServiceRef = useRef<CategoryService | null>(null);
+
+  useEffect(() => {
+    categoryServiceRef.current = new CategoryService(`${getSubdomain()}_db`);
+  }, []);
 
   const fetchCategories = useCallback(async () => {
+    if (!categoryServiceRef.current) return;
+
     try {
       const data = await categoryServiceRef.current.getAllCategories();
 
-      if (typeof data === 'object' && data !== null) {
-        setCategories(data as any);
+      if (data && typeof data === 'object' && !Array.isArray(data)) {
+        setCategories(data as Record<string, Treatment[]>);
       } else {
         console.error('Invalid API response format:', data);
       }
@@ -54,13 +60,15 @@ const TreatmentAccordion: React.FC<TreatmentAccordionProps> = ({
     setSelectedTreatments(assignedTreatments || []);
   }, [assignedTreatments]);
 
-  const handleCheck = (treatmentName: string) => {
-    const updatedSelected = selectedTreatments.includes(treatmentName)
-      ? selectedTreatments.filter((name) => name !== treatmentName)
-      : [...selectedTreatments, treatmentName];
+  const handleCheck = (treatmentId: string) => {
+    setSelectedTreatments((prevSelected) => {
+      const updatedSelected = prevSelected.includes(treatmentId)
+        ? prevSelected.filter((id) => id !== treatmentId)
+        : [...prevSelected, treatmentId];
 
-    setSelectedTreatments(updatedSelected);
-    onServiceChange(updatedSelected);
+      onServiceChange(updatedSelected);
+      return updatedSelected;
+    });
   };
 
   return (

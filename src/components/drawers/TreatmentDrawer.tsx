@@ -148,6 +148,7 @@ const TreatmentDrawer: React.FC = () => {
   };
 
 
+
   // Reset form fields
   const resetForm = () => {
     setName('');

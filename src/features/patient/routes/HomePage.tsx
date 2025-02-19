@@ -48,9 +48,9 @@ function HomePage() {
             <h3>Baicului</h3>
           </div>
           <div className={styles.clinicDescription}>
-             {/*  <ClinicPresentation />  */}
+              <ClinicPresentation /> 
              {/* <AppointmentCard /> */}
-             <NoAppointmentCard />
+             {/* <NoAppointmentCard /> */}
           </div>
         </div>
         <div className={styles.map}>
@@ -76,7 +76,7 @@ function HomePage() {
         </div>
         <div className={styles.availabilitySection}>
           {stats.map((stat, index) => (
-            <div className={styles.statBox} tabIndex={index}>
+            <div className={styles.statBox} key={index}>
               <h3>{stat.name}</h3>
               <h2>{stat.currentCount}</h2>
             </div>

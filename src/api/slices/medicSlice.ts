@@ -27,26 +27,16 @@ const initialState: MedicState = {
 export const fetchMedics = createAsyncThunk(
   "medics/fetch",
   async (
-    { token, clinicDb, name = "", offset = 0 }: { token: string; clinicDb: string; name?: string; offset?: number },
+    { token, clinicDb }: { token: string; clinicDb: string; name?: string; offset?: number },
     { rejectWithValue }
   ) => {
     try {
       const dataService = new UnifiedDataService(token, clinicDb);
       // Call getResources for the "medics" resource.
-      const result = await dataService.getResources("medics", { name, offset: String(offset) }) as any;
+      const result = await dataService.getResources("medics", {}) as any;
       console.log("UnifiedDataService.getResources result:", result);
 
-      // Since we expect a key "medics", use that.
-      const medicsArray: any[] = Array.isArray(result.medics)
-        ? result.medics
-        : [];
-      
-      // Transform each medic for table display.
-      const medicsTableData = medicsArray.map((medic) =>
-        transformMedicInfoToTableFormat(medic)
-      );
-
-      return { data: medicsTableData, offset: result.offset, limit: result.limit };
+      return result;
     } catch (error) {
       return rejectWithValue(
         error instanceof Error ? error.message : "Failed to fetch medics"
@@ -69,6 +59,7 @@ export const fetchMedicById = createAsyncThunk(
       const dataService = new UnifiedDataService(token, clinicDb);
       const medic = await dataService.getResourceById("medics", id);
       // No transformation is applied here—you may adjust if needed.
+      console.log(medic)
       return medic;
     } catch (error) {
       return rejectWithValue(
@@ -166,20 +157,39 @@ const medicSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(fetchMedics.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(fetchMedics.fulfilled, (state, action) => {
         state.loading = false;
-        // Assume action.payload is an array of medics.
-        const newMedics: MedicsListItem[] = Array.isArray(action.payload)
-          ? action.payload
-          : [];
       
-        // Merge the existing medics with the new ones.
-        const combined = [...state.medics, ...newMedics];
+        // Ensure action.payload.data is an array.
+        const newMedics: any[] = Array.isArray(action.payload.data) ? action.payload.data : [];
       
-        // Deduplicate: create a Map keyed by medic id, then convert back to an array.
-        const deduped = Array.from(new Map(combined.map((medic) => [medic.id, medic])).values());
+        // If offset is 0, replace; otherwise, merge the new data with the existing array.
+        const combined = action.payload.offset === 0
+          ? newMedics
+          : [...state.medics, ...newMedics];
       
-        state.medics = deduped;
+        // Deduplicate based on unique 'id' field.
+        const deduplicated = Array.from(
+          new Map(combined.map((medic) => [medic.id, medic])).values()
+        );
+      
+        state.medics = deduplicated;
+      })
+      .addCase(fetchMedics.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      // Fetch Detailed Medic Data
+      .addCase(fetchMedicById.fulfilled, (state, action) => {
+        const existingIndex = state.detailedMedics.findIndex((m) => m.id === action.payload.id);
+        if (existingIndex !== -1) {
+          state.detailedMedics[existingIndex] = action.payload;
+        } else {
+          state.detailedMedics = [action.payload, ...state.detailedMedics].slice(0, 20);
+        }
       })
       // Create Medic
       .addCase(createMedic.fulfilled, (state, action) => {
