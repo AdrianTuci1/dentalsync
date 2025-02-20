@@ -79,6 +79,8 @@ const AppointmentDrawer: React.FC = () => {
     { key: 3, icon: <DeleteIcon fontSize="medium" />, component: <DeleteTab /> },
   ];
 
+  console.log(appointmentDetails)
+
   return (
     <Drawer
        anchor="right" 
