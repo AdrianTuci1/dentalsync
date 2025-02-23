@@ -31,5 +31,6 @@
       "@styles-cl/*": ["./src/features/clinic/styles"],
     }
   },
-  "include": ["vite.config.ts", "src/service-worker.ts"]
+  "include": ["vite.config.ts", "src/service-worker.ts", "jest.config.ts"],
+  "types": ["node", "jest"]
 }

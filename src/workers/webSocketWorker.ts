@@ -6,8 +6,8 @@ let websocket: WebSocket | null = null;
 let messageQueue: string[] = []; // ✅ Message queue if WebSocket is not open
 let reconnectAttempts = 0; // ✅ Keep track of reconnect attempts
 
-const MAX_RECONNECT_ATTEMPTS = 5; // ✅ Avoid infinite reconnecting
-const RECONNECT_INTERVAL = 5000; // ✅ Wait 5 seconds before reconnecting
+const MAX_RECONNECT_ATTEMPTS = 3; // ✅ Avoid infinite reconnecting
+const RECONNECT_INTERVAL = 8000; // ✅ Wait 5 seconds before reconnecting
 
 self.onmessage = (event: MessageEvent) => {
   const { action, payload } = event.data;

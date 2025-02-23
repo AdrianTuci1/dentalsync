@@ -1,10 +1,16 @@
-import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from "react";
-import { Appointment } from "@/features/clinic/types/appointmentEvent";
+import React, { createContext, useContext, useEffect, useRef, useCallback, useState } from "react";
 import { getSubdomain } from "../utils/getSubdomains";
-import { cache } from "@/api/cacheService"; // ✅ Importăm cache-ul pentru stocarea offline
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setWeeklyAppointments,
+  updateAppointmentState,
+  removeAppointmentState,
+} from "@/api/slices/appointmentsSlice";
+import { RootState } from "@/shared/services/store"; // Import RootState
+import { cache } from "@/api/cacheService";
 
 interface WebSocketContextProps {
-  appointments: Appointment[];
+  appointments: any[];
   fetchAppointments: (params?: { startDate?: string; endDate?: string; medicId?: string }) => void;
 }
 
@@ -19,128 +25,135 @@ export const useWebSocket = () => {
 };
 
 export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const subdomain = getSubdomain();
   const workerRef = useRef<Worker | null>(null);
+  const dispatch = useDispatch();
+  const appointments = useSelector((state: RootState) => state.appointments.appointments); // ✅ Get Redux state
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [receivedResponse, setReceivedResponse] = useState(false); // Track if WebSocket responds
 
-  // ✅ 1. Funcție pentru a salva datele în cache
-  const saveToCache = async (data: Appointment[]) => {
-    await cache.set("appointments", data);
-  };
-
-  // ✅ 2. Funcție pentru a încărca datele din cache dacă suntem offline
-  const loadCachedAppointments = async () => {
-    const cachedAppointments = await cache.get("appointments");
-    if (cachedAppointments) {
-      console.log("📌 Using cached appointments:", cachedAppointments);
-      setAppointments(cachedAppointments);
-    }
-  };
-
-  // ✅ 3. Adăugăm/modificăm o singură programare în state și cache
-  const updateAppointment = useCallback(async (updatedAppointment: Appointment) => {
-    setAppointments((prevAppointments) => {
-      const existingIndex = prevAppointments.findIndex(
-        (appt) => appt.appointmentId === updatedAppointment.appointmentId
-      );
-
-      const updatedAppointments = existingIndex !== -1
-        ? [...prevAppointments.slice(0, existingIndex), updatedAppointment, ...prevAppointments.slice(existingIndex + 1)]
-        : [...prevAppointments, updatedAppointment];
-
-      saveToCache(updatedAppointments); // ✅ Salvăm modificările în cache
-      return updatedAppointments;
-    });
+  // ✅ Handle online/offline status change
+  useEffect(() => {
+    const updateOnlineStatus = () => setIsOnline(navigator.onLine);
+    window.addEventListener("online", updateOnlineStatus);
+    window.addEventListener("offline", updateOnlineStatus);
+    return () => {
+      window.removeEventListener("online", updateOnlineStatus);
+      window.removeEventListener("offline", updateOnlineStatus);
+    };
   }, []);
 
-  // ✅ 4. Gestionăm mesajele primite din WebSocketWorker
+  // ✅ 1. Load cached weekly appointments if WebSocket fails
+  const loadCachedAppointments = useCallback(async () => {
+    console.log("📌 Loading cached weekly appointments...");
+    const cachedAppointments = await cache.get("weeklyAppointments");
+    if (cachedAppointments) {
+      console.log("✅ Using cached appointments:", cachedAppointments);
+      dispatch(setWeeklyAppointments(cachedAppointments));
+    } else {
+      console.warn("⚠️ No cached appointments available.");
+    }
+  }, [dispatch]);
+
+  // ✅ 2. Handle incoming WebSocket messages
   const handleWorkerMessage = useCallback((event: MessageEvent) => {
     const { type, payload } = event.data;
-  
-    console.log("📩 Received WebSocket message:", payload);
-  
+
+    console.log("📩 WebSocket message received:", payload);
+    setReceivedResponse(true); // ✅ Mark WebSocket as responding
+
     if (type === "message" && payload.type === "appointments") {
       switch (payload.action) {
         case "view":
           if (Array.isArray(payload.data)) {
-            console.log("✅ Setting full appointment list");
-            setAppointments(payload.data);
-            saveToCache(payload.data);
+            console.log("✅ Updating weekly appointment list from WebSocket");
+            dispatch(setWeeklyAppointments(payload.data));
+            cache.set("weeklyAppointments", payload.data); // ✅ Save in cache
           } else {
-            console.warn("⚠️ Invalid 'view' response, expected an array:", payload.data);
+            console.warn("⚠️ Invalid 'view' response:", payload.data);
           }
           break;
-  
+
         case "create":
         case "update":
           if (payload.data) {
             console.log(`🔄 Updating appointment: ${payload.data.appointmentId}`);
-            updateAppointment(payload.data);
+            dispatch(updateAppointmentState(payload.data));
           } else {
             console.warn(`⚠️ No data received for '${payload.action}' action.`);
           }
           break;
-  
+
         case "delete":
           if (payload.data?.appointmentId) {
-            console.log(`🗑️ Deleting appointment: ${payload.data.appointmentId}`);
-            setAppointments((prev) => {
-              const updated = prev.filter((appt) => appt.appointmentId !== payload.data.appointmentId);
-              saveToCache(updated);
-              return updated;
-            });
+            console.log(`🗑️ Removing appointment: ${payload.data.appointmentId}`);
+            dispatch(removeAppointmentState(payload.data.appointmentId));
           } else {
             console.warn("⚠️ Invalid delete message, missing appointmentId.");
           }
           break;
-  
+
         default:
           console.warn("⚠️ Unhandled WebSocket action:", payload.action);
       }
     } else {
       console.warn("⚠️ Unrecognized WebSocket message:", payload);
     }
-  }, [updateAppointment]);
+  }, [dispatch]);
 
-  // ✅ 5. Inițializăm WebSocketWorker și încărcăm cache-ul dacă suntem offline
+  // ✅ 3. Initialize WebSocketWorker
   useEffect(() => {
     const worker = new Worker(new URL("@/workers/webSocketWorker.ts", import.meta.url));
     workerRef.current = worker;
-
     worker.onmessage = handleWorkerMessage;
+    setReceivedResponse(false); // Reset WebSocket response tracker
 
-    // ✅ Dacă suntem offline, folosim datele din cache
-    if (!navigator.onLine) {
-      loadCachedAppointments();
-    }
-
-    // ✅ Conectăm WebSocket-ul
     worker.postMessage({
       action: "connect",
       payload: { url: `ws://localhost:3000/api/appointment-socket?subdomain=${subdomain}` },
     });
 
+    // **✅ If no WebSocket response after 5 seconds, load cache**
+    setTimeout(() => {
+      if (!receivedResponse) {
+        console.warn("⏳ WebSocket did not respond, using cached data...");
+        loadCachedAppointments();
+      }
+    }, 8000); // 5 seconds delay
+
     return () => {
       worker.postMessage({ action: "disconnect" });
       worker.terminate();
     };
-  }, [handleWorkerMessage, subdomain]);
+  }, [handleWorkerMessage, subdomain, loadCachedAppointments]);
 
-  // ✅ 6. Funcție pentru a trimite cereri la WebSocketWorker
-  // ✅ Corectăm fetchAppointments să trimită un mesaj valid
-  const fetchAppointments = useCallback((params?: { startDate?: string; endDate?: string; medicId?: string }) => {
-    const message = {
-      type: "appointments",
-      action: "view",
-      data: params || {}, // ✅ Asigurăm că avem date valide
-    };
+  // ✅ 4. Fetch weekly appointments (Use cache if WebSocket fails)
+  const fetchAppointments = useCallback(
+    async (params?: { startDate?: string; endDate?: string; medicId?: string }) => {
+      setReceivedResponse(false); // Reset before sending request
 
-    console.log("📤 Sending WebSocket request:", message);
-    workerRef.current?.postMessage({
-      action: "send",
-      payload: { message },
-    });
-  }, []);
+      const message = {
+        type: "appointments",
+        action: "view",
+        data: params || {},
+      };
+
+      console.log("📤 Sending WebSocket request:", message);
+      workerRef.current?.postMessage({
+        action: "send",
+        payload: { message },
+      });
+
+      // **✅ If no WebSocket response after 5 seconds, use cache**
+      setTimeout(() => {
+        if (!receivedResponse) {
+          console.warn("⏳ WebSocket did not respond, using cached data...");
+          loadCachedAppointments();
+        }
+      }, 5000);
+    },
+    [loadCachedAppointments]
+  );
 
   return (
     <WebSocketContext.Provider value={{ appointments, fetchAppointments }}>

@@ -13,5 +13,5 @@
     },
     "declaration": false,
   },
-  "include": ["src", "src/service-worker.ts"],
+  "include": ["src", "src/service-worker.ts", "jest.config.js"],
 }

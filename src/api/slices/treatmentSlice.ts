@@ -4,7 +4,7 @@ import UnifiedDataService from "../services/unifiedDataService";
 import { cache } from '@/shared/utils/localForage';
 import { queueOfflineUpdate } from '../syncQueue';
 
-interface TreatmentState {
+export interface TreatmentState {
   treatments: Treatment[];
   loading: boolean;
   error: string | null;

@@ -33,7 +33,7 @@
       "@teeth/*": ["src/features/clinic/components/teeth/*"],
       "@styles-cl/*": ["./src/features/clinic/styles"],
     },
-    "types": ["vite-plugin-pwa/client", "workbox-window"],
+    "types": ["vite-plugin-pwa/client", "workbox-window", "vite/client"],
   },
-  "include": ["src", "src/service-worker.ts"]
+  "include": ["src", "src/service-worker.ts", "jest.config.js"]
 }
