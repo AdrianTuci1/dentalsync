@@ -119,7 +119,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         console.warn("⏳ WebSocket did not respond, using cached data...");
         loadCachedAppointments();
       }
-    }, 8000); // 5 seconds delay
+    }, 7000); // 5 seconds delay
 
     return () => {
       worker.postMessage({ action: "disconnect" });

@@ -98,6 +98,7 @@ const TreatmentDrawer: React.FC = () => {
 
 
   const handleSave = () => {
+    console.log("🚀 handleSave function called");
   
     const treatmentData = {
       id: treatmentId,
@@ -131,19 +132,19 @@ const TreatmentDrawer: React.FC = () => {
     try {
       if (treatmentId) {
         if (isModified()) {
-          console.log('✅ Changes detected. Updating treatment...');
+          console.log("✅ Changes detected. Updating treatment...");
           dispatch(updateTreatment({ id: treatmentId, treatment: treatmentData, token, clinicDb }) as any);
         } else {
-          console.log('ℹ️ No changes detected. Skipping update.');
+          console.log("ℹ️ No changes detected. Skipping update.");
         }
       } else {
-        console.log('🆕 Creating new treatment...');
+        console.log("🆕 Creating new treatment...");
         dispatch(createTreatment({ treatment: treatmentData, token, clinicDb }) as any);
         resetForm();
       }
       dispatch(closeDrawer());
     } catch (error) {
-      console.error('❌ Error submitting treatment:', error);
+      console.error("❌ Error submitting treatment:", error);
     }
   };
 
@@ -204,7 +205,7 @@ const handleInputFocus = (index: number) => {
   // Handle drawer close
   const handleClose = async () => {
     if (treatmentId && isModified()) {
-      await handleSave();
+      handleSave();
     }
     dispatch(closeDrawer());
   };

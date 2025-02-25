@@ -73,6 +73,10 @@ export const Treatments: React.FC = () => {
     dispatch(openDrawer({ type: "Treatment", data: { treatment: selectedTreatment } }));
   };
 
+  if(isLoading){
+    return <div className="loading">Loading...</div>
+  }
+
   return (
     <>
       <TableContainer component={Paper}>

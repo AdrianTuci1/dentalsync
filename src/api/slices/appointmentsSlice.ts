@@ -171,6 +171,64 @@ export const updateAppointment = createAsyncThunk<
   }
 );
 
+// ✅ **Create an Appointment**
+export const createAppointment = createAsyncThunk<
+  Appointment,
+  { appointment: Partial<Appointment>; token: string },
+  { state: RootState; rejectValue: string }
+>(
+  'appointments/createAppointment',
+  async ({ appointment, token }, { rejectWithValue }) => {
+
+    const clinicDb = 'demo_db'; // Ensure correct database
+    console.log(`🆕 Creating appointment in clinic: ${clinicDb}`);
+
+    try {
+      const appointmentService = new AppointmentService(token, clinicDb);
+      const newAppointment = await appointmentService.createAppointment(appointment);
+      newAppointment.status = determineStatus(newAppointment);
+
+      // 🔹 Cache the new appointment
+      const cachedAppointments = (await cache.get("detailedAppointments")) || [];
+      const updatedCache = [newAppointment, ...cachedAppointments].slice(0, 50);
+      await cache.set("detailedAppointments", updatedCache);
+
+      console.log("✅ Created appointment & updated cache", newAppointment);
+      return newAppointment;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : "Failed to create appointment");
+    }
+  }
+);
+
+// ✅ **Delete an Appointment**
+export const deleteAppointment = createAsyncThunk<
+  string,
+  { appointmentId: string; token: string },
+  { state: RootState; rejectValue: string }
+>(
+  'appointments/deleteAppointment',
+  async ({ appointmentId, token }, { rejectWithValue }) => {
+    const clinicDb = 'demo_db';
+    console.log(`🗑️ Deleting appointment ID: ${appointmentId} in clinic: ${clinicDb}`);
+
+    try {
+      const appointmentService = new AppointmentService(token, clinicDb);
+      await appointmentService.deleteAppointment(appointmentId);
+
+      // 🔹 Remove from cache
+      const cachedAppointments = (await cache.get("detailedAppointments")) || [];
+      const updatedCache = cachedAppointments.filter((appt: Appointment) => appt.appointmentId !== appointmentId);
+      await cache.set("detailedAppointments", updatedCache);
+
+      console.log(`✅ Deleted appointment ID: ${appointmentId} & updated cache`);
+      return appointmentId;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : "Failed to delete appointment");
+    }
+  }
+);
+
 
 // 🔷 **Convert `detailedAppointments` to `appointments` for Optimistic Updates**
 const transformDetailedToAppointment = (detailedAppointment: Appointment): Appointment => ({
@@ -226,7 +284,7 @@ const appointmentsSlice = createSlice({
 
     // **1️⃣ Update a single field inside `appointmentDetails`**
     updateAppointmentField<K extends keyof Appointment>(
-      state,
+      state: any,
       action: PayloadAction<{ field: K; value: Appointment[K] }>
     ) {
       state.appointmentDetails[action.payload.field] = action.payload.value;

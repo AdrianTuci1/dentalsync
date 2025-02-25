@@ -2,11 +2,14 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { MedicInfo, MedicsListItem } from "@/features/clinic/types/Medic";
 import UnifiedDataService from "../services/unifiedDataService";
 import { transformMedicInfoToTableFormat } from "@/shared/utils/medicTransform";
+import { getSubdomain } from "@/shared/utils/getSubdomains";
+import { RootState } from "@/shared/services/store";
+
 
 // Define state for medics.
 export interface MedicState {
-  medics: MedicsListItem[];       // Table Data
-  detailedMedics: MedicInfo[];     // Drawer Data
+  medics: MedicsListItem[]; // Table Data
+  detailedMedics: MedicInfo[]; // Drawer Data
   loading: boolean;
   error: string | null;
 }
@@ -18,112 +21,87 @@ const initialState: MedicState = {
   error: null,
 };
 
-/** 
- * Thunk to fetch medics for the table.
- * Uses UnifiedDataService.getResources for the "medics" resource.
- * Expects a normalized response with shape { data: any[], offset, limit }.
- * Then transforms each raw medic into a MedicsListItem.
- */
+// ✅ Fetch Medics
 export const fetchMedics = createAsyncThunk(
   "medics/fetch",
-  async (
-    { token, clinicDb }: { token: string; clinicDb: string; name?: string; offset?: number },
-    { rejectWithValue }
-  ) => {
-    try {
-      const dataService = new UnifiedDataService(token, clinicDb);
-      // Call getResources for the "medics" resource.
-      const result = await dataService.getResources("medics", {}) as any;
-      console.log("UnifiedDataService.getResources result:", result);
+  async ({ token }: { token: string }, { rejectWithValue }) => {
+    const clinicDb = getSubdomain() + "_db";
+    console.log(`📡 Fetching medics for clinic: ${clinicDb}`);
 
+    try {
+      const service = UnifiedDataService.getInstance(token, clinicDb);
+      const result = await service.getResources("medics", {});
       return result;
     } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Failed to fetch medics"
-      );
+      return rejectWithValue(error instanceof Error ? error.message : "Failed to fetch medics");
     }
   }
 );
 
-/** 
- * Thunk to fetch detailed medic info for the drawer.
- * Uses UnifiedDataService.getResourceById for the "medics" resource.
- */
+// ✅ Fetch Medic by ID
 export const fetchMedicById = createAsyncThunk(
   "medics/fetchById",
-  async (
-    { id, token, clinicDb }: { id: string; token: string; clinicDb: string },
-    { rejectWithValue }
-  ) => {
+  async ({ id, token }: { id: string; token: string }, { rejectWithValue }) => {
+    const clinicDb = getSubdomain() + "_db";
+    console.log(`🔎 Fetching medic ID: ${id} from clinic: ${clinicDb}`);
+
     try {
-      const dataService = new UnifiedDataService(token, clinicDb);
-      const medic = await dataService.getResourceById("medics", id);
-      // No transformation is applied here—you may adjust if needed.
-      console.log(medic)
+      const service = UnifiedDataService.getInstance(token, clinicDb);
+      const medic = await service.getResourceById("medics", id);
       return medic;
     } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Failed to fetch medic details"
-      );
+      return rejectWithValue(error instanceof Error ? error.message : "Failed to fetch medic details");
     }
   }
 );
 
-/** ✅ Create new medic */
+// ✅ Create Medic
 export const createMedic = createAsyncThunk(
   "medics/create",
-  async (
-    { medic, token, clinicDb }: { medic: Partial<MedicInfo>; token: string; clinicDb: string },
-    { rejectWithValue }
-  ) => {
-    // For creation, you can keep using your existing factory method if desired.
-    // Here, we'll use UnifiedDataService for consistency.
+  async ({ medic, token }: { medic: Partial<MedicInfo>; token: string }, { rejectWithValue }) => {
+    const clinicDb = getSubdomain() + "_db";
+    console.log(`🆕 Creating medic in clinic: ${clinicDb}`);
+
     try {
-      const dataService = new UnifiedDataService(token, clinicDb);
-      const newMedic = await dataService.createResource("medics", medic);
+      const service = UnifiedDataService.getInstance(token, clinicDb);
+      const newMedic = await service.createResource("medics", medic);
       return newMedic;
     } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Failed to create medic"
-      );
+      return rejectWithValue(error instanceof Error ? error.message : "Failed to create medic");
     }
   }
 );
 
-/** ✅ Update existing medic */
+// ✅ Update Medic
 export const updateMedic = createAsyncThunk(
   "medics/update",
-  async (
-    { id, medic, token, clinicDb }: { id: string; medic: Partial<MedicInfo>; token: string; clinicDb: string },
-    { rejectWithValue }
-  ) => {
+  async ({ id, medic, token }: { id: string; medic: Partial<MedicInfo>; token: string }, { rejectWithValue }) => {
+    const clinicDb = getSubdomain() + "_db";
+    console.log(`✏️ Updating medic ID: ${id} in clinic: ${clinicDb}`);
+
     try {
-      const dataService = new UnifiedDataService(token, clinicDb);
-      const updatedMedic = await dataService.updateResource("medics", id, medic);
+      const service = UnifiedDataService.getInstance(token, clinicDb);
+      const updatedMedic = await service.updateResource("medics", id, medic);
       return updatedMedic;
     } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Failed to update medic"
-      );
+      return rejectWithValue(error instanceof Error ? error.message : "Failed to update medic");
     }
   }
 );
 
-/** ✅ Delete medic */
+// ✅ Delete Medic
 export const deleteMedic = createAsyncThunk(
   "medics/delete",
-  async (
-    { id, token, clinicDb }: { id: string; token: string; clinicDb: string },
-    { rejectWithValue }
-  ) => {
+  async ({ id, token }: { id: string; token: string }, { rejectWithValue }) => {
+    const clinicDb = getSubdomain() + "_db";
+    console.log(`🗑️ Deleting medic ID: ${id} in clinic: ${clinicDb}`);
+
     try {
-      const dataService = new UnifiedDataService(token, clinicDb);
-      await dataService.deleteResource("medics", id);
-      return id; // Return deleted medic ID.
+      const service = UnifiedDataService.getInstance(token, clinicDb);
+      await service.deleteResource("medics", id);
+      return id;
     } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Failed to delete medic"
-      );
+      return rejectWithValue(error instanceof Error ? error.message : "Failed to delete medic");
     }
   }
 );
@@ -132,11 +110,9 @@ const medicSlice = createSlice({
   name: "medics",
   initialState,
   reducers: {
-    // Store table data.
     setMedics: (state, action: PayloadAction<MedicsListItem[]>) => {
       state.medics = action.payload;
     },
-    // Update a medic in the table.
     setUpdatedMedicInTable: (state, action: PayloadAction<MedicsListItem>) => {
       const index = state.medics.findIndex((m) => m.id === action.payload.id);
       if (index !== -1) {
@@ -145,13 +121,12 @@ const medicSlice = createSlice({
         state.medics.push(action.payload);
       }
     },
-    // Store detailed medic info (drawer data).
     setDetailedMedic: (state, action: PayloadAction<MedicInfo>) => {
       const existingIndex = state.detailedMedics.findIndex((m) => m.id === action.payload.id);
       if (existingIndex !== -1) {
         state.detailedMedics[existingIndex] = action.payload;
       } else {
-        state.detailedMedics.push(action.payload);
+        state.detailedMedics = [action.payload, ...state.detailedMedics].slice(0, 20);
       }
     },
   },
@@ -162,56 +137,28 @@ const medicSlice = createSlice({
       })
       .addCase(fetchMedics.fulfilled, (state, action) => {
         state.loading = false;
-      
-        // Ensure action.payload.data is an array.
         const newMedics: any[] = Array.isArray(action.payload.data) ? action.payload.data : [];
-      
-        // If offset is 0, replace; otherwise, merge the new data with the existing array.
-        const combined = action.payload.offset === 0
-          ? newMedics
-          : [...state.medics, ...newMedics];
-      
-        // Deduplicate based on unique 'id' field.
-        const deduplicated = Array.from(
-          new Map(combined.map((medic) => [medic.id, medic])).values()
+
+        state.medics = [...state.medics, ...newMedics].reduce(
+          (acc, item) => (acc.find((i: any) => i.id === item.id) ? acc : [...acc, item]),
+          [] as MedicsListItem[]
         );
-      
-        state.medics = deduplicated;
       })
       .addCase(fetchMedics.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      // Fetch Detailed Medic Data
       .addCase(fetchMedicById.fulfilled, (state, action) => {
-        const existingIndex = state.detailedMedics.findIndex((m) => m.id === action.payload.id);
-        if (existingIndex !== -1) {
-          state.detailedMedics[existingIndex] = action.payload;
-        } else {
-          state.detailedMedics = [action.payload, ...state.detailedMedics].slice(0, 20);
-        }
+        state.detailedMedics = [action.payload, ...state.detailedMedics].slice(0, 20);
       })
-      // Create Medic
       .addCase(createMedic.fulfilled, (state, action) => {
-        // Transform the new medic for table display.
-        const newMedicTableItem = transformMedicInfoToTableFormat(action.payload);
-        state.medics.push(newMedicTableItem);
-        state.detailedMedics.push(action.payload);
+        state.medics.unshift(transformMedicInfoToTableFormat(action.payload));
+        state.detailedMedics.unshift(action.payload);
       })
-      // Update Medic
       .addCase(updateMedic.fulfilled, (state, action) => {
-        // Update detailed medic data.
-        const detailedIndex = state.detailedMedics.findIndex((m) => m.id === action.payload.id);
-        if (detailedIndex !== -1) {
-          state.detailedMedics[detailedIndex] = action.payload;
-        }
-        // Update table display data.
-        const tableIndex = state.medics.findIndex((m) => m.id === action.payload.id);
-        if (tableIndex !== -1) {
-          state.medics[tableIndex] = transformMedicInfoToTableFormat(action.payload);
-        }
+        state.medics = state.medics.map((m) => (m.id === action.payload.id ? transformMedicInfoToTableFormat(action.payload) : m));
+        state.detailedMedics = state.detailedMedics.map((m) => (m.id === action.payload.id ? action.payload : m));
       })
-      // Delete Medic
       .addCase(deleteMedic.fulfilled, (state, action) => {
         state.medics = state.medics.filter((m) => m.id !== action.payload);
         state.detailedMedics = state.detailedMedics.filter((m) => m.id !== action.payload);
@@ -219,11 +166,11 @@ const medicSlice = createSlice({
   },
 });
 
-// Export actions and selectors.
+// Export actions and selectors
 export const { setMedics, setUpdatedMedicInTable, setDetailedMedic } = medicSlice.actions;
-export const selectMedics = (state: any) => state.medics.medics;
-export const selectDetailedMedics = (state: any) => state.medics.detailedMedics;
-export const selectMedicLoading = (state: any) => state.medics.loading;
-export const selectMedicError = (state: any) => state.medics.error;
+export const selectMedics = (state: RootState) => state.medics.medics;
+export const selectDetailedMedics = (state: RootState) => state.medics.detailedMedics;
+export const selectMedicLoading = (state: RootState) => state.medics.loading;
+export const selectMedicError = (state: RootState) => state.medics.error;
 
 export default medicSlice.reducer;

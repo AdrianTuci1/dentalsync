@@ -47,7 +47,7 @@ const MedicDrawer: React.FC = () => {
   useEffect(() => {
     if (medicId && token && clinicDb) {
       console.log(`📡 Fetching medic details for ID: ${medicId}`);
-      dispatch(fetchMedicById({ id: medicId, token, clinicDb }) as any);
+      dispatch(fetchMedicById({ id: medicId, token }) as any);
     }
   }, [medicId, dispatch, token, clinicDb]);
 
@@ -96,6 +96,11 @@ const MedicDrawer: React.FC = () => {
     return <div>Loading medic details...</div>;
   }
 
+    // ✅ Prevent rendering until state is ready
+    if (!medicInfo.assignedServices) {
+      return <div>Loading medic details...</div>;
+    }
+
   // 📝 Handle input changes
   const handleChange = (field: keyof MedicInfo, value: any) => {
     setMedicInfo((prevInfo) =>
@@ -112,11 +117,11 @@ const MedicDrawer: React.FC = () => {
 
       if (medicInfo.id) {
         console.log("💾 Updating existing medic:", medicInfo);
-        await dispatch(updateMedic({ id: medicInfo.id, medic: medicInfo, token, clinicDb }) as any);
+        await dispatch(updateMedic({ id: medicInfo.id, medic: medicInfo, token }) as any);
         updatedMedic = medicInfo; // Redux will update this eventually
       } else {
         console.log("➕ Creating new medic:", medicInfo);
-        await dispatch(createMedic({ medic: medicInfo, token, clinicDb }) as any);
+        await dispatch(createMedic({ medic: medicInfo, token }) as any);
         updatedMedic = medicInfo;
       }
 

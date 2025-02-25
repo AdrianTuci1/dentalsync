@@ -10,7 +10,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { closeDrawer } from '../drawerSlice';
 import { Component } from '@/features/clinic/types/componentType';
 import { selectTopDrawer } from '@/shared/utils/selectors';
-import { getSubdomain } from '@/shared/utils/getSubdomains';
 import { createComponent, updateComponent } from '@/api/slices/stockSlice';
 
 import styles from "./StockDrawer.module.scss";
@@ -18,8 +17,6 @@ import styles from "./StockDrawer.module.scss";
 
 export const StockDrawer: React.FC = () => {
   const dispatch = useDispatch();
-  const token = useSelector((state: any) => state.auth.subaccountToken);
-  const db = getSubdomain() + "_db";
 
   const { drawerData } = useSelector(selectTopDrawer);
   const stock = drawerData?.stock || null;
@@ -82,10 +79,10 @@ export const StockDrawer: React.FC = () => {
 
     if (stock) {
       // ✅ Update existing stock
-      dispatch(updateComponent({ id: savedStock.id, component: savedStock, token, clinicDb: db }) as any);
+      dispatch(updateComponent({ id: savedStock.id, changes: savedStock }) as any);
     } else {
       // ✅ Create new stock
-      dispatch(createComponent({ component: savedStock, token, clinicDb: db }) as any);
+      dispatch(createComponent({ component: savedStock}) as any);
     }
 
     dispatch(closeDrawer());

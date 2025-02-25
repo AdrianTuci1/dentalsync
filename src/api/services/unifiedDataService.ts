@@ -1,4 +1,3 @@
-// src/api/services/unifiedDataService.ts
 import ApiService from "../apiService";
 import { cache } from "@/api/cacheService";
 import { syncService } from "../syncService";
@@ -19,13 +18,14 @@ export interface ResourceResponse {
 }
 
 export class UnifiedDataService {
+  private static instance: UnifiedDataService;
   private token: string;
   private clinicDb: string;
   private api: ApiService;
-  // The batch size is used only in demo/offline mode.
   private batchSize: number = 20;
+  private demoDataCache: DemoData | null = null; // Cache demo data to prevent repeated API calls.
 
-  constructor(token?: string, clinicDb?: string) {
+  private constructor(token?: string, clinicDb?: string) {
     if (DEMO_MODE) {
       this.token = "demo-token";
       this.clinicDb = "demo-clinic";
@@ -36,190 +36,156 @@ export class UnifiedDataService {
       this.token = token;
       this.clinicDb = clinicDb;
     }
+    
     this.api = ApiService.getInstance(this.token, this.clinicDb);
   }
 
+  public static getInstance(token?: string, clinicDb?: string): UnifiedDataService {
+    if (!this.instance) {
+      this.instance = new UnifiedDataService(token, clinicDb);
+    } else if (token && clinicDb) {
+      this.instance.setCredentials(token, clinicDb);
+    }
+    return this.instance;
+  }
 
+  private setCredentials(token: string, clinicDb: string): void {
+    this.token = token;
+    this.clinicDb = clinicDb;
+    this.api.setCredentials(token, clinicDb);
+  }
 
   /**
-   * Fetch a list of resources.
-   *
-   * In production mode, this calls the API with the provided query parameters.
-   * In demo mode, it calls the demo endpoint, slices the resource data according
-   * to the offset and batch size, and returns an object with { data, limit, offset }.
-   *
-   * @param resource - The resource key (e.g., "patients", "components")
-   * @param params - Query parameters, e.g. { name: "John", offset: "0" }
+   * Fetch all demo data and cache it in-memory for performance.
    */
+  private async getAllDemoData(): Promise<DemoData> {
+    if (this.demoDataCache) return this.demoDataCache;
+    this.demoDataCache = await this.api.get<DemoData>("demo-data");
+    return this.demoDataCache;
+  }
+
   async getResources<T = any>(
     resource: keyof DemoData,
     params: Record<string, string> = {},
     id?: string
   ): Promise<{ data: T[]; limit?: number; offset?: number }> {
     console.log("UnifiedDataService.getResources called with:", resource, params);
-  
-    // **1️⃣ Handle Demo Mode**
+
     if (DEMO_MODE) {
       const demoData: DemoData = await this.getAllDemoData();
       if (id) {
-        const item = (demoData[resource] as T[] | undefined)?.find((item) => (item as any).id === id);
+        const item = demoData[resource]?.find((item) => (item as any).id === id);
         return { data: item ? [item] : [] };
       }
-      return { data: (demoData[resource] as T[]) || [] };
+      return { data: demoData[resource] ?? [] };
     }
-  
-    // ✅ **Handle Offline Mode - Use Cached Data if No Internet**
+
     if (!navigator.onLine) {
-      console.log(`🔌 Offline mode: Using cached data for '${resource}'`);
-  
+      console.log(`🔌 Offline: Using cached data for '${resource}'`);
       const cachedData: T[] = (await cache.get(resource)) ?? [];
-      if (!cachedData.length) {
-        console.warn(`⚠️ No cached data found for '${resource}' while offline.`);
-      }
-      
       return { data: cachedData };
     }
-  
-    // **3️⃣ Fetch Data from API**
+
     try {
       const endpoint = id ? `${resource}/${id}` : resource;
-      const result = await this.api.get<{ data?: T[]; limit?: number; offset?: number } | T[]>(endpoint, params);
-      console.log("✅ API result received:", result);
-  
-      // **4️⃣ Determine API Response Format**
-      let responseData: T[];
-      if (Array.isArray(result)) {
-        responseData = result; // Direct array response
-      } else if (Array.isArray(result.data)) {
-        responseData = result.data; // Object with "data" key
-      } else if (Array.isArray((result as any)[resource])) {
-        responseData = (result as any)[resource]; // Object with resource key
-      } else {
-        throw new Error(`Invalid API response structure for ${resource}`);
-      }
-  
-      // ✅ **Determine if this resource is paginated or full-set**
-      const isPaginated = params.hasOwnProperty("offset"); // Checks if request had "offset"
-  
+      const result = await this.api.get<ResourceResponse | T[]>(endpoint, params);
+      
+      let responseData: T[] = Array.isArray(result) ? result : result.data ?? [];
+      
+      const isPaginated = params.hasOwnProperty("offset");
       if (isPaginated) {
-        console.log(`📄 Paginated data detected for '${resource}'`);
-  
-        // 🔹 Merge with previously cached data to prevent duplicates
+        console.log(`📄 Paginated data for '${resource}'`);
         const existingCache: T[] = (await cache.get(resource)) ?? [];
         const mergedData = [...existingCache, ...responseData].reduce(
-          (acc, item) => acc.find((i) => (i as any).id === (item as any).id) ? acc : [...acc, item], 
-          [] as T[]
+          (acc, item) => acc.find((i) => (i as any).id === (item as any).id) ? acc : [...acc, item], [] as T[]
         );
-  
         await cache.set(resource, mergedData);
+        console.log(mergedData)
       } else {
-        console.log(`📦 Full dataset detected for '${resource}', caching all.`);
+        console.log(`📦 Full dataset for '${resource}', caching all.`);
         await cache.set(resource, responseData);
       }
-  
+
       return {
         data: responseData,
         limit: (result as any).limit ?? undefined,
         offset: (result as any).offset ?? undefined,
       };
     } catch (error) {
-      console.error(`❌ Error fetching '${resource}':`, error);
-  
-      // Load from cache in case of API failure
+      console.error(`❌ API failure fetching '${resource}', using cache.`, error);
       const cachedData: T[] = (await cache.get(resource)) ?? [];
-      console.log(`📂 Using cached data for '${resource}' due to API failure (${cachedData.length} records)`);
-  
       return { data: cachedData };
     }
   }
 
-
-  /**
-   * Fetch a single resource by its id.
-   *
-   * In production mode, it calls the endpoint "resource/{id}".
-   * In demo mode, it fetches all demo data and returns the item with matching id.
-   *
-   * @param resource - The resource key (e.g., "patients", "components")
-   * @param id - The id of the desired resource.
-   * @param params - Optional query parameters.
-   */
-  async getResourceById(
+  async getResourceById<T = any>(
     resource: keyof DemoData,
     id: string,
     params: Record<string, string> = {}
-  ): Promise<any> {
+  ): Promise<T | null> {
+    console.log(`Fetching '${resource}' with ID '${id}'`);
+
     if (DEMO_MODE) {
-      const demoData: DemoData = await this.getAllDemoData();
-      return (demoData[resource] || []).find((item) => item.id === id);
+      const demoData = await this.getAllDemoData();
+      return demoData[resource]?.find((item) => (item as any).id === id) ?? null;
     }
 
     if (!navigator.onLine) {
-      console.log(`Offline: Using cached data for ${resource}`);
-      // When offline, you may try to read from cache and then find the item.
-      const cached: any[] = (await cache.get(resource)) as any[];
-      return cached.find((item) => item.id === id);
+      console.log(`🔌 Offline: Fetching cached '${resource}' with ID '${id}'`);
+      const cachedData: T[] = (await cache.get(resource)) ?? [];
+      return cachedData.find((item) => (item as any).id === id) ?? null;
     }
 
-    // Production mode online: Construct endpoint with id.
-    const endpoint = `${resource}/${id}`;
-    const data = await this.api.get(endpoint, params);
-    // Optionally update cache if needed.
-    return data;
+    try {
+      const result = await this.api.get<T>(`${resource}/${id}`, params);
+      const cachedData: T[] = (await cache.get(resource)) ?? [];
+      const updatedCache = cachedData.map((item) => (item as any).id === id ? result : item);
+      if (!updatedCache.some((item) => (item as any).id === id)) {
+        updatedCache.unshift(result);
+      }
+      const cacheLimit = resource === "appointments" ? 60 : 20;
+      await cache.set(resource, updatedCache.slice(0, cacheLimit));
+
+      return result;
+    } catch (error) {
+      console.error(`❌ Failed to fetch '${resource}' with ID '${id}', using cache.`, error);
+      const cachedData: T[] = (await cache.get(resource)) ?? [];
+      return cachedData.find((item) => (item as any).id === id) ?? null;
+    }
   }
-
-
-  /**
-   * For demo mode: Fetch all data in one request.
-   */
-  async getAllDemoData(): Promise<DemoData> {
-    return await this.api.get<DemoData>("demo-data");
-  }
-
-  // --- Mutations: Create, Update, Delete (not modified in this example) ---
 
   async createResource(resource: keyof DemoData, payload: any): Promise<any> {
     if (!navigator.onLine || DEMO_MODE) {
       const offlineData = { ...payload, id: `offline-${Date.now()}` };
       if (!DEMO_MODE) {
-        await syncService.addAction({ type: "CREATE", resource: resource as any, payload: offlineData });
+        await syncService.addAction({ type: "CREATE", resource, payload: offlineData });
       }
       return offlineData;
     }
     return await this.api.post(resource, payload);
   }
 
-  async updateResource(resource: keyof DemoData, id: string, changes: any): Promise<any> {
+  async updateResource<T>(resource: keyof DemoData, id: string, changes: Partial<T>): Promise<T> {
     if (!navigator.onLine || DEMO_MODE) {
+      console.log(`🔌 Offline: Queuing update for ${resource} (ID: ${id})`);
       if (!DEMO_MODE) {
-        await syncService.addAction({ type: "UPDATE", resource: resource as any, payload: { id, ...changes } });
+        await syncService.addAction({ type: "UPDATE", resource, payload: { id, ...changes } });
       }
-      return { id, ...changes };
+      return { id, ...changes } as T;
     }
-    return await this.api.put(`${resource}/${id}`, changes);
+    return await this.api.put<T>(resource, id, changes);
   }
 
-  async deleteResource(resource: keyof DemoData, id: string): Promise<any> {
+  async deleteResource(resource: keyof DemoData, id: string): Promise<string> {
     if (!navigator.onLine || DEMO_MODE) {
+      console.log(`🔌 Offline: Queuing delete for ${resource} (ID: ${id})`);
       if (!DEMO_MODE) {
-        await syncService.addAction({ type: "DELETE", resource: resource as any, payload: { id } });
+        await syncService.addAction({ type: "DELETE", resource, payload: { id } });
       }
       return id;
     }
-    return await this.api.delete(`${resource}/${id}`);
-  }
-
-  async syncOfflineActions(): Promise<void> {
-    if (!navigator.onLine || DEMO_MODE) return;
-    const queue = await syncService.getQueue();
-    if (queue.length === 0) return;
-    try {
-      await this.api.post("sync", { actions: queue });
-      await syncService.clearQueue();
-      console.log("Sync successful.");
-    } catch (error) {
-      console.error("Sync failed:", error);
-    }
+    await this.api.delete(resource, id);
+    return id;
   }
 }
 

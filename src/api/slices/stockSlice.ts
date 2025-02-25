@@ -1,10 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Component } from '@/features/clinic/types/componentType';
-import { createComponentFactory } from "@/api/factories/componentFactory";
 import { cache } from '@/shared/utils/localForage';
-import { queueOfflineUpdate } from '@/api/syncQueue';
-import { ComponentUpdater } from '@/shared/utils/ComponentUpdater';
 import UnifiedDataService from '../services/unifiedDataService';
+import { RootState } from '@/shared/services/store';
 
 interface StockState {
   stocks: Component[];
@@ -20,8 +18,9 @@ const initialState: StockState = {
   offset: 0,
 };
 
+import { getSubdomain } from '@/shared/utils/getSubdomains';
 
-
+// ✅ Fetch Components with Proper Caching & Pagination
 export const fetchComponents = createAsyncThunk(
   "stocks/fetch",
   async (
@@ -29,93 +28,106 @@ export const fetchComponents = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const service = new UnifiedDataService(token, clinicDb);
+      const service = UnifiedDataService.getInstance(token, clinicDb);
       const result = await service.getResources("components", { name, offset: String(offset) });
-      return result; // normalized shape { data, offset, limit }
+
+      // ✅ Merge new data with cached data to prevent duplicate requests
+      const cachedComponents = (await cache.get("components")) || [];
+      const mergedComponents = [...cachedComponents, ...result.data].reduce(
+        (acc, item) => acc.find((i: any) => i.id === item.id) ? acc : [...acc, item], [] as any[]
+      );
+
+      await cache.set("components", mergedComponents);
+      return result;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : "Failed to fetch components");
     }
   }
 );
 
-
-/** ✅ Optimistic Creation of Component */
+// ✅ Optimistic Component Creation (Cache Only After API)
 export const createComponent = createAsyncThunk(
   "stocks/create",
   async (
-    { component, token, clinicDb }: { component: Partial<Component>; token: string; clinicDb: string },
-    { rejectWithValue, dispatch }
+    { component }: { component: Partial<Component> },
+    { rejectWithValue, dispatch, getState }
   ) => {
-    const factory = createComponentFactory(token, clinicDb);
     try {
-      const newComponent = await factory.createComponent(component);
-      const cachedComponents = await cache.get("stocks");
-      const updatedComponents = [...cachedComponents, newComponent];
-      await cache.set("stocks", updatedComponents);
-      dispatch(setStocks(updatedComponents)); // Update Redux state
-      return newComponent;
+      const state = getState() as RootState;
+      const token = state.auth.subaccountToken || '';
+      const clinicDb = getSubdomain() + '_db'
+      const service = UnifiedDataService.getInstance(token, clinicDb);
+
+      // ✅ Send API request first
+      const savedComponent = await service.createResource("components", component);
+
+      // ✅ Update cache & Redux with API-confirmed data
+      const cachedComponents = (await cache.get("components")) || [];
+      const finalComponents = [...cachedComponents, savedComponent];
+
+      await cache.set("components", finalComponents);
+      dispatch(setStocks(finalComponents));
+
+      return savedComponent;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : "Failed to create component");
     }
   }
 );
 
-/** ✅ Optimistic Update of Component */
+// ✅ Optimistic Component Update (Use Full API Response)
 export const updateComponent = createAsyncThunk(
   "stocks/update",
-  async (
-    { id, component, token, clinicDb }: { id: string; component: Partial<Component>; token: string; clinicDb: string },
-    { rejectWithValue, dispatch, getState }
-  ) => {
-    // Get current state
-    const state: any = getState();
-    const existingComponents: Component[] = state.stocks.stocks || [];
+  async ({ id, changes }: { id: string; changes: Partial<Component> }, { rejectWithValue, dispatch, getState }) => {
+    try {
+      const state = getState() as RootState;
+      const token = state.auth.subaccountToken || '';
+      const clinicDb = getSubdomain() + '_db'
+      const service = UnifiedDataService.getInstance(token, clinicDb);
 
-    // Optimistic update
-    const optimisticComponents = ComponentUpdater.mergeComponent(existingComponents, id, component);
-    await cache.set("stocks", optimisticComponents);
-    dispatch(setStocks(optimisticComponents));
+      // ✅ Send API request first
+      const updatedComponent = await service.updateResource("components", id, changes);
 
-    // If online, attempt to update in the background
-    if (navigator.onLine) {
-      try {
-        const factory = createComponentFactory(token, clinicDb);
-        const confirmedComponent = await factory.updateComponent(id, component);
-        const finalComponents = ComponentUpdater.mergeComponent(optimisticComponents, id, confirmedComponent);
-        await cache.set("stocks", finalComponents);
-        dispatch(setStocks(finalComponents));
-        return confirmedComponent;
-      } catch (error) {
-        console.error("API update failed:", error);
-        return rejectWithValue(error instanceof Error ? error.message : "Failed to update component");
-      }
-    } else {
-      // If offline, queue update for later sync
-      await queueOfflineUpdate({ type: "component", action: "update", data: { id, ...component } });
-      return optimisticComponents.find((c) => c.id === id);
+      // ✅ Update cache & Redux with API-confirmed data
+      const cachedComponents = (await cache.get("components")) || [];
+      const finalComponents = cachedComponents.map(comp => comp.id === id ? updatedComponent : comp);
+
+      await cache.set("components", finalComponents);
+      dispatch(setStocks(finalComponents));
+
+      return updatedComponent;
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : "Failed to update component");
     }
   }
 );
 
-/** ✅ Optimistic Deletion of Component */
+// ✅ Optimistic Component Deletion (Fix: Proper Token Handling)
 export const deleteComponent = createAsyncThunk(
   "stocks/delete",
-  async (
-    { id, token, clinicDb }: { id: string; token: string; clinicDb: string },
-    { rejectWithValue }
-  ) => {
-    const factory = createComponentFactory(token, clinicDb);
+  async ({ id }: { id: string }, { rejectWithValue, dispatch, getState }) => {
     try {
-      await factory.deleteComponent(id);
-      const cachedComponents = await cache.get("stocks");
-      const updatedList = cachedComponents.filter((c: Component) => c.id !== id);
-      await cache.set("stocks", updatedList);
+      const state = getState() as RootState;
+      const token = state.auth.subaccountToken || '';
+      const clinicDb = getSubdomain() + '_db'
+      const service = UnifiedDataService.getInstance(token, clinicDb);
+
+      await service.deleteResource("components", id);
+
+      // ✅ Remove from cache & Redux after API success
+      const cachedComponents = (await cache.get("components")) || [];
+      const updatedComponents = cachedComponents.filter(comp => comp.id !== id);
+      
+      await cache.set("components", updatedComponents);
+      dispatch(setStocks(updatedComponents));
+
       return id;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : "Failed to delete component");
     }
   }
 );
+
 
 // Slice
 const stockSlice = createSlice({
@@ -155,7 +167,6 @@ const stockSlice = createSlice({
         );
         
         state.stocks = deduplicated;
-        state.offset = action.payload.offset;
       })
       .addCase(fetchComponents.rejected, (state, action) => {
         state.loading = false;
