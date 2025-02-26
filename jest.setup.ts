@@ -1,1 +1,0 @@
-import "@testing-library/jest-dom"; // For extended matchers in React tests

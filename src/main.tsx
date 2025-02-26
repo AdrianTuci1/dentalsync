@@ -21,16 +21,18 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 
 
 // Register the service worker
-if ('serviceWorker' in navigator) {
-  const wb = new Workbox('/service-worker.js');
+if ('serviceWorker' in navigator && import.meta.env.NODE_ENV === 'production') {
+  import('workbox-window').then(({ Workbox }) => {
+    const wb = new Workbox ('/service-worker.js');
 
-  wb.addEventListener('installed', (event: any) => {
-    if (event.isUpdate) {
-      if (confirm('New update available. Reload?')) {
-        window.location.reload();
+    wb.addEventListener('installed', (event: any) => {
+      if (event.isUpdate) {
+        if (confirm('New update available. Reload?')) {
+          window.location.reload();
+        }
       }
-    }
-  });
+    });
 
-  wb.register();
+    wb.register();
+  });
 }

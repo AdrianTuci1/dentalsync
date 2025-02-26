@@ -16,7 +16,7 @@ import {
   setAppointmentDetails,
   resetAppointment,
   fetchAppointmentById,
-  updateAppointment,
+  updateAppointmentState,
 } from '@/api/slices/appointmentsSlice';
 import styles from '@styles-cl/drawers/AppointmentDrawer.module.scss'; // Import CSS file for styling
 import { RootState } from '@/shared/services/store';
@@ -62,7 +62,7 @@ const AppointmentDrawer: React.FC = () => {
     console.log('handle close called')
     try {
       if (!isNewAppointment && appointmentId && appointmentDetails) {
-        dispatch(updateAppointment(appointmentDetails)).unwrap();
+        dispatch(updateAppointmentState(appointmentDetails));
         console.log('Appointment successfully updated before closing drawer.');
       }
     } catch (error) {

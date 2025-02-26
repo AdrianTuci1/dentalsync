@@ -6,7 +6,6 @@ import Dashboard from '@/features/clinic/Dashboard';
 import PatientDashboard from '@/features/patient/PatientDashboard';
 import SignIn from './SignIn'; // Import the SignIn component
 import { loadUserFromLocalStorage } from '@/api/slices/authSlice';
-import { testValue } from '@/test';
 import { getOfflineQueue } from "@/api/syncQueue";
 import { setOfflineQueueCount } from "@/api/syncSlice";
 import useSync from "@/api/hooks/useSync";
@@ -20,7 +19,6 @@ function App() {
 
   useSync(); 
 
-  console.log(testValue);
 
   useEffect(() => {
     dispatch(loadUserFromLocalStorage());

@@ -1,8 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Appointment } from '@/features/clinic/types/appointmentEvent';
-import AppointmentService from '@/api/services/fetchAppointments';
 import { RootState } from '@/shared/services/store';
 import { cache } from '@/api/cacheService';
+import UnifiedDataService from '../services/unifiedDataService';
 
 
 // 🔹 Debugging Utility
@@ -72,45 +72,38 @@ const initialState: AppointmentsState = {
 
 // **🔷 Fetch appointment by ID (Offline Caching)**
 export const fetchAppointmentById = createAsyncThunk<
-  Appointment,
+  Appointment | null,
   string,
   { state: RootState; rejectValue: string }
 >(
-  'appointments/fetchAppointmentById',
+  "appointments/fetchAppointmentById",
   async (appointmentId, { getState, rejectWithValue }) => {
-    const state = getState();
-    const token = state.auth.subaccountToken;
-    const database = 'demo_db';
-    const appointmentService = new AppointmentService(token || '', database);
-
     try {
-      const response = await appointmentService.fetchAppointment(appointmentId);
-      response.status = determineStatus(response);
+      const state = getState();
+      const token = state.auth.subaccountToken;
+      const clinicDb = "demo_db";
+      const service = UnifiedDataService.getInstance(token || '', clinicDb);
 
-      // 🔹 Cache detailed appointment (max 50 records)
-      const cachedDetails = (await cache.get("detailedAppointments")) || [];
-      const updatedDetails = cachedDetails.map(appt =>
-        appt.appointmentId === response.appointmentId ? response : appt
-      );
+      console.log(`📡 Fetching appointment ID: ${appointmentId}`);
+
+      const response = await service.getResourceById<Appointment>("appointments", appointmentId);
       
-      // If appointment is missing, add it
-      if (!updatedDetails.some(appt => appt.appointmentId === response.appointmentId)) {
-        updatedDetails.unshift(response);
+      if (!response) {
+        console.warn(`⚠️ Appointment not found: ${appointmentId}`);
+        return rejectWithValue("Appointment not found");
       }
-      
-      // Ensure we only keep the latest 50
-      await cache.set("detailedAppointments", updatedDetails.slice(0, 50));
 
-      logDebug("Fetched appointment by ID & updated cache", response);
-
+      response.status = determineStatus(response);
       return response;
     } catch (error) {
-      logDebug("Fetch appointment failed, falling back to cache", appointmentId);
-      // 🔹 Fallback to cached data if offline
-      const cachedDetails = (await cache.get("detailedAppointments")) || [];
-      const cachedAppointment = cachedDetails.find((appt: Appointment) => appt.appointmentId === appointmentId);
+      console.log(`⚠️ Fetch failed, falling back to cache`, appointmentId);
+
+      // 🔹 Fallback to cached data if API fails
+      const cachedDetails: Appointment[] = (await cache.get("detailedAppointments")) || [];
+      const cachedAppointment = cachedDetails.find(appt => appt?.appointmentId === appointmentId);
+
       if (cachedAppointment) return cachedAppointment;
-      return rejectWithValue('Failed to fetch appointment');
+      return rejectWithValue("Failed to fetch appointment");
     }
   }
 );
@@ -119,52 +112,33 @@ export const fetchAppointmentById = createAsyncThunk<
 export const updateAppointment = createAsyncThunk<
   Appointment,
   Partial<Appointment>,
-  { state: RootState; rejectValue: string }
+  { state: RootState; rejectValue: string; extra: { token: string; clinicDb: string } }
 >(
-  'appointments/updateAppointment',
-  async (updatedFields, { getState, dispatch, rejectWithValue }) => {
-    const state = getState();
-    const token = state.auth.subaccountToken;
-    const database = 'demo_db';
-    const appointmentService = new AppointmentService(token || '', database);
-    const { appointmentDetails } = state.appointments;
-
-    if (!appointmentDetails?.appointmentId) return rejectWithValue('No appointmentId provided');
-
+  "appointments/updateAppointment",
+  async (updatedFields, { getState, dispatch, rejectWithValue, extra }) => {
     try {
-      // ✅ API call to update appointment
-      const response = await appointmentService.editAppointment(appointmentDetails.appointmentId, updatedFields);
+      const { token, clinicDb } = extra;
+      const service = UnifiedDataService.getInstance(token, clinicDb);
+      const { appointmentDetails, appointments } = getState().appointments;
+
+      if (!appointmentDetails?.appointmentId) return rejectWithValue("No appointmentId provided");
+
+      const response = await service.patchResource("appointments", appointmentDetails.appointmentId, updatedFields);
       response.status = determineStatus(response);
 
-      logDebug("✅ Appointment updated via API", response);
+      console.log("✅ Appointment updated via API", response);
 
-      // ✅ Sync changes with state (weekly view updates automatically)
-      dispatch(updateAppointmentState(response));
+      // ✅ Sync changes with `weeklyAppointments`
+      const updatedWeeklyAppointments = appointments.map(appt =>
+        appt.appointmentId === response.appointmentId ? response : appt
+      );
+
+      await cache.set("weeklyAppointments", updatedWeeklyAppointments);
+      dispatch(setWeeklyAppointments(updatedWeeklyAppointments));
 
       return response;
     } catch (error) {
-      logDebug("⚠️ Failed to update appointment, handling offline mode", updatedFields);
-
-      if (navigator.onLine) {
-        console.log("⚡ Offline Mode: Caching update for later sync");
-
-        const offlineUpdates = (await cache.get("offlineUpdates")) || [];
-        const updatedOffline = [
-          ...offlineUpdates.filter(
-            (a: any) => a.appointmentId !== appointmentDetails.appointmentId
-          ),
-          { ...appointmentDetails, ...updatedFields },
-        ];
-
-        await cache.set("offlineUpdates", updatedOffline);
-
-        // ✅ Apply the update optimistically
-        const updatedAppointment = { ...appointmentDetails, ...updatedFields };
-
-        dispatch(updateAppointmentState(updatedAppointment));
-
-        return updatedAppointment;
-      }
+      console.log("⚠️ Failed to update appointment, handling offline mode", updatedFields);
 
       return rejectWithValue("Failed to update appointment");
     }
@@ -177,23 +151,23 @@ export const createAppointment = createAsyncThunk<
   { appointment: Partial<Appointment>; token: string },
   { state: RootState; rejectValue: string }
 >(
-  'appointments/createAppointment',
-  async ({ appointment, token }, { rejectWithValue }) => {
-
-    const clinicDb = 'demo_db'; // Ensure correct database
-    console.log(`🆕 Creating appointment in clinic: ${clinicDb}`);
-
+  "appointments/createAppointment",
+  async ({ appointment, token }, { getState, dispatch, rejectWithValue }) => {
     try {
-      const appointmentService = new AppointmentService(token, clinicDb);
-      const newAppointment = await appointmentService.createAppointment(appointment);
+      const clinicDb = "demo_db";
+      console.log(`🆕 Creating appointment in clinic: ${clinicDb}`);
+
+      const service = UnifiedDataService.getInstance(clinicDb, token);
+      const newAppointment = await service.createResource("appointments", appointment);
       newAppointment.status = determineStatus(newAppointment);
 
-      // 🔹 Cache the new appointment
-      const cachedAppointments = (await cache.get("detailedAppointments")) || [];
-      const updatedCache = [newAppointment, ...cachedAppointments].slice(0, 50);
-      await cache.set("detailedAppointments", updatedCache);
+      const state = getState();
+      const updatedWeeklyAppointments = [newAppointment, ...state.appointments.appointments];
 
-      console.log("✅ Created appointment & updated cache", newAppointment);
+      await cache.set("weeklyAppointments", updatedWeeklyAppointments);
+      dispatch(setWeeklyAppointments(updatedWeeklyAppointments));
+
+      console.log("✅ Created appointment & updated weekly cache", newAppointment);
       return newAppointment;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : "Failed to create appointment");
@@ -207,21 +181,24 @@ export const deleteAppointment = createAsyncThunk<
   { appointmentId: string; token: string },
   { state: RootState; rejectValue: string }
 >(
-  'appointments/deleteAppointment',
-  async ({ appointmentId, token }, { rejectWithValue }) => {
-    const clinicDb = 'demo_db';
-    console.log(`🗑️ Deleting appointment ID: ${appointmentId} in clinic: ${clinicDb}`);
-
+  "appointments/deleteAppointment",
+  async ({ appointmentId, token }, { getState, dispatch, rejectWithValue }) => {
     try {
-      const appointmentService = new AppointmentService(token, clinicDb);
-      await appointmentService.deleteAppointment(appointmentId);
+      const clinicDb = "demo_db";
+      console.log(`🗑️ Deleting appointment ID: ${appointmentId}`);
 
-      // 🔹 Remove from cache
-      const cachedAppointments = (await cache.get("detailedAppointments")) || [];
-      const updatedCache = cachedAppointments.filter((appt: Appointment) => appt.appointmentId !== appointmentId);
-      await cache.set("detailedAppointments", updatedCache);
+      const service = UnifiedDataService.getInstance(clinicDb, token);
+      await service.deleteResource("appointments", appointmentId);
 
-      console.log(`✅ Deleted appointment ID: ${appointmentId} & updated cache`);
+      const state = getState();
+      const updatedWeeklyAppointments = state.appointments.appointments.filter(
+        appt => appt.appointmentId !== appointmentId
+      );
+
+      await cache.set("weeklyAppointments", updatedWeeklyAppointments);
+      dispatch(setWeeklyAppointments(updatedWeeklyAppointments));
+
+      console.log(`✅ Deleted appointment & updated weekly cache`);
       return appointmentId;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : "Failed to delete appointment");
@@ -243,6 +220,11 @@ const transformDetailedToAppointment = (detailedAppointment: Appointment): Appoi
   patientUser: detailedAppointment.patientUser,
   color: detailedAppointment.treatments?.[0]?.color || "#FF5733",
   status: detailedAppointment.status, // Keep the correct appointment status
+    // ✅ Ensure these properties are retained
+    time: detailedAppointment.time, 
+    isPaid: detailedAppointment.isPaid, 
+    createdAt: detailedAppointment.createdAt, 
+    updatedAt: detailedAppointment.updatedAt
 });
 
 
@@ -291,32 +273,11 @@ const appointmentsSlice = createSlice({
     },
 
     updateAppointmentState(state, action: PayloadAction<Appointment>) {
-      logDebug("🔄 Updating `detailedAppointments` and syncing to `weeklyAppointments`", action.payload);
+      logDebug("🔄 Updating `weeklyAppointments`", action.payload);
     
       const updatedAppointment = action.payload;
     
-      // ✅ Update `detailedAppointments` by modifying only the relevant appointment
-      state.detailedAppointments = state.detailedAppointments.map(appt =>
-        appt.appointmentId === updatedAppointment.appointmentId ? updatedAppointment : appt
-      );
-    
-      // ✅ Ensure `detailedAppointments` cache is updated
-      cache.get("detailedAppointments").then((cachedDetails: Appointment[] = []) => {
-        const updatedCache = cachedDetails.map(appt =>
-          appt.appointmentId === updatedAppointment.appointmentId ? updatedAppointment : appt
-        );
-    
-        // ✅ If the appointment is missing, add it
-        if (!updatedCache.some(appt => appt.appointmentId === updatedAppointment.appointmentId)) {
-          updatedCache.unshift(updatedAppointment);
-        }
-    
-        // ✅ Save the updated cache (keep only 50)
-        cache.set("detailedAppointments", updatedCache.slice(0, 50));
-        logDebug("✅ Updated detailedAppointments cache", updatedCache);
-      });
-    
-      // ✅ Sync `weeklyAppointments` by modifying only the updated appointment, keeping the rest
+      // ✅ Sync `weeklyAppointments` in Redux state
       state.appointments = state.appointments.map(appt =>
         appt.appointmentId === updatedAppointment.appointmentId
           ? transformDetailedToAppointment(updatedAppointment)
@@ -341,8 +302,7 @@ const appointmentsSlice = createSlice({
         logDebug("✅ Updated weeklyAppointments cache", updatedWeeklyCache);
       });
     
-      logDebug("✅ Synced detailedAppointments → weeklyAppointments", {
-        detailedAppointments: state.detailedAppointments,
+      logDebug("✅ Synced weeklyAppointments", {
         weeklyAppointments: state.appointments,
       });
     },
@@ -363,7 +323,12 @@ const appointmentsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchAppointmentById.fulfilled, (state, action) => {
-        state.appointmentDetails = action.payload;
+        if (action.payload) {
+          state.appointmentDetails = action.payload;
+        } else {
+          console.warn("⚠️ No appointment found, resetting to default.");
+          state.appointmentDetails = initialState.appointmentDetails; // Ensure default state
+        }
       });
   },
 });

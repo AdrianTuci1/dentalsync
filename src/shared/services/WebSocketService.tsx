@@ -48,7 +48,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     console.log("📌 Loading cached weekly appointments...");
     const cachedAppointments = await cache.get("weeklyAppointments");
     if (cachedAppointments) {
-      console.log("✅ Using cached appointments:", cachedAppointments);
       dispatch(setWeeklyAppointments(cachedAppointments));
     } else {
       console.warn("⚠️ No cached appointments available.");
@@ -59,7 +58,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const handleWorkerMessage = useCallback((event: MessageEvent) => {
     const { type, payload } = event.data;
 
-    console.log("📩 WebSocket message received:", payload);
     setReceivedResponse(true); // ✅ Mark WebSocket as responding
 
     if (type === "message" && payload.type === "appointments") {
@@ -138,7 +136,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         data: params || {},
       };
 
-      console.log("📤 Sending WebSocket request:", message);
       workerRef.current?.postMessage({
         action: "send",
         payload: { message },

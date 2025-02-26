@@ -1,9 +1,13 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Treatment } from '@/features/clinic/types/treatmentType';
 import UnifiedDataService from "../services/unifiedDataService";
-import { cache } from '@/shared/utils/localForage';
 import { RootState } from '@/shared/services/store';
-import { getSubdomain } from '@/shared/utils/getSubdomains';
+
+// ✅ Define Extra Argument Type for `createAsyncThunk`
+export interface ExtraArg {
+  db: string;
+  token: string;
+}
 
 export interface TreatmentState {
   treatments: Treatment[];
@@ -17,55 +21,36 @@ const initialState: TreatmentState = {
   error: null,
 };
 
-// ✅ Fetch Treatments with Proper Caching
-export const fetchTreatments = createAsyncThunk(
+// ✅ Fetch Treatments (Type-Safe `extra`)
+export const fetchTreatments = createAsyncThunk<Treatment[], void, { state: RootState; extra: ExtraArg }>(
   "treatments/fetch",
-  async ({ token }: { token: string }, { rejectWithValue }) => {
-    const clinicDb = getSubdomain() + "_db";
-    console.log(`📡 Fetching treatments for clinic: ${clinicDb}`);
-
+  async (_, { rejectWithValue, extra }) => {
     try {
-      const service = UnifiedDataService.getInstance(token, clinicDb);
-      const result = await service.getResources("treatments", {});
+      const service = UnifiedDataService.getInstance(extra.db);
+      console.log(`📡 Fetching treatments for clinic: ${extra.db}`);
 
-      // ✅ Merge new treatments with cache to prevent overwriting
-      const cachedTreatments = (await cache.get("treatments")) || [];
-      const mergedTreatments = [...cachedTreatments, ...result.data].reduce(
-        (acc, item) => acc.find((i: any) => i.id === item.id) ? acc : [...acc, item], [] as any[]
-      );
-
-      await cache.set("treatments", mergedTreatments);
-      return mergedTreatments;
+      const result = await service.getResources<Treatment>("treatments", {});
+      return result.data;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : "Failed to fetch treatments");
     }
   }
 );
 
-// ✅ Create Treatment with Optimistic Update
-export const createTreatment = createAsyncThunk(
+// ✅ Create Treatment (Type-Safe `extra`)
+export const createTreatment = createAsyncThunk<Treatment, { treatment: Partial<Treatment> }, { state: RootState; extra: ExtraArg }>(
   "treatments/create",
-  async ({ treatment, token }: { treatment: Partial<Treatment>; token: string }, { rejectWithValue, dispatch }) => {
-    const clinicDb = getSubdomain() + "_db";
-    console.log(`🆕 Creating treatment in clinic: ${clinicDb}`);
-
+  async ({ treatment }, { rejectWithValue, extra, dispatch, getState }) => {
     try {
-      const service = UnifiedDataService.getInstance(token, clinicDb);
+      const service = UnifiedDataService.getInstance(extra.db);
+      console.log(`🆕 Creating treatment in clinic: ${extra.db}`);
 
-      // 🔹 Optimistic UI Update: Add treatment to cache before API call
-      const cachedTreatments = (await cache.get("treatments")) || [];
-      const newTreatment: Treatment = {
-        ...treatment,
-        id: `temp-${Date.now()}`, // Temporary ID
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      } as Treatment;
+      // ✅ Optimistic Update Before API Call
+      const tempId = `temp-${Date.now()}`;
+      const optimisticTreatment: Treatment = { ...treatment, id: tempId } as Treatment;
+      dispatch(setTreatments([...getState().treatments.treatments, optimisticTreatment]));
 
-      const updatedCache = [newTreatment, ...cachedTreatments].slice(0, 20);
-      await cache.set("treatments", updatedCache);
-      dispatch(setTreatments(updatedCache));
-
-      // ✅ Send API request
+      // ✅ API Call
       const savedTreatment = await service.createResource("treatments", treatment);
       return savedTreatment;
     } catch (error) {
@@ -74,27 +59,21 @@ export const createTreatment = createAsyncThunk(
   }
 );
 
-// ✅ Update Treatment with Proper Cache & API Sync
-export const updateTreatment = createAsyncThunk(
+// ✅ Update Treatment (Type-Safe `extra`)
+export const updateTreatment = createAsyncThunk<Treatment, { id: string; treatment: Partial<Treatment> }, { state: RootState; extra: ExtraArg }>(
   "treatments/update",
-  async ({ id, treatment, token }: { id: string; treatment: Partial<Treatment>; token: string }, { rejectWithValue, dispatch, getState }) => {
-    const clinicDb = getSubdomain() + "_db";
-    console.log(`✏️ Updating treatment ID: ${id} in clinic: ${clinicDb}`);
-
+  async ({ id, treatment }, { rejectWithValue, extra, dispatch, getState }) => {
     try {
-      const service = UnifiedDataService.getInstance(token, clinicDb);
-      const state = getState() as RootState;
-      const existingTreatments: Treatment[] = state.treatments.treatments || [];
+      const service = UnifiedDataService.getInstance(extra.db);
+      console.log(`✏️ Updating treatment ID: ${id} in clinic: ${extra.db}`);
 
-      // 🔹 Optimistic UI Update: Update treatment in cache before API call
-      const optimisticUpdate = { ...treatment, id };
-      const updatedCache = existingTreatments.map((t) => (t.id === id ? { ...t, ...optimisticUpdate } : t));
+      // ✅ Optimistic UI Update Before API Call
+      dispatch(setTreatments(getState().treatments.treatments.map(t => 
+        t.id === id ? { ...t, ...treatment } : t
+      )));
 
-      await cache.set("treatments", updatedCache);
-      dispatch(setTreatments(updatedCache));
-
-      // ✅ Send API request
-      const updatedTreatment = await service.updateResource("treatments", id, optimisticUpdate);
+      // ✅ API Call
+      const updatedTreatment = await service.updateResource<Treatment>("treatments", id, treatment);
       return updatedTreatment;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : "Failed to update treatment");
@@ -102,24 +81,18 @@ export const updateTreatment = createAsyncThunk(
   }
 );
 
-// ✅ Delete Treatment with Proper Optimistic Handling
-export const deleteTreatment = createAsyncThunk(
+// ✅ Delete Treatment (Type-Safe `extra`)
+export const deleteTreatment = createAsyncThunk<string, { id: string }, { state: RootState; extra: ExtraArg }>(
   "treatments/delete",
-  async ({ id, token }: { id: string; token: string }, { rejectWithValue, dispatch, getState }) => {
-    const clinicDb = getSubdomain() + "_db";
-    console.log(`🗑️ Deleting treatment ID: ${id} in clinic: ${clinicDb}`);
-
+  async ({ id }, { rejectWithValue, extra, dispatch, getState }) => {
     try {
-      const service = UnifiedDataService.getInstance(token, clinicDb);
-      const state = getState() as RootState;
-      const existingTreatments: Treatment[] = state.treatments.treatments || [];
+      const service = UnifiedDataService.getInstance(extra.db);
+      console.log(`🗑️ Deleting treatment ID: ${id} in clinic: ${extra.db}`);
 
-      // 🔹 Optimistic UI Update: Remove treatment from cache before API call
-      const updatedCache = existingTreatments.filter((t) => t.id !== id);
-      await cache.set("treatments", updatedCache);
-      dispatch(setTreatments(updatedCache));
+      // ✅ Optimistic UI Update Before API Call
+      dispatch(setTreatments(getState().treatments.treatments.filter(t => t.id !== id)));
 
-      // ✅ Send API request
+      // ✅ API Call
       await service.deleteResource("treatments", id);
       return id;
     } catch (error) {
@@ -128,54 +101,36 @@ export const deleteTreatment = createAsyncThunk(
   }
 );
 
-// ✅ Slice
+// ✅ Treatment Slice (Type-Safe & Preserves Props)
 const treatmentSlice = createSlice({
   name: "treatments",
   initialState,
   reducers: {
     setTreatments: (state, action: PayloadAction<Treatment[]>) => {
-      state.treatments = action.payload;
-      cache.set("treatments", state.treatments);
+      console.log("📦 Updating treatments in Redux:", action.payload);
+      state.treatments = action.payload.map(existing => {
+        const incoming = action.payload.find(t => t.id === existing.id);
+        return incoming ? { ...existing, ...incoming } : existing;
+      });
     },
   },
   extraReducers: (builder) => {
     builder
-      // ✅ Fetch Treatments
-      .addCase(fetchTreatments.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(fetchTreatments.fulfilled, (state, action) => {
-        state.loading = false;
-
-        // Ensure unique treatments based on id
-        const uniqueTreatments = Array.from(
-          new Map(action.payload.map((t: any) => [t.id, t])).values()
-        );
-
-        state.treatments = uniqueTreatments;
+        state.treatments = action.payload;
       })
-      .addCase(fetchTreatments.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-
-      // ✅ Create Treatment
       .addCase(createTreatment.fulfilled, (state, action) => {
-        state.treatments.unshift(action.payload);
+        state.treatments = state.treatments.map(t =>
+          t.id.startsWith("temp-") ? action.payload : t
+        );
       })
-
-      // ✅ Update Treatment
       .addCase(updateTreatment.fulfilled, (state, action) => {
-        const index = state.treatments.findIndex((t) => t.id === action.payload.id);
-        if (index !== -1) {
-          state.treatments[index] = action.payload;
-        }
+        state.treatments = state.treatments.map(t =>
+          t.id === action.payload.id ? { ...t, ...action.payload } : t
+        );
       })
-
-      // ✅ Delete Treatment
       .addCase(deleteTreatment.fulfilled, (state, action) => {
-        state.treatments = state.treatments.filter((t) => t.id !== action.payload);
+        state.treatments = state.treatments.filter(t => t.id !== action.payload);
       });
   },
 });
@@ -184,9 +139,9 @@ const treatmentSlice = createSlice({
 export const { setTreatments } = treatmentSlice.actions;
 
 // ✅ Export Selectors
-export const selectTreatments = (state: any) => state.treatments.treatments;
-export const selectTreatmentLoading = (state: any) => state.treatments.loading;
-export const selectTreatmentError = (state: any) => state.treatments.error;
+export const selectTreatments = (state: RootState) => state.treatments.treatments;
+export const selectTreatmentLoading = (state: RootState) => state.treatments.loading;
+export const selectTreatmentError = (state: RootState) => state.treatments.error;
 
 // ✅ Export Reducer
 export default treatmentSlice.reducer;

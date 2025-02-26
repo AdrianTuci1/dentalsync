@@ -1,44 +1,42 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Component } from '@/features/clinic/types/componentType';
-import { cache } from '@/shared/utils/localForage';
 import UnifiedDataService from '../services/unifiedDataService';
 import { RootState } from '@/shared/services/store';
 
 interface StockState {
-  stocks: Component[];
+  components: Component[];
   loading: boolean;
   error: string | null;
   offset: number;
 }
 
 const initialState: StockState = {
-  stocks: [],
+  components: [],
   loading: false,
   error: null,
   offset: 0,
 };
 
-import { getSubdomain } from '@/shared/utils/getSubdomains';
+
+// ✅ Explicitly Define Extra Argument Type
+interface ExtraArg {
+  db: string;
+}
 
 // ✅ Fetch Components with Proper Caching & Pagination
-export const fetchComponents = createAsyncThunk(
+export const fetchComponents = createAsyncThunk<
+  Component[], // Expected return type
+  void, // No arguments required in payload
+  { extra: ExtraArg } // Explicitly define the extra argument
+>(
   "stocks/fetch",
-  async (
-    { token, clinicDb, name = "", offset = 0 }: { token: string; clinicDb: string; name?: string; offset?: number },
-    { rejectWithValue }
-  ) => {
+  async (_, { rejectWithValue, extra }) => {
     try {
-      const service = UnifiedDataService.getInstance(token, clinicDb);
-      const result = await service.getResources("components", { name, offset: String(offset) });
+      const service = UnifiedDataService.getInstance(extra.db);
+      console.log(`📡 Fetching components for clinic: ${extra.db}`);
 
-      // ✅ Merge new data with cached data to prevent duplicate requests
-      const cachedComponents = (await cache.get("components")) || [];
-      const mergedComponents = [...cachedComponents, ...result.data].reduce(
-        (acc, item) => acc.find((i: any) => i.id === item.id) ? acc : [...acc, item], [] as any[]
-      );
-
-      await cache.set("components", mergedComponents);
-      return result;
+      const result = await service.getResources("components", {});
+      return result.data;
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : "Failed to fetch components");
     }
@@ -46,27 +44,25 @@ export const fetchComponents = createAsyncThunk(
 );
 
 // ✅ Optimistic Component Creation (Cache Only After API)
-export const createComponent = createAsyncThunk(
+export const createComponent = createAsyncThunk<
+  Component,
+  { component: Partial<Component> },
+  { extra: ExtraArg }
+>(
   "stocks/create",
-  async (
-    { component }: { component: Partial<Component> },
-    { rejectWithValue, dispatch, getState }
-  ) => {
+  async ({ component }, { rejectWithValue, extra, dispatch, getState }) => {
     try {
+      const service = UnifiedDataService.getInstance(extra.db);
+      console.log(`🆕 Creating component in clinic: ${extra.db}`);
+
+      // ✅ Optimistic UI Update Before API Call
       const state = getState() as RootState;
-      const token = state.auth.subaccountToken || '';
-      const clinicDb = getSubdomain() + '_db'
-      const service = UnifiedDataService.getInstance(token, clinicDb);
+      const tempId = `temp-${Date.now()}`;
+      const newComponent: Component = { ...component, id: tempId } as Component;
+      dispatch(setStocks([newComponent, ...state.stocks.components]));
 
-      // ✅ Send API request first
+      // ✅ API Call
       const savedComponent = await service.createResource("components", component);
-
-      // ✅ Update cache & Redux with API-confirmed data
-      const cachedComponents = (await cache.get("components")) || [];
-      const finalComponents = [...cachedComponents, savedComponent];
-
-      await cache.set("components", finalComponents);
-      dispatch(setStocks(finalComponents));
 
       return savedComponent;
     } catch (error) {
@@ -76,24 +72,26 @@ export const createComponent = createAsyncThunk(
 );
 
 // ✅ Optimistic Component Update (Use Full API Response)
-export const updateComponent = createAsyncThunk(
+export const updateComponent = createAsyncThunk<
+  Component,
+  { id: string; changes: Partial<Component> },
+  { extra: ExtraArg }
+>(
   "stocks/update",
-  async ({ id, changes }: { id: string; changes: Partial<Component> }, { rejectWithValue, dispatch, getState }) => {
+  async ({ id, changes }, { rejectWithValue, extra, dispatch, getState }) => {
     try {
+      const service = UnifiedDataService.getInstance(extra.db);
+      console.log(`✏️ Updating component ID: ${id} in clinic: ${extra.db}`);
+
+      // ✅ Optimistic UI Update Before API Call
       const state = getState() as RootState;
-      const token = state.auth.subaccountToken || '';
-      const clinicDb = getSubdomain() + '_db'
-      const service = UnifiedDataService.getInstance(token, clinicDb);
+      const optimisticUpdate = state.stocks.components.map(comp =>
+        comp.id === id ? { ...comp, ...changes } : comp
+      );
+      dispatch(setStocks(optimisticUpdate));
 
-      // ✅ Send API request first
+      // ✅ API Call
       const updatedComponent = await service.updateResource("components", id, changes);
-
-      // ✅ Update cache & Redux with API-confirmed data
-      const cachedComponents = (await cache.get("components")) || [];
-      const finalComponents = cachedComponents.map(comp => comp.id === id ? updatedComponent : comp);
-
-      await cache.set("components", finalComponents);
-      dispatch(setStocks(finalComponents));
 
       return updatedComponent;
     } catch (error) {
@@ -102,24 +100,24 @@ export const updateComponent = createAsyncThunk(
   }
 );
 
-// ✅ Optimistic Component Deletion (Fix: Proper Token Handling)
-export const deleteComponent = createAsyncThunk(
+// ✅ Optimistic Component Deletion
+export const deleteComponent = createAsyncThunk<
+  string,
+  { id: string },
+  { extra: ExtraArg }
+>(
   "stocks/delete",
-  async ({ id }: { id: string }, { rejectWithValue, dispatch, getState }) => {
+  async ({ id }, { rejectWithValue, extra, dispatch, getState }) => {
     try {
+      const service = UnifiedDataService.getInstance(extra.db);
+      console.log(`🗑️ Deleting component ID: ${id} in clinic: ${extra.db}`);
+
+      // ✅ Optimistic UI Update Before API Call
       const state = getState() as RootState;
-      const token = state.auth.subaccountToken || '';
-      const clinicDb = getSubdomain() + '_db'
-      const service = UnifiedDataService.getInstance(token, clinicDb);
+      dispatch(setStocks(state.stocks.components.filter(comp => comp.id !== id)));
 
+      // ✅ API Call
       await service.deleteResource("components", id);
-
-      // ✅ Remove from cache & Redux after API success
-      const cachedComponents = (await cache.get("components")) || [];
-      const updatedComponents = cachedComponents.filter(comp => comp.id !== id);
-      
-      await cache.set("components", updatedComponents);
-      dispatch(setStocks(updatedComponents));
 
       return id;
     } catch (error) {
@@ -128,73 +126,54 @@ export const deleteComponent = createAsyncThunk(
   }
 );
 
-
 // Slice
+// ✅ Slice (Ensure Components Update Properly)
 const stockSlice = createSlice({
   name: "stocks",
   initialState,
   reducers: {
     setStocks: (state, action: PayloadAction<Component[]>) => {
-      state.stocks = action.payload;
-      cache.set("stocks", state.stocks);
+      console.log("📦 Setting Stocks in Redux:", action.payload); // Debugging log
+      state.components = [...action.payload]; // 🔥 New reference to trigger UI update
     },
-    addStock: (state, action: PayloadAction<Component>) => {
-      state.stocks.push(action.payload);
+    setNextOffset: (state, action: PayloadAction<number>) => {
+      state.offset = action.payload;
     },
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchComponents.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
       .addCase(fetchComponents.fulfilled, (state, action) => {
-        state.loading = false;
-        
-        // Ensure action.payload.data is an array.
-        const newComponents: Component[] = Array.isArray(action.payload.data)
-          ? action.payload.data
-          : [];
-        
-        // Merge arrays: if offset is 0, use newComponents; otherwise, combine with existing stocks.
-        const combined = action.payload.offset === 0 
-          ? newComponents 
-          : [...state.stocks, ...newComponents];
-        
-        // Deduplicate using a Map keyed by the component's unique id.
-        const deduplicated = Array.from(
-          new Map(combined.map((comp) => [comp.id, comp])).values()
-        );
-        
-        state.stocks = deduplicated;
-      })
-      .addCase(fetchComponents.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        if (state.offset === 0) {
+          state.components = action.payload; // Overwrite if first load
+        } else {
+          state.components = [...state.components, ...action.payload]; // Append if loading more
+        }
       })
       .addCase(createComponent.fulfilled, (state, action) => {
-        state.stocks.push(action.payload);
+        state.components = [action.payload, ...state.components]; // **Ensures UI reflects change**
+      })
+      .addCase(updateComponent.fulfilled, (state, action) => {
+        state.components = state.components.map(comp =>
+          comp.id === action.payload.id ? action.payload : comp
+        ); // **Ensures UI reflects change**
       })
       .addCase(deleteComponent.fulfilled, (state, action) => {
-        state.stocks = state.stocks.filter((c) => c.id !== action.payload);
+        state.components = state.components.filter(comp => comp.id !== action.payload); // **Ensures UI reflects change**
       });
   },
 });
 
+
+export const { setStocks, setNextOffset } = stockSlice.actions;
+
 // Export actions and selectors
-export const { setStocks, addStock } = stockSlice.actions;
+
 export const selectStocks = (state: any) => state.stocks.stocks;
 export const selectStockLoading = (state: any) => state.stocks.loading;
 export const selectStockError = (state: any) => state.stocks.error;
 
 // Export reducer
 export default stockSlice.reducer;
-
-// Function to load stocks from LocalForage and dispatch them
-export const initializeStocks = () => async (dispatch: any) => {
-  const storedStocks = await cache.get("stocks");
-  dispatch(setStocks(storedStocks));
-};
 
 // Explicitly export StockState type
 export type { StockState };

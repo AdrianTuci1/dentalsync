@@ -79,7 +79,7 @@ export const StockDrawer: React.FC = () => {
 
     if (stock) {
       // ✅ Update existing stock
-      dispatch(updateComponent({ id: savedStock.id, changes: savedStock }) as any);
+      dispatch(updateComponent({ id: savedStock.id, changes: savedStock}) as any);
     } else {
       // ✅ Create new stock
       dispatch(createComponent({ component: savedStock}) as any);

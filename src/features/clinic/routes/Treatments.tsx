@@ -35,7 +35,7 @@ export const Treatments: React.FC = () => {
   // ✅ Fetch all treatments once when component mounts
   useEffect(() => {
     if (token && clinicDb) {
-      dispatch(fetchTreatments({ token, clinicDb }) as any);
+      dispatch(fetchTreatments() as any);
     }
   }, [dispatch, token, clinicDb]);
 

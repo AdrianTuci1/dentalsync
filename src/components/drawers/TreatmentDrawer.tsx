@@ -17,7 +17,6 @@ import { Treatment } from '@/features/clinic/types/treatmentType';
 
 import isEqual from 'lodash/isEqual'; // Ensure lodash is installed
 import { createTreatment, deleteTreatment, selectTreatments, updateTreatment } from '@/api/slices/treatmentSlice';
-import { getSubdomain } from '@/shared/utils/getSubdomains';
 
 import styles from "./TreatmentDrawer.module.scss";
 
@@ -42,8 +41,6 @@ const TreatmentDrawer: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null); // Anchor for color picker menu
   const [currentIndex, setCurrentIndex] = useState<number | null>(null); // Current focused component index
 
-    const token = useSelector((state: any) => state.auth.subaccountToken);
-    const clinicDb = getSubdomain() + '_db'; // Hardcoded clinicDb
 
   // Load treatment data when the drawer opens
   useEffect(() => {
@@ -52,15 +49,15 @@ const TreatmentDrawer: React.FC = () => {
       if (treatment) {
         setName(treatment.name);
         setCategory(treatment.category || '');
-        setPrice(treatment.price);
-        setDuration(treatment.duration);
+        setPrice(treatment.price ?? 0); // ✅ Ensure fallback to 0
+        setDuration(treatment.duration ?? 0); // ✅ Ensure fallback to 0
         setDescription(treatment.description || '');
         setColor(treatment.color || '#FF5733');
         setComponents(treatment.components || []);
         setOriginalTreatment(treatment);
       } else {
-        resetForm()
-        console.log('error occured')
+        resetForm();
+        console.log('error occurred');
       }
     } else {
       resetForm();
@@ -97,10 +94,12 @@ const TreatmentDrawer: React.FC = () => {
   };
 
 
-  const handleSave = () => {
+
+  
+  const handleSave = async () => {
     console.log("🚀 handleSave function called");
   
-    const treatmentData = {
+    const treatmentData: Partial<Treatment> = {
       id: treatmentId,
       name,
       category,
@@ -111,37 +110,20 @@ const TreatmentDrawer: React.FC = () => {
       components: normalizeComponents(components),
     };
   
-    const isModified = () => {
-      if (!originalTreatment) return false;
-  
-      const currentData = normalizeData({
-        name,
-        category,
-        price,
-        duration,
-        description,
-        color,
-        components,
-      });
-  
-      const originalData = normalizeData(originalTreatment);
-  
-      return !isEqual(currentData, originalData);
-    };
-  
     try {
       if (treatmentId) {
         if (isModified()) {
           console.log("✅ Changes detected. Updating treatment...");
-          dispatch(updateTreatment({ id: treatmentId, treatment: treatmentData, token, clinicDb }) as any);
+          await dispatch(updateTreatment({ id: treatmentId, treatment: treatmentData }) as any).unwrap();
         } else {
           console.log("ℹ️ No changes detected. Skipping update.");
         }
       } else {
         console.log("🆕 Creating new treatment...");
-        dispatch(createTreatment({ treatment: treatmentData, token, clinicDb }) as any);
+        await dispatch(createTreatment({ treatment: treatmentData }) as any).unwrap();
         resetForm();
       }
+  
       dispatch(closeDrawer());
     } catch (error) {
       console.error("❌ Error submitting treatment:", error);
@@ -213,7 +195,7 @@ const handleInputFocus = (index: number) => {
 
   const handleDelete = async () => {
     console.log(treatmentId)
-      await dispatch(deleteTreatment({ id: treatmentId, token, clinicDb }) as any);
+      await dispatch(deleteTreatment({ id: treatmentId }) as any);
       dispatch(closeDrawer())
   }
 

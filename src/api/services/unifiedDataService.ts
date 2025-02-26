@@ -70,50 +70,78 @@ export class UnifiedDataService {
     id?: string
   ): Promise<{ data: T[]; limit?: number; offset?: number }> {
     console.log("UnifiedDataService.getResources called with:", resource, params);
-
+  
+    // **1️⃣ Handle Demo Mode**
     if (DEMO_MODE) {
       const demoData: DemoData = await this.getAllDemoData();
       if (id) {
-        const item = demoData[resource]?.find((item) => (item as any).id === id);
+        const item = (demoData[resource] as T[] | undefined)?.find((item) => (item as any).id === id);
         return { data: item ? [item] : [] };
       }
-      return { data: demoData[resource] ?? [] };
+      return { data: (demoData[resource] as T[]) || [] };
     }
-
+  
+    // ✅ **Handle Offline Mode - Use Cached Data if No Internet**
     if (!navigator.onLine) {
-      console.log(`🔌 Offline: Using cached data for '${resource}'`);
+      console.log(`🔌 Offline mode: Using cached data for '${resource}'`);
+  
       const cachedData: T[] = (await cache.get(resource)) ?? [];
+      if (!cachedData.length) {
+        console.warn(`⚠️ No cached data found for '${resource}' while offline.`);
+      }
+      
       return { data: cachedData };
     }
-
+  
+    // **3️⃣ Fetch Data from API**
     try {
       const endpoint = id ? `${resource}/${id}` : resource;
-      const result = await this.api.get<ResourceResponse | T[]>(endpoint, params);
-      
-      let responseData: T[] = Array.isArray(result) ? result : result.data ?? [];
-      
-      const isPaginated = params.hasOwnProperty("offset");
+      const result = await this.api.get<{ data?: T[]; limit?: number; offset?: number } | T[]>(endpoint, params);
+      console.log("✅ API result received:", result);
+  
+      // **4️⃣ Determine API Response Format**
+      let responseData: T[];
+      if (Array.isArray(result)) {
+        responseData = result; // Direct array response
+      } else if (Array.isArray(result.data)) {
+        responseData = result.data; // Object with "data" key
+      } else if (Array.isArray((result as any)[resource])) {
+        responseData = (result as any)[resource]; // Object with resource key
+      } else {
+        throw new Error(`Invalid API response structure for ${resource}`);
+      }
+  
+      // ✅ **Determine if this resource is paginated or full-set**
+      const isPaginated = params.hasOwnProperty("offset"); // Checks if request had "offset"
+  
       if (isPaginated) {
-        console.log(`📄 Paginated data for '${resource}'`);
+        console.log(`📄 Paginated data detected for '${resource}'`);
+  
+        // 🔹 Merge with previously cached data to prevent duplicates
         const existingCache: T[] = (await cache.get(resource)) ?? [];
         const mergedData = [...existingCache, ...responseData].reduce(
-          (acc, item) => acc.find((i) => (i as any).id === (item as any).id) ? acc : [...acc, item], [] as T[]
+          (acc, item) => acc.find((i) => (i as any).id === (item as any).id) ? acc : [...acc, item], 
+          [] as T[]
         );
+  
         await cache.set(resource, mergedData);
-        console.log(mergedData)
       } else {
-        console.log(`📦 Full dataset for '${resource}', caching all.`);
+        console.log(`📦 Full dataset detected for '${resource}', caching all.`);
         await cache.set(resource, responseData);
       }
-
+  
       return {
         data: responseData,
         limit: (result as any).limit ?? undefined,
         offset: (result as any).offset ?? undefined,
       };
     } catch (error) {
-      console.error(`❌ API failure fetching '${resource}', using cache.`, error);
+      console.error(`❌ Error fetching '${resource}':`, error);
+  
+      // Load from cache in case of API failure
       const cachedData: T[] = (await cache.get(resource)) ?? [];
+      console.log(`📂 Using cached data for '${resource}' due to API failure (${cachedData.length} records)`);
+  
       return { data: cachedData };
     }
   }
@@ -149,43 +177,165 @@ export class UnifiedDataService {
       return result;
     } catch (error) {
       console.error(`❌ Failed to fetch '${resource}' with ID '${id}', using cache.`, error);
+
       const cachedData: T[] = (await cache.get(resource)) ?? [];
-      return cachedData.find((item) => (item as any).id === id) ?? null;
+      
+      // ✅ Use `appointmentId` for `appointments`, otherwise default to `id`
+      const identifier = resource === "appointments" ? "appointmentId" : "id";
+      
+      return cachedData.find((item) => (item as any)[identifier] === id) ?? null;
     }
   }
 
   async createResource(resource: keyof DemoData, payload: any): Promise<any> {
+    // Use the correct ID field based on the resource type
+    const resourceIdField = resource === "appointments" ? "appointmentId" : "id";
+  
+    const offlineData = {
+      ...payload,
+      [resourceIdField]: `offline-${Date.now()}`,
+    };
+  
+    // ✅ Optimistic cache update before API call
+    const existingCache = (await cache.get(resource)) || [];
+    await cache.set(resource, [...existingCache, offlineData]);
+  
     if (!navigator.onLine || DEMO_MODE) {
-      const offlineData = { ...payload, id: `offline-${Date.now()}` };
+      console.log(`🔌 Offline: Queuing CREATE for ${resource}`);
       if (!DEMO_MODE) {
         await syncService.addAction({ type: "CREATE", resource, payload: offlineData });
       }
       return offlineData;
     }
-    return await this.api.post(resource, payload);
-  }
-
-  async updateResource<T>(resource: keyof DemoData, id: string, changes: Partial<T>): Promise<T> {
-    if (!navigator.onLine || DEMO_MODE) {
-      console.log(`🔌 Offline: Queuing update for ${resource} (ID: ${id})`);
-      if (!DEMO_MODE) {
-        await syncService.addAction({ type: "UPDATE", resource, payload: { id, ...changes } });
-      }
-      return { id, ...changes } as T;
+  
+    try {
+      const result = await this.api.post(resource, payload);
+  
+      // ✅ Update cache after successful API response
+      const updatedCache = [...((await cache.get(resource)) || []), result];
+      await cache.set(resource, updatedCache);
+  
+      return result;
+    } catch (error) {
+      console.error(`❌ API Failed: Create ${resource}`, error);
+      return offlineData; // Still return optimistic data
     }
-    return await this.api.put<T>(resource, id, changes);
+  }
+  
+  // ✅ Update & Cache Data (Even if API Fails)
+  async updateResource<T>(
+    resource: keyof DemoData,
+    id: string,
+    changes: Partial<T>
+  ): Promise<T> {
+    const resourceIdField = resource === "appointments" ? "appointmentId" : "id";
+  
+    const optimisticUpdate = { [resourceIdField]: id, ...changes } as T;
+  
+    // ✅ Optimistically update cache immediately
+    const existingCache: T[] = (await cache.get(resource)) || [];
+    const updatedCache = existingCache.map((item) =>
+      (item as any)[resourceIdField] === id ? { ...item, ...changes } : item
+    );
+  
+    if (!existingCache.some((item) => (item as any)[resourceIdField] === id)) {
+      updatedCache.unshift(optimisticUpdate);
+    }
+  
+    await cache.set(resource, updatedCache);
+  
+    if (!navigator.onLine || DEMO_MODE) {
+      console.log(`🔌 Offline: Queuing UPDATE for ${resource}`);
+      if (!DEMO_MODE) {
+        await syncService.addAction({ type: "UPDATE", resource, payload: optimisticUpdate });
+      }
+      return optimisticUpdate;
+    }
+  
+    try {
+      const updatedResource = await this.api.put<T>(resource, id, changes);
+  
+      // ✅ Replace optimistic cache entry with confirmed API response
+      const confirmedCache = updatedCache.map((item) =>
+        (item as any)[resourceIdField] === id ? updatedResource : item
+      );
+      await cache.set(resource, confirmedCache);
+  
+      return updatedResource;
+    } catch (error) {
+      console.error(`❌ API Failed: Update ${resource}/${id}`, error);
+  
+      // ✅ Queue failed API update for later sync
+      if (!DEMO_MODE) {
+        await syncService.addAction({ type: "UPDATE", resource, payload: optimisticUpdate });
+      }
+  
+      // ✅ Keep optimistic data in cache, API sync will handle it later.
+      return optimisticUpdate;
+    }
   }
 
-  async deleteResource(resource: keyof DemoData, id: string): Promise<string> {
+
+  async patchResource<T>(resource: keyof DemoData, id: string, changes: Partial<T>): Promise<T> {
+    const resourceIdField = resource === "appointments" ? "appointmentId" : "id";
+  
+    const optimisticUpdate = { [resourceIdField]: id, ...changes } as T;
+  
+    // ✅ Optimistic cache update before API call
+    const existingCache: T[] = (await cache.get(resource)) || [];
+    const updatedCache = existingCache.map((item) =>
+      (item as any)[resourceIdField] === id ? { ...item, ...changes } : item
+    );
+    await cache.set(resource, updatedCache);
+  
     if (!navigator.onLine || DEMO_MODE) {
-      console.log(`🔌 Offline: Queuing delete for ${resource} (ID: ${id})`);
+      console.log(`🔌 Offline: Queuing PATCH for ${resource} (ID: ${id})`);
       if (!DEMO_MODE) {
-        await syncService.addAction({ type: "DELETE", resource, payload: { id } });
+        await syncService.addAction({ type: "PATCH", resource, payload: optimisticUpdate });
+      }
+      return optimisticUpdate;
+    }
+  
+    try {
+      const updatedResource = await this.api.patch<T>(resource, id, changes);
+  
+      // ✅ Update cache after successful API response
+      const finalCache = existingCache.map((item) =>
+        (item as any)[resourceIdField] === id ? updatedResource : item
+      );
+      await cache.set(resource, finalCache);
+  
+      return updatedResource;
+    } catch (error) {
+      console.error(`❌ API Failed: Patch ${resource}/${id}`, error);
+      return optimisticUpdate; // Still return the optimistic update
+    }
+  }
+  
+  // ✅ DELETE with Guaranteed Cache Update
+  async deleteResource(resource: keyof DemoData, id: string): Promise<string> {
+    const resourceIdField = resource === "appointments" ? "appointmentId" : "id";
+  
+    // ✅ Optimistic cache update before API call
+    const existingCache: any[] = (await cache.get(resource)) || [];
+    const updatedCache = existingCache.filter((item) => item[resourceIdField] !== id);
+    await cache.set(resource, updatedCache);
+  
+    if (!navigator.onLine || DEMO_MODE) {
+      console.log(`🔌 Offline: Queuing DELETE for ${resource} (ID: ${id})`);
+      if (!DEMO_MODE) {
+        await syncService.addAction({ type: "DELETE", resource, payload: { [resourceIdField]: id } });
       }
       return id;
     }
-    await this.api.delete(resource, id);
-    return id;
+  
+    try {
+      await this.api.delete(resource, id);
+      return id;
+    } catch (error) {
+      console.error(`❌ API Failed: Delete ${resource}/${id}`, error);
+      return id; // Still return the deleted ID
+    }
   }
 }
 
