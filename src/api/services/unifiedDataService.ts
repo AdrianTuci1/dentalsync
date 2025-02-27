@@ -188,7 +188,6 @@ export class UnifiedDataService {
   }
 
   async createResource(resource: keyof DemoData, payload: any): Promise<any> {
-    // Use the correct ID field based on the resource type
     const resourceIdField = resource === "appointments" ? "appointmentId" : "id";
   
     const offlineData = {
@@ -196,29 +195,27 @@ export class UnifiedDataService {
       [resourceIdField]: `offline-${Date.now()}`,
     };
   
-    // ✅ Optimistic cache update before API call
+    // Optimistic cache update
     const existingCache = (await cache.get(resource)) || [];
     await cache.set(resource, [...existingCache, offlineData]);
   
     if (!navigator.onLine || DEMO_MODE) {
       console.log(`🔌 Offline: Queuing CREATE for ${resource}`);
       if (!DEMO_MODE) {
-        await syncService.addAction({ type: "CREATE", resource, payload: offlineData });
+        // Remove id from payload if not needed by syncService:
+        await syncService.addAction({ type: "CREATE", resource, payload: { ...payload } });
       }
       return offlineData;
     }
   
     try {
       const result = await this.api.post(resource, payload);
-  
-      // ✅ Update cache after successful API response
       const updatedCache = [...((await cache.get(resource)) || []), result];
       await cache.set(resource, updatedCache);
-  
       return result;
     } catch (error) {
       console.error(`❌ API Failed: Create ${resource}`, error);
-      return offlineData; // Still return optimistic data
+      return offlineData;
     }
   }
   

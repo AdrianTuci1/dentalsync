@@ -56,43 +56,71 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [dispatch]);
 
   // ✅ 2. Handle incoming WebSocket messages
-  const handleWorkerMessage = useCallback((event: MessageEvent) => {
+  const handleWorkerMessage = useCallback(async (event: MessageEvent) => {
     const { type, payload } = event.data;
-
+  
     console.log("📩 WebSocket message received:", payload);
     setReceivedResponse(true); // ✅ Mark WebSocket as responding
-
+  
     if (type === "message" && payload.type === "appointments") {
+      let cachedAppointments = (await cache.get("weeklyAppointments")) || [];
+  
       switch (payload.action) {
         case "view":
           if (Array.isArray(payload.data)) {
             console.log("✅ Updating weekly appointment list from WebSocket");
             dispatch(setWeeklyAppointments(payload.data));
-            cache.set("weeklyAppointments", payload.data); // ✅ Save in cache
+            await cache.set("weeklyAppointments", payload.data); // ✅ Save in cache
           } else {
             console.warn("⚠️ Invalid 'view' response:", payload.data);
           }
           break;
-
+  
         case "create":
+          if (payload.data) {
+            console.log(`➕ Adding new appointment: ${payload.data.appointmentId}`);
+            dispatch(updateAppointmentState(payload.data));
+  
+            // Add to cache if not already present
+            if (!cachedAppointments.some((appt) => appt.appointmentId === payload.data.appointmentId)) {
+              cachedAppointments = [...cachedAppointments, payload.data];
+              await cache.set("weeklyAppointments", cachedAppointments);
+            }
+          } else {
+            console.warn(`⚠️ No data received for 'create' action.`);
+          }
+          break;
+  
         case "update":
           if (payload.data) {
             console.log(`🔄 Updating appointment: ${payload.data.appointmentId}`);
             dispatch(updateAppointmentState(payload.data));
+  
+            // Update cache
+            cachedAppointments = cachedAppointments.map((appt) =>
+              appt.appointmentId === payload.data.appointmentId ? payload.data : appt
+            );
+            await cache.set("weeklyAppointments", cachedAppointments);
           } else {
-            console.warn(`⚠️ No data received for '${payload.action}' action.`);
+            console.warn(`⚠️ No data received for 'update' action.`);
           }
           break;
-
+  
         case "delete":
           if (payload.data?.appointmentId) {
             console.log(`🗑️ Removing appointment: ${payload.data.appointmentId}`);
             dispatch(removeAppointmentState(payload.data.appointmentId));
+  
+            // Remove from cache
+            cachedAppointments = cachedAppointments.filter(
+              (appt) => appt.appointmentId !== payload.data.appointmentId
+            );
+            await cache.set("weeklyAppointments", cachedAppointments);
           } else {
             console.warn("⚠️ Invalid delete message, missing appointmentId.");
           }
           break;
-
+  
         default:
           console.warn("⚠️ Unhandled WebSocket action:", payload.action);
       }
@@ -119,7 +147,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         console.warn("⏳ WebSocket did not respond, using cached data...");
         loadCachedAppointments();
       }
-    }, 8000); // 5 seconds delay
+    }, 7000); // 5 seconds delay
 
     return () => {
       worker.postMessage({ action: "disconnect" });

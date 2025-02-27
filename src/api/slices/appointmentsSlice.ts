@@ -119,27 +119,32 @@ export const updateAppointment = createAsyncThunk<
     try {
       const { token, clinicDb } = extra;
       const service = UnifiedDataService.getInstance(token, clinicDb);
-      const { appointmentDetails, appointments } = getState().appointments;
+      const { appointmentDetails } = getState().appointments;
 
-      if (!appointmentDetails?.appointmentId) return rejectWithValue("No appointmentId provided");
+      // Verifică că avem un appointmentId definit
+      if (!appointmentDetails?.appointmentId) {
+        console.error("❌ No appointmentId provided");
+        return rejectWithValue("No appointmentId provided");
+      }
 
+      console.log("📡 Before API call, appointmentId:", appointmentDetails.appointmentId, "Updated fields:", updatedFields);
+
+      // Trimite cererea PATCH către API
       const response = await service.patchResource("appointments", appointmentDetails.appointmentId, updatedFields);
+      if (!response) {
+        throw new Error("API response was empty");
+      }
+
+      // Determină statusul nou al appointment-ului
       response.status = determineStatus(response);
+      console.log("✅ API update response:", response);
 
-      console.log("✅ Appointment updated via API", response);
-
-      // ✅ Sync changes with `weeklyAppointments`
-      const updatedWeeklyAppointments = appointments.map(appt =>
-        appt.appointmentId === response.appointmentId ? response : appt
-      );
-
-      await cache.set("weeklyAppointments", updatedWeeklyAppointments);
-      dispatch(setWeeklyAppointments(updatedWeeklyAppointments));
+      // Actualizează starea Redux cu noua valoare
+      dispatch(updateAppointmentState(response));
 
       return response;
     } catch (error) {
-      console.log("⚠️ Failed to update appointment, handling offline mode", updatedFields);
-
+      console.error("❌ API update failed:", error);
       return rejectWithValue("Failed to update appointment");
     }
   }

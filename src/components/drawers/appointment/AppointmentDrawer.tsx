@@ -16,7 +16,7 @@ import {
   setAppointmentDetails,
   resetAppointment,
   fetchAppointmentById,
-  updateAppointmentState,
+  updateAppointment,
 } from '@/api/slices/appointmentsSlice';
 import styles from '@styles-cl/drawers/AppointmentDrawer.module.scss'; // Import CSS file for styling
 import { RootState } from '@/shared/services/store';
@@ -58,28 +58,28 @@ const AppointmentDrawer: React.FC = () => {
     }
   }, [appointmentId, dispatch]);
 
-  const handleClose = () => {
-    console.log('handle close called')
+
+  const handleClose = (): void => {
+    console.log("handle close called");
     try {
       if (!isNewAppointment && appointmentId && appointmentDetails) {
-        dispatch(updateAppointmentState(appointmentDetails));
-        console.log('Appointment successfully updated before closing drawer.');
+        dispatch(updateAppointment(appointmentDetails))
+          .unwrap()
+          .then(() => console.log("Appointment successfully updated before closing drawer."))
+          .catch((error) => console.error("Error updating appointment before closing:", error));
       }
     } catch (error) {
-      console.error('Error updating appointment before closing:', error);
+      console.error("Unexpected error:", error);
     } finally {
       dispatch(closeDrawer());
     }
   };
-
   const tabs = [
     { key: 0, icon: <FolderOpenIcon fontSize="medium" />, component: <DetailsTab /> },
     { key: 1, icon: <PostAddIcon fontSize="medium" />, component: <TreatmentsTab /> },
     { key: 2, icon: <PaymentsIcon fontSize="medium" />, component: <PriceTab /> },
     { key: 3, icon: <DeleteIcon fontSize="medium" />, component: <DeleteTab /> },
   ];
-
-  console.log(appointmentDetails)
 
   return (
     <Drawer
