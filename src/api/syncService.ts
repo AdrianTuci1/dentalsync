@@ -4,7 +4,7 @@ import ApiService from "./apiService";
 
 export type SyncAction = {
   type: "CREATE" | "UPDATE" | "DELETE" | "PATCH";
-  resource: "patients" | "medics" | "treatments" | "appointments" | "components";
+  resource: "patients" | "medics" | "treatments" | "appointments" | "components" | "weeklyAppointments";
   payload: any;
 };
 

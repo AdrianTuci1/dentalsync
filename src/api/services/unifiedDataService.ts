@@ -8,6 +8,7 @@ export interface DemoData {
   medics: any[];
   treatments: any[];
   appointments: any[];
+  weeklyAppointments: any[];
   components: any[];
 }
 

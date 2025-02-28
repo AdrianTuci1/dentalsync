@@ -5,21 +5,18 @@ import PostAddIcon from '@mui/icons-material/PostAdd';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { useAppDispatch, useAppSelector } from '@/shared/services/hooks';
+import { useAppSelector } from '@/shared/services/hooks';
 import { closeDrawer } from '../../drawerSlice';
 import InitialAppointmentTab from './tabs/InitialAppointmentTab';
 import DetailsTab from './tabs/DetailsTab';
 import TreatmentsTab from './tabs/TreatmentsTab';
 import PriceTab from './tabs/PriceTab';
 import DeleteTab from './tabs/DeleteTab';
-import {
-  setAppointmentDetails,
-  resetAppointment,
-  fetchAppointmentById,
-  updateAppointment,
-} from '@/api/slices/appointmentsSlice';
+
 import styles from '@styles-cl/drawers/AppointmentDrawer.module.scss'; // Import CSS file for styling
 import { RootState } from '@/shared/services/store';
+import { AppointmentRepository } from '@/api/repositories/AppointmentRepository';
+import { useDispatch } from 'react-redux';
 
 // Selector for the topmost drawer
 const selectDrawerData = (state: RootState) => {
@@ -28,7 +25,7 @@ const selectDrawerData = (state: RootState) => {
 };
 
 const AppointmentDrawer: React.FC = () => {
-  const dispatch = useAppDispatch();
+  const dispatch = useDispatch()
   const drawerData = useAppSelector(selectDrawerData);
   const appointmentId: string | null = drawerData?.appointment?.appointmentId || null;
 
@@ -36,44 +33,42 @@ const AppointmentDrawer: React.FC = () => {
     (state: RootState) => state.appointments.appointmentDetails
   );
 
-  const [isNewAppointment, setIsNewAppointment] = useState<boolean>(
-    !appointmentId
-  );
+  const [isNewAppointment, setIsNewAppointment] = useState<boolean>(!appointmentId);
   const [activeTab, setActiveTab] = useState<number>(0);
 
   useEffect(() => {
     if (appointmentId) {
-      dispatch(fetchAppointmentById(appointmentId))
-        .unwrap()
+      AppointmentRepository.fetchAppointmentById(appointmentId)
         .then((appointment) => {
-          dispatch(setAppointmentDetails(appointment));
+          AppointmentRepository.updateAppointmentState(appointment);
           setIsNewAppointment(false);
         })
-        .catch((error: unknown) => {
-          console.error('Error fetching appointment:', error);
+        .catch((error) => {
+          console.error("Error fetching appointment:", error);
         });
     } else {
-      dispatch(resetAppointment());
+      AppointmentRepository.resetAppointment(); // ✅ Reset appointment state
       setIsNewAppointment(true);
     }
-  }, [appointmentId, dispatch]);
+  }, [appointmentId]);
 
 
-  const handleClose = (): void => {
+  const handleClose = async (): Promise<void> => {
     console.log("handle close called");
     try {
       if (!isNewAppointment && appointmentId && appointmentDetails) {
-        dispatch(updateAppointment(appointmentDetails))
-          .unwrap()
-          .then(() => console.log("Appointment successfully updated before closing drawer."))
-          .catch((error) => console.error("Error updating appointment before closing:", error));
+        await AppointmentRepository.updateAppointment(appointmentDetails);
+        console.log("✅ Appointment successfully updated before closing drawer.");
       }
     } catch (error) {
-      console.error("Unexpected error:", error);
+      console.error("❌ Error updating appointment before closing:", error);
     } finally {
-      dispatch(closeDrawer());
+      AppointmentRepository.resetAppointment(); // ✅ Reset state after closing
+      dispatch(closeDrawer()); // ✅ Close the drawer after action
     }
   };
+
+
   const tabs = [
     { key: 0, icon: <FolderOpenIcon fontSize="medium" />, component: <DetailsTab /> },
     { key: 1, icon: <PostAddIcon fontSize="medium" />, component: <TreatmentsTab /> },

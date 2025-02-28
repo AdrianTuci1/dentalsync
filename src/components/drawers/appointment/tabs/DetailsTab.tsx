@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SearchService from '@/api/services/searchService';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { RootState } from '@/shared/services/store';
-import { updateAppointmentField } from '@/api/slices/appointmentsSlice';
 import Switch from '@mui/material/Switch'; // MUI Switch
 import styles from '@styles-cl/drawers/DetailsTab.module.scss';
+import { AppointmentRepository } from '@/api/repositories/AppointmentRepository';
+
+
 
 const DetailsTab: React.FC = () => {
-  const dispatch = useDispatch();
-  const appointmentDetails = useSelector(
-    (state: RootState) => state.appointments.appointmentDetails
-  );
+
+    const appointmentDetails = useSelector(
+      (state: RootState) => state.appointments.appointmentDetails
+    );
+
   const token = useSelector((state: RootState) => state.auth.subaccountToken);
   const database = 'demo_db';
 
@@ -101,8 +104,8 @@ const DetailsTab: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleInputChange = (field: keyof typeof appointmentDetails, value: any) => {
-    dispatch(updateAppointmentField({ field, value }));
+  const handleInputChange = (field: string, value: any) => {
+     AppointmentRepository.updateAppointmentField( field, value )
   };
 
   if (!appointmentDetails) {

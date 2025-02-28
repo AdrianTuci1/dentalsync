@@ -21,7 +21,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
 
 
 // Register the service worker
-if ('serviceWorker' in navigator && import.meta.env.NODE_ENV === 'production') {
+if ('serviceWorker' in navigator && import.meta.env.VITE_NODE_ENV === 'production') {
   import('workbox-window').then(({ Workbox }) => {
     const wb = new Workbox ('/service-worker.js');
 

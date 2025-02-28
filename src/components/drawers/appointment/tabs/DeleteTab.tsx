@@ -1,36 +1,32 @@
 import React from 'react';
-import { useAppSelector, useAppDispatch } from '@/shared/services/hooks';
-import { RootState } from '@/shared/services/store';
-import AppointmentService from '@/api/services/fetchAppointments';
-import { closeDrawer } from '@/components/drawerSlice';
-import { resetAppointment } from '@/api/slices/appointmentsSlice';
+import { useAppSelector } from '@/shared/services/hooks';
+
+import { AppointmentRepository } from '@/api/repositories/AppointmentRepository';
 
 const DeleteTab: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const token = useAppSelector((state: RootState) => state.auth.subaccountToken);
-  const database = 'demo_db';
-  
   // Retrieve the appointmentId from state
-  const appointmentId = useAppSelector((state: RootState) => state.appointments.appointmentDetails.appointmentId);
-
-  const appointmentService = new AppointmentService(token || '', database);
+  const appointmentId = useAppSelector(
+    (state: any) => state.appointments.detailedAppointments.find(
+      (appt: any) => appt.appointmentId === state.appointments.activeAppointmentId
+    )?.appointmentId
+  );
 
   const handleDelete = async () => {
     if (!appointmentId) {
-      console.error('No appointmentId available to delete');
+      console.error("❌ No appointmentId available to delete.");
       return;
     }
 
     try {
-      // Call the deleteAppointment service directly
-      await appointmentService.deleteAppointment(appointmentId);
-      console.log('Appointment successfully deleted');
+      // ✅ Call deleteAppointment from Repository
+      await AppointmentRepository.deleteAppointment(appointmentId);
+      console.log("🗑️ Appointment successfully deleted.");
 
-      // After successful deletion, reset and close if needed
-      dispatch(resetAppointment());
-      dispatch(closeDrawer());
+      // ✅ Reset appointment details and close drawer
+      AppointmentRepository.setAppointmentDetails(null);
+      AppointmentRepository.setWeeklyAppointments([]);
     } catch (error) {
-      console.error('Error deleting appointment:', error);
+      console.error("❌ Error deleting appointment:", error);
     }
   };
 
