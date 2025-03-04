@@ -1,97 +1,142 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import styles from '../styles/pages/TreatmentsPage.module.scss';
-import { Chip } from '@mui/material';
+import React, { useLayoutEffect, useRef, useState } from "react";
+import { Chip } from "@mui/material";
+import styles from "../styles/pages/TreatmentsPage.module.scss";
 
 const treatmentsData = [
   {
-    category: 'Preventive Care',
-    slug: 'preventive-care',
+    category: "Preventive Care",
     treatments: [
-      { name: 'Teeth Cleaning', price: '$50' },
-      { name: 'Fluoride Treatment', price: '$30' },
+      { name: "Teeth Cleaning", price: "$50" },
+      { name: "Fluoride Treatment", price: "$30" },
+      { name: "Sealants", price: "$40" },
+      { name: "Oral Cancer Screening", price: "$70" },
+      { name: "Periodontal Maintenance", price: "$90" },
     ],
   },
   {
-    category: 'Restorative Care',
-    slug: 'restorative-care',
+    category: "Restorative Care",
     treatments: [
-      { name: 'Fillings', price: '$80' },
-      { name: 'Crowns', price: '$500' },
+      { name: "Fillings", price: "$80" },
+      { name: "Crowns", price: "$500" },
+      { name: "Bridges", price: "$1200" },
+      { name: "Inlays & Onlays", price: "$400" },
+      { name: "Root Canal Therapy", price: "$900" },
+      { name: "Denture Repair", price: "$250" },
     ],
   },
   {
-    category: 'Cosmetic Care',
-    slug: 'cosmetic-care',
+    category: "Cosmetic Care",
     treatments: [
-      { name: 'Whitening', price: '$200' },
-      { name: 'Veneers', price: '$700' },
+      { name: "Teeth Whitening", price: "$200" },
+      { name: "Veneers", price: "$700" },
+      { name: "Bonding", price: "$150" },
+      { name: "Gum Contouring", price: "$350" },
+      { name: "Smile Makeover", price: "$5000" },
     ],
   },
   {
-    category: 'Orthodontics',
-    slug: 'orthodontics',
+    category: "Orthodontics",
     treatments: [
-      { name: 'Braces', price: '$3000' },
-      { name: 'Retainers', price: '$400' },
+      { name: "Traditional Braces", price: "$3000" },
+      { name: "Clear Aligners", price: "$4000" },
+      { name: "Retainers", price: "$400" },
+      { name: "Palatal Expanders", price: "$1500" },
+      { name: "Space Maintainers", price: "$600" },
+    ],
+  },
+  {
+    category: "Oral Surgery",
+    treatments: [
+      { name: "Tooth Extraction", price: "$150" },
+      { name: "Wisdom Tooth Removal", price: "$400" },
+      { name: "Dental Implants", price: "$3000" },
+      { name: "Bone Grafting", price: "$800" },
+      { name: "Sinus Lift Surgery", price: "$1200" },
+    ],
+  },
+  {
+    category: "Periodontics",
+    treatments: [
+      { name: "Scaling & Root Planing", price: "$250" },
+      { name: "Gum Grafting", price: "$900" },
+      { name: "Laser Gum Therapy", price: "$500" },
+      { name: "Periodontal Surgery", price: "$2000" },
+    ],
+  },
+  {
+    category: "Prosthodontics",
+    treatments: [
+      { name: "Dentures (Full)", price: "$1500" },
+      { name: "Dentures (Partial)", price: "$800" },
+      { name: "Implant-Supported Dentures", price: "$3500" },
+      { name: "Crown Lengthening", price: "$1200" },
     ],
   },
 ];
- 
-
-
 
 const TreatmentsPage: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState(treatmentsData[0]?.category || "");
+  const [activeCategory, setActiveCategory] = useState(treatmentsData[0].category);
   const contentRef = useRef<HTMLDivElement>(null);
+  const categoryRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const isMobile = window.innerWidth <= 768;
 
-  // Scroll to the selected category container
+  // 📌 Funcție pentru scroll controlat
   const scrollToCategory = (category: string) => {
-    const targetElement = document.getElementById(category);
-    if (targetElement) {
-      const yOffset = 0; // offset to compensate for sticky headers
-      const targetPosition = targetElement.getBoundingClientRect().top + window.scrollY - yOffset;
-      const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-      const finalPosition = Math.min(targetPosition, maxScroll);
-      window.scrollTo({ top: finalPosition, behavior: "smooth" });
-      setActiveCategory(category);
-    }
+    const targetEl = categoryRefs.current[category];
+    if (!contentRef.current || !targetEl) return;
+
+    contentRef.current.scrollTo({
+      top: targetEl.offsetTop - contentRef.current.offsetTop,
+      behavior: "smooth",
+    });
+
+    setActiveCategory(category);
   };
 
-  // Update active category on manual scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      // Loop through categories and find the one that is near the top of viewport
-      for (const category of treatmentsData) {
-        const element = document.getElementById(category.category);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          // When the top of the element is near 100px from top,
-          // we consider that category active.
-          if (rect.top <= 0 && rect.bottom > 100) {
-            if (activeCategory !== category.category) {
-              setActiveCategory(category.category);
-            }
-            break;
+  // 📌 Detectează categoria activă bazată pe scroll
+  useLayoutEffect(() => {
+    const container = contentRef.current;
+    if (!container) return;
+
+    const onScroll = () => {
+      const scrollPos = container.scrollTop;
+      let closestCategory = activeCategory;
+      let minDist = Infinity;
+
+      for (const cat of treatmentsData) {
+        const el = categoryRefs.current[cat.category];
+        if (el) {
+          const dist = Math.abs(el.offsetTop - container.offsetTop - scrollPos);
+          if (dist < minDist) {
+            minDist = dist;
+            closestCategory = cat.category;
           }
         }
       }
+
+      if (closestCategory !== activeCategory) {
+        setActiveCategory(closestCategory);
+      }
+
+      // 📌 Oprește scroll-ul la ultima categorie
+      const lastEl = categoryRefs.current[treatmentsData[treatmentsData.length - 1].category];
+      if (lastEl && scrollPos >= lastEl.offsetTop - container.offsetTop) {
+        container.scrollTop = lastEl.offsetTop - container.offsetTop;
+      }
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    container.addEventListener("scroll", onScroll);
+    return () => container.removeEventListener("scroll", onScroll);
   }, [activeCategory]);
 
   return (
     <div className={styles.pageContainer}>
-      {/* Sidebar Navigation (Desktop) */}
       {!isMobile && (
         <aside className={styles.sidebar}>
           <div className={styles.sidebarList}>
-            {treatmentsData.map((cat, index) => (
+            {treatmentsData.map((cat) => (
               <button
-                key={index}
+                key={cat.category}
                 className={`${styles.navItem} ${activeCategory === cat.category ? styles.active : ""}`}
                 onClick={() => scrollToCategory(cat.category)}
               >
@@ -102,12 +147,11 @@ const TreatmentsPage: React.FC = () => {
         </aside>
       )}
 
-      {/* Mobile Navigation */}
       {isMobile && (
         <div className={styles.mobileNav}>
-          {treatmentsData.map((cat, index) => (
+          {treatmentsData.map((cat) => (
             <Chip
-              key={index}
+              key={cat.category}
               label={cat.category}
               onClick={() => scrollToCategory(cat.category)}
               className={`${styles.chip} ${activeCategory === cat.category ? styles.activeChip : ""}`}
@@ -116,21 +160,27 @@ const TreatmentsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Treatments List (Each Category in Its Own Container) */}
       <main className={styles.contentContainer} ref={contentRef}>
-        {treatmentsData.map((cat, index) => (
-          <section key={index} id={cat.category} className={styles.categorySection}>
-            <h2 className={styles.categoryTitle}>{cat.category}</h2>
-            <div className={styles.treatmentList}>
-              {cat.treatments.map((treatment, i) => (
-                <div key={i} className={styles.treatmentCard}>
-                  <span className={styles.treatmentName}>{treatment.name}</span>
-                  <span className={styles.treatmentPrice}>{treatment.price}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        ))}
+        <div className={styles.contentWrapper}>
+          {treatmentsData.map((cat) => (
+            <section
+              key={cat.category}
+              id={cat.category}
+              className={styles.categorySection}
+              ref={(el) => (categoryRefs.current[cat.category] = el)}
+            >
+              <h2 className={styles.categoryTitle}>{cat.category}</h2>
+              <div className={styles.treatmentList}>
+                {cat.treatments.map((t, i) => (
+                  <div key={i} className={styles.treatmentCard}>
+                    <span className={styles.treatmentName}>{t.name}</span>
+                    <span className={styles.treatmentPrice}>{t.price}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
       </main>
     </div>
   );

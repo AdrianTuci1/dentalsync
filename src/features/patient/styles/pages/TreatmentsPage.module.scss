@@ -1,16 +1,16 @@
-/* Main Page Container */
+/* Page Container */
 .pageContainer {
   display: flex;
   height: 100vh;
   background: #f4f4f4;
+  overflow: hidden;
 }
 
-/* Sidebar (Desktop Only) */
+/* Desktop Sidebar */
 .sidebar {
   width: 260px;
   height: calc(100vh - 200px);
   margin-top: 100px;
-  margin-bottom: 100px;
   background: white;
   border-radius: 20px;
   padding: 20px;
@@ -19,7 +19,6 @@
   left: 20px;
   overflow-y: auto;
 }
-
 
 .sidebarList {
   display: flex;
@@ -38,20 +37,20 @@
   cursor: pointer;
   transition: 0.3s;
   border-radius: 8px;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
 }
 
-.navItem:hover {
-  background: rgba(0, 0, 0, 0.05);
-}
-
-/* Active Sidebar Item */
+/* Active Sidebar */
 .active {
   background: #007bff;
   color: white;
   font-weight: 600;
 }
 
-/* Mobile Navigation */
+/* Mobile Nav */
 .mobileNav {
   position: fixed;
   top: 0;
@@ -76,32 +75,44 @@
   color: white !important;
 }
 
-/* Content Container */
+/* Container scrollabil */
 .contentContainer {
   flex-grow: 1;
   margin-top: 100px;
-  padding-left: 300px; /* Leave space for the sidebar */
+  padding-left: 300px;
   padding-right: 40px;
   overflow-y: auto;
   height: calc(100vh - 100px);
-  scroll-behavior: smooth;
 }
 
-/* Category Section Container */
-.categorySection {
-  margin-bottom: 20px;
-  /* The padding-top creates a gap so that when scrolled to, the title isn't hidden */
+/* Wrapper */
+.contentWrapper {
+  padding-bottom: 100vh; /* Spațiu jos pentru ca ultima categorie să ajungă sus */
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  scroll-padding-top: 100px;
 }
+
+/* Fiecare categorie */
+.categorySection {
+  scroll-snap-align: start;
+  scroll-margin-top: 100px; /* Când facem scroll, se oprește la 100px */
+  margin-bottom: 20px;
+  background: #d2eaf6;
+  border-radius: 12px;
+  padding: 20px;
+}
+
 
 .categoryTitle {
+  text-align: left;
   font-size: 22px;
   font-weight: 700;
-  text-align: left;
-  color: #222;
   margin-bottom: 14px;
+  color: #222;
 }
 
-/* Treatment List Styles */
+/* Treatment List & Cards */
 .treatmentList {
   display: flex;
   flex-direction: column;
@@ -111,15 +122,14 @@
 .treatmentCard {
   display: flex;
   justify-content: space-between;
-  background: white;
+  background: #fff;
   padding: 14px;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: background 0.3s ease;
-}
 
-.treatmentCard:hover {
-  background: #f0f0f0;
+  &:hover {
+    background: #f0f0f0;
+  }
 }
 
 .treatmentName {
@@ -134,7 +144,7 @@
   color: #007bff;
 }
 
-/* Responsive Adjustments */
+/* Responsive */
 @media (max-width: 768px) {
   .pageContainer {
     flex-direction: column;
@@ -146,8 +156,5 @@
     padding-left: 20px;
     padding-right: 20px;
     margin-top: 70px;
-  }
-  .categoryTitle {
-    font-size: 20px;
   }
 }
