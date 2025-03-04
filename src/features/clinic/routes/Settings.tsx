@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import '../styles/windows/settings.scss';
+import styles from '../styles/windows/Settings.module.scss';
+import CategoryTreatmentManager from '../components/settings/CategoryTreatmentManager';
 
-type AccordionSections = 'general' | 'financial' | 'features' | 'backup';
+type AccordionSections = 'general' | 'financial' | 'features' | 'backup' | 'highlights';
 
 const Settings: React.FC = () => {
   const [expanded, setExpanded] = useState<Record<AccordionSections, boolean>>({
@@ -9,6 +10,7 @@ const Settings: React.FC = () => {
     financial: true,
     features: true,
     backup: true,
+    highlights: true,
   });
 
   const [selectedTimezone, setSelectedTimezone] = useState<string>('Europe/Bucharest');
@@ -52,16 +54,16 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <div className="settings-container">
-      <div className="settings-grid">
-        <div className="main-settings">
+    <div className={styles.settingsContainer}>
+      <div className={styles.settingsGrid}>
+        <div className={styles.mainSettings}>
           {/* General Settings */}
-          <div className="accordion">
-            <div className="accordion-header" onClick={() => toggleAccordion('general')}>
+          <div className={styles.accordion}>
+            <div className={styles.accordionHeader} onClick={() => toggleAccordion("general")}>
               <h3>General Settings</h3>
             </div>
             {expanded.general && (
-              <div className="accordion-content">
+              <div className={styles.accordionContent}>
                 <label>Language</label>
                 <select>
                   <option value="en">English</option>
@@ -72,7 +74,9 @@ const Settings: React.FC = () => {
                 <label>Time Zone</label>
                 <select value={selectedTimezone} onChange={handleTimezoneChange}>
                   {timeZones.map((tz) => (
-                    <option key={tz.value} value={tz.value}>{tz.label}</option>
+                    <option key={tz.value} value={tz.value}>
+                      {tz.label}
+                    </option>
                   ))}
                 </select>
 
@@ -86,12 +90,12 @@ const Settings: React.FC = () => {
           </div>
 
           {/* Financial Settings */}
-          <div className="accordion">
-            <div className="accordion-header" onClick={() => toggleAccordion('financial')}>
+          <div className={styles.accordion}>
+            <div className={styles.accordionHeader} onClick={() => toggleAccordion("financial")}>
               <h3>Financial Settings</h3>
             </div>
             {expanded.financial && (
-              <div className="accordion-content">
+              <div className={styles.accordionContent}>
                 <label>Currency Symbol</label>
                 <input type="text" placeholder="$" />
               </div>
@@ -99,29 +103,51 @@ const Settings: React.FC = () => {
           </div>
 
           {/* Features */}
-          <div className="accordion">
-            <div className="accordion-header" onClick={() => toggleAccordion('features')}>
+          <div className={styles.accordion}>
+            <div className={styles.accordionHeader} onClick={() => toggleAccordion("features")}>
               <h3>Features</h3>
             </div>
             {expanded.features && (
-              <div className="accordion-content">
-                <label>Enable Statistics</label>
-                <input type="checkbox" />
+              <div className={styles.accordionContent}>
+                <label>
+                  <input type="checkbox" />
+                  Enable Statistics
+                </label>
+                <label>
+                  <input type="checkbox" />
+                  Enable Billing
+                </label>
+                <label>
+                  <input type="checkbox" />
+                  Enable POS
+                </label>
+              </div>
+            )}
+          </div>
+
+          {/* Manage Highlighted */}
+          <div className={styles.accordion}>
+            <div className={styles.accordionHeader} onClick={() => toggleAccordion("highlights")}>
+              <h3>Manage Highlighted</h3>
+            </div>
+            {expanded.highlights && (
+              <div className={styles.accordionContent}>
+                <CategoryTreatmentManager />
               </div>
             )}
           </div>
         </div>
 
         {/* Restore Backup */}
-        <div className="backup-settings">
-          <div className="accordion">
-            <div className="accordion-header" onClick={() => toggleAccordion('backup')}>
+        <div className={styles.backupSettings}>
+          <div className={styles.accordion}>
+            <div className={styles.accordionHeader} onClick={() => toggleAccordion("backup")}>
               <h3>Restore from Backup</h3>
             </div>
             {expanded.backup && (
-              <div className="accordion-content">
+              <div className={styles.accordionContent}>
                 <p>Click below to restore from a previous backup.</p>
-                <button>Restore Backup</button>
+                <button className={styles.restoreButton}>Restore Backup</button>
               </div>
             )}
           </div>

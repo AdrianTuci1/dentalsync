@@ -15,16 +15,14 @@ import DeleteTab from './patient/DeleteTab';
 import { closeDrawer } from '@/components/drawerSlice';
 import styles from '@styles-cl/drawers/PatientDrawer.module.scss'; // Import CSS module for styling
 import { selectTopDrawer } from '@/shared/utils/selectors';
-import { createPatient, fetchPatientById, setDetailedPatient, updatePatient} from '@/api/slices/patientUserSlice';
-import { getSubdomain } from '@/shared/utils/getSubdomains';
-import { AppDispatch } from '@/shared/services/store';
+import { PatientRepository } from '@/api/repositories/PatientRepository';
 
 const PatientDrawer: React.FC = () => {
-  const dispatch = useDispatch<AppDispatch>();
-
-  // ✅ Get drawer data from Redux
+  const dispatch = useDispatch();
   const { drawerData } = useSelector(selectTopDrawer);
   const patientId = drawerData?.patientId || null;
+
+  const patientRepository = new PatientRepository();
 
   // ✅ Get detailed patient from Redux
   const patientUser = useSelector((state: any) =>
@@ -32,19 +30,30 @@ const PatientDrawer: React.FC = () => {
   );
 
   const [activeTab, setActiveTab] = useState(0);
-  const token = useSelector((state: any) => state.auth.subaccountToken);
-  const clinicDb = `${getSubdomain()}_db`;
 
   // ✅ Fetch patient details if not in Redux cache
   useEffect(() => {
     if (patientId && !patientUser) {
-      dispatch(fetchPatientById({ id: patientId, token, clinicDb }) as any);
+      patientRepository.loadPatientById(patientId);
     }
-  }, [dispatch, patientId, patientUser, token, clinicDb]);
+  }, [patientId, patientUser]);
 
-  // ✅ Handle form changes dynamically
   const handleInputChange = (field: string, value: any) => {
-    dispatch(setDetailedPatient({ ...patientUser, [field]: value }));
+    if (!patientUser) return;
+  
+    const updatedPatient = {
+      ...patientUser,
+      ...(field.startsWith("patientProfile.") // ✅ Check if it's inside patientProfile
+        ? {
+            patientProfile: {
+              ...patientUser.patientProfile, // Preserve other profile fields
+              [field.replace("patientProfile.", "")]: value, // Update specific field inside patientProfile
+            },
+          }
+        : { [field]: value }), // ✅ Otherwise, update the top-level field
+    };
+  
+    patientRepository.setDetailedPatientDirectly(updatedPatient);
   };
 
   // ✅ Save Patient (Optimistic Update)
@@ -65,10 +74,10 @@ const PatientDrawer: React.FC = () => {
     try {
       if (patientId) {
         // ✅ Update existing patient
-        await dispatch(updatePatient({ id: patientId, patient: sanitizedPayload, token, clinicDb }) as any);
+        await patientRepository.modifyPatient(patientId, sanitizedPayload);
       } else {
         // ✅ Create new patient
-        await dispatch(createPatient({ patient: sanitizedPayload, token, clinicDb }) as any);
+        await patientRepository.addPatient(sanitizedPayload);
       }
       dispatch(closeDrawer());
     } catch (error) {

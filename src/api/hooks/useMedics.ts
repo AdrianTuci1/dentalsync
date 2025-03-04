@@ -1,27 +1,30 @@
-// src/api/hooks/useMedics.ts
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchMedics } from "@/api/slices/medicSlice";
-import { getSubdomain } from "@/shared/utils/getSubdomains";
-import { AppDispatch, RootState } from "@/shared/services/store";
+import { useEffect, useCallback } from "react";
+import { useSelector } from "react-redux";
+import { MedicRepository } from "@/api/repositories/MedicRepository";
+import { RootState } from "@/shared/services/store";
+import { MedicState } from "@/api/slices/medicSlice"; // Import state type
 
 const useMedics = (searchTerm: string = "", offset: number = 0) => {
-  const dispatch = useDispatch<AppDispatch>();
+  const medicRepository = new MedicRepository();
 
-  const medics = useSelector((state: RootState) => state.medics.medics);
-  const loading = useSelector((state: RootState) => state.medics.loading);
-  const error = useSelector((state: RootState) => state.medics.error);
+  // ✅ Explicitly assert state type to `MedicState`
+  const { medicsList, loading, error } = useSelector(
+    (state: RootState) => state.medics as MedicState
+  ) || { medics: [], loading: false, error: null };
 
-  const token = useSelector((state: RootState) => state.auth.subaccountToken);
-  const clinicDb = `${getSubdomain()}_db`;
-
+  // ✅ Fetch Medics on Mount/Search Change
   useEffect(() => {
-    if (token && clinicDb) {
-      dispatch(fetchMedics({ token, clinicDb, name: searchTerm, offset }) as any);
-    }
-  }, [dispatch, token, clinicDb, searchTerm, offset]);
+    medicRepository.loadMedics(searchTerm, 0); // Fetch from the beginning
+  }, [searchTerm]);
 
-  return { medics, loading, error };
+  // ✅ Load More Medics (Pagination)
+  const loadMore = useCallback(() => {
+    if (!loading) {
+      medicRepository.loadMedics(searchTerm, offset);
+    }
+  }, [searchTerm, offset, loading]);
+
+  return { medics: medicsList ?? [], loading: loading ?? false, error: error ?? null, loadMore };
 };
 
 export default useMedics;

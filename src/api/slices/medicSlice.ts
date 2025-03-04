@@ -1,37 +1,37 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { MedicInfo, MedicsListItem } from "@/features/clinic/types/Medic";
-import UnifiedDataService from "../services/unifiedDataService";
-import { transformMedicInfoToTableFormat } from "@/shared/utils/medicTransform";
-import { getSubdomain } from "@/shared/utils/getSubdomains";
 import { RootState } from "@/shared/services/store";
-
+import UnifiedDataService from "../services/unifiedDataService";
 
 // Define state for medics.
 export interface MedicState {
-  medics: MedicsListItem[]; // Table Data
-  detailedMedics: MedicInfo[]; // Drawer Data
+  medicsList: any[]; // Table Data (Paginated)
+  detailedMedics: any[]; // Detailed Drawer Data (Limited to 20)
   loading: boolean;
   error: string | null;
+  offset: number;
 }
 
 const initialState: MedicState = {
-  medics: [],
+  medicsList: [],
   detailedMedics: [],
   loading: false,
   error: null,
+  offset: 0,
 };
 
-// ✅ Fetch Medics
+// ✅ Fetch Medics (Paginated)
 export const fetchMedics = createAsyncThunk(
   "medics/fetch",
-  async ({ token }: { token: string }, { rejectWithValue }) => {
-    const clinicDb = getSubdomain() + "_db";
-    console.log(`📡 Fetching medics for clinic: ${clinicDb}`);
+  async ({ name = "", offset = 0 }: { name?: string; offset?: number }, { rejectWithValue, extra }) => {
+    const { token, db } = extra as { token: string; db: string };
+
+    console.log(`📡 Fetching medics for clinic: ${db} (Offset: ${offset})`);
 
     try {
-      const service = UnifiedDataService.getInstance(token, clinicDb);
-      const result = await service.getResources("medics", {});
-      return result;
+      const service = UnifiedDataService.getInstance(token, db);
+      const result = await service.getResources("medics", { name, offset: String(offset) });
+
+      return { data: result.data || [], offset };
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : "Failed to fetch medics");
     }
@@ -41,12 +41,12 @@ export const fetchMedics = createAsyncThunk(
 // ✅ Fetch Medic by ID
 export const fetchMedicById = createAsyncThunk(
   "medics/fetchById",
-  async ({ id, token }: { id: string; token: string }, { rejectWithValue }) => {
-    const clinicDb = getSubdomain() + "_db";
-    console.log(`🔎 Fetching medic ID: ${id} from clinic: ${clinicDb}`);
+  async (id: string, { rejectWithValue, extra }) => {
+    const { token, db } = extra as { token: string; db: string };
+    console.log(`🔎 Fetching medic ID: ${id} from clinic: ${db}`);
 
     try {
-      const service = UnifiedDataService.getInstance(token, clinicDb);
+      const service = UnifiedDataService.getInstance(token, db);
       const medic = await service.getResourceById("medics", id);
       return medic;
     } catch (error) {
@@ -58,12 +58,12 @@ export const fetchMedicById = createAsyncThunk(
 // ✅ Create Medic
 export const createMedic = createAsyncThunk(
   "medics/create",
-  async ({ medic, token }: { medic: Partial<MedicInfo>; token: string }, { rejectWithValue }) => {
-    const clinicDb = getSubdomain() + "_db";
-    console.log(`🆕 Creating medic in clinic: ${clinicDb}`);
+  async (medic: Partial<any>, { rejectWithValue, extra }) => {
+    const { token, db } = extra as { token: string; db: string };
+    console.log(`🆕 Creating medic in clinic: ${db}`);
 
     try {
-      const service = UnifiedDataService.getInstance(token, clinicDb);
+      const service = UnifiedDataService.getInstance(token, db);
       const newMedic = await service.createResource("medics", medic);
       return newMedic;
     } catch (error) {
@@ -75,12 +75,12 @@ export const createMedic = createAsyncThunk(
 // ✅ Update Medic
 export const updateMedic = createAsyncThunk(
   "medics/update",
-  async ({ id, medic, token }: { id: string; medic: Partial<MedicInfo>; token: string }, { rejectWithValue }) => {
-    const clinicDb = getSubdomain() + "_db";
-    console.log(`✏️ Updating medic ID: ${id} in clinic: ${clinicDb}`);
+  async ({ id, medic }: { id: string; medic: Partial<any> }, { rejectWithValue, extra }) => {
+    const { token, db } = extra as { token: string; db: string };
+    console.log(`✏️ Updating medic ID: ${id} in clinic: ${db}`);
 
     try {
-      const service = UnifiedDataService.getInstance(token, clinicDb);
+      const service = UnifiedDataService.getInstance(token, db);
       const updatedMedic = await service.updateResource("medics", id, medic);
       return updatedMedic;
     } catch (error) {
@@ -92,12 +92,12 @@ export const updateMedic = createAsyncThunk(
 // ✅ Delete Medic
 export const deleteMedic = createAsyncThunk(
   "medics/delete",
-  async ({ id, token }: { id: string; token: string }, { rejectWithValue }) => {
-    const clinicDb = getSubdomain() + "_db";
-    console.log(`🗑️ Deleting medic ID: ${id} in clinic: ${clinicDb}`);
+  async (id: string, { rejectWithValue, extra }) => {
+    const { token, db } = extra as { token: string; db: string };
+    console.log(`🗑️ Deleting medic ID: ${id} in clinic: ${db}`);
 
     try {
-      const service = UnifiedDataService.getInstance(token, clinicDb);
+      const service = UnifiedDataService.getInstance(token, db);
       await service.deleteResource("medics", id);
       return id;
     } catch (error) {
@@ -110,23 +110,24 @@ const medicSlice = createSlice({
   name: "medics",
   initialState,
   reducers: {
-    setMedics: (state, action: PayloadAction<MedicsListItem[]>) => {
-      state.medics = action.payload;
+    setMedicsList: (state, action: PayloadAction<any[]>) => {
+      state.medicsList = action.payload;
     },
-    setUpdatedMedicInTable: (state, action: PayloadAction<MedicsListItem>) => {
-      const index = state.medics.findIndex((m) => m.id === action.payload.id);
-      if (index !== -1) {
-        state.medics[index] = action.payload;
-      } else {
-        state.medics.push(action.payload);
-      }
-    },
-    setDetailedMedic: (state, action: PayloadAction<MedicInfo>) => {
+    setDetailedMedic: (state, action: PayloadAction<any>) => {
       const existingIndex = state.detailedMedics.findIndex((m) => m.id === action.payload.id);
       if (existingIndex !== -1) {
         state.detailedMedics[existingIndex] = action.payload;
       } else {
         state.detailedMedics = [action.payload, ...state.detailedMedics].slice(0, 20);
+      }
+    },
+    // ✅ Update a medic in the table (Optimistic UI)
+    setUpdatedMedicInTable: (state, action: PayloadAction<any>) => {
+      const index = state.medicsList.findIndex((m) => m.id === action.payload.id);
+      if (index !== -1) {
+        state.medicsList[index] = action.payload;
+      } else {
+        state.medicsList.push(action.payload);
       }
     },
   },
@@ -137,38 +138,48 @@ const medicSlice = createSlice({
       })
       .addCase(fetchMedics.fulfilled, (state, action) => {
         state.loading = false;
-        const newMedics: any[] = Array.isArray(action.payload.data) ? action.payload.data : [];
+        const newMedics: any[] = action.payload.data;
 
-        state.medics = [...state.medics, ...newMedics].reduce(
-          (acc, item) => (acc.find((i: any) => i.id === item.id) ? acc : [...acc, item]),
-          [] as MedicsListItem[]
-        );
+        state.medicsList =
+          action.payload.offset === 0
+            ? newMedics
+            : [...state.medicsList, ...newMedics].reduce(
+                (acc, item) => (acc.find((i: any) => i.id === item.id) ? acc : [...acc, item]),
+                [] as any[]
+              );
+
+        state.offset = action.payload.offset + newMedics.length;
       })
       .addCase(fetchMedics.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
       .addCase(fetchMedicById.fulfilled, (state, action) => {
-        state.detailedMedics = [action.payload, ...state.detailedMedics].slice(0, 20);
+        const existingIndex = state.detailedMedics.findIndex((m) => m.id === action.payload.id);
+        if (existingIndex !== -1) {
+          state.detailedMedics[existingIndex] = action.payload;
+        } else {
+          state.detailedMedics = [action.payload, ...state.detailedMedics].slice(0, 20);
+        }
       })
       .addCase(createMedic.fulfilled, (state, action) => {
-        state.medics.unshift(transformMedicInfoToTableFormat(action.payload));
-        state.detailedMedics.unshift(action.payload);
+        state.medicsList.unshift(action.payload);
+        state.detailedMedics = [action.payload, ...state.detailedMedics].slice(0, 20);
       })
       .addCase(updateMedic.fulfilled, (state, action) => {
-        state.medics = state.medics.map((m) => (m.id === action.payload.id ? transformMedicInfoToTableFormat(action.payload) : m));
+        state.medicsList = state.medicsList.map((m) => (m.id === action.payload.id ? action.payload : m));
         state.detailedMedics = state.detailedMedics.map((m) => (m.id === action.payload.id ? action.payload : m));
       })
       .addCase(deleteMedic.fulfilled, (state, action) => {
-        state.medics = state.medics.filter((m) => m.id !== action.payload);
+        state.medicsList = state.medicsList.filter((m) => m.id !== action.payload);
         state.detailedMedics = state.detailedMedics.filter((m) => m.id !== action.payload);
       });
   },
 });
 
 // Export actions and selectors
-export const { setMedics, setUpdatedMedicInTable, setDetailedMedic } = medicSlice.actions;
-export const selectMedics = (state: RootState) => state.medics.medics;
+export const { setMedicsList, setDetailedMedic, setUpdatedMedicInTable } = medicSlice.actions;
+export const selectMedics = (state: RootState) => state.medics.medicsList;
 export const selectDetailedMedics = (state: RootState) => state.medics.detailedMedics;
 export const selectMedicLoading = (state: RootState) => state.medics.loading;
 export const selectMedicError = (state: RootState) => state.medics.error;

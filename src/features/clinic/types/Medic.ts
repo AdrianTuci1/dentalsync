@@ -69,21 +69,32 @@ export interface DayOff {
 
 export interface MedicInfo {
   id?: string;
-  info: {
-    name: string;
-    email: string;
+  email: string;
+  name: string;
+  role: string;
+  subaccount_of: number;
+  photo: string;
+  medicProfile: {
     employmentType: string;
     specialization: string;
     phone: string;
     address: string;
-    photo: string;
-  };
-  assignedServices: {
     assignedTreatments: string[];
+    workingDaysHours: {
+      id: number;
+      medicId: number;
+      day: string;
+      startTime: string;
+      endTime: string;
+    }[];
+    daysOff: {
+      id: string;
+      medicId: number;
+      name: string;
+      startDate: string;
+      endDate: string;
+      repeatYearly: boolean;
+    }[];
   };
-  workingHours: {
-    [day: string]: string;
-  };
-  daysOff: DayOff[];
-  permissions: [];
+  permissions: any[];
 }
