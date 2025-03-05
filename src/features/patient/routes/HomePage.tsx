@@ -13,6 +13,8 @@ import Footer from '../components/home/Footer'
 import Categories from '../components/home/Categories'
 import AppointmentCard from '../components/home/AppointmentCard'
 import NoAppointmentCard from '../components/home/NoAppointmentCard'
+import StatBox from '../components/home/StatBox'
+import { FaTooth, FaUser, FaUserMd } from 'react-icons/fa'
 
 const categories = [
   { name: 'Preventive Care', color: '#FFEBE0' }, // Light peach
@@ -33,7 +35,11 @@ function HomePage() {
    
   const position: [number, number] = [44.4268, 26.1025];
 
-  const stats = [{name:'Pacienti', currentCount: '24'}, {name:'Medici', currentCount:'6'}, {name:'Tratamente', currentCount:'326'}]
+  const stats = [
+    { icon: <FaUser />, name: 'Pacienți', currentCount: 24 },
+    { icon: <FaUserMd />, name: 'Medici', currentCount: 6 },
+    { icon: <FaTooth />, name: 'Tratamente', currentCount: 326 }
+];
 
   return (
     <>
@@ -61,7 +67,7 @@ function HomePage() {
       <Categories categories={categories} handleCategoryClick={handleCategoryClick}/>
 
       <section className={styles.calendarAvailability}>
-        <div className={styles.calendarSection}>
+        <div className={styles.calendarSection} style={{background:'#211c84'}}>
           <div className={styles.calendar}>
             <Calendar />
           </div>
@@ -76,10 +82,7 @@ function HomePage() {
         </div>
         <div className={styles.availabilitySection}>
           {stats.map((stat, index) => (
-            <div className={styles.statBox} key={index}>
-              <h3>{stat.name}</h3>
-              <h2>{stat.currentCount}</h2>
-            </div>
+            <StatBox key={index} icon={stat.icon} name={stat.name} currentCount={stat.currentCount} />
           ))}
         </div>
       </section>
