@@ -15,6 +15,8 @@ import AppointmentCard from '../components/home/AppointmentCard'
 import NoAppointmentCard from '../components/home/NoAppointmentCard'
 import StatBox from '../components/home/StatBox'
 import { FaTooth, FaUser, FaUserMd } from 'react-icons/fa'
+import { openRequestAppointment } from '@/api/slices/requestSlice'
+import { useDispatch } from 'react-redux'
 
 const categories = [
   { name: 'Preventive Care', color: '#FFEBE0' }, // Light peach
@@ -26,6 +28,7 @@ const categories = [
 function HomePage() {
 
  // const navigate = useNavigate();
+ const dispatch = useDispatch();
 
   const handleCategoryClick = (category: string) => {
     // Navigate to TreatmentsPage and pass selected category as state
@@ -69,7 +72,7 @@ function HomePage() {
       <section className={styles.calendarAvailability}>
         <div className={styles.calendarSection} style={{background:'#211c84'}}>
           <div className={styles.calendar}>
-            <Calendar />
+            <Calendar/>
           </div>
           <div className={styles.openingTrafic}>
             <div className={styles.opening}>
@@ -80,14 +83,14 @@ function HomePage() {
             </div>
           </div>
         </div>
-        <div className={styles.availabilitySection}>
+        <div className={styles.statAvailabilitySection}>
           {stats.map((stat, index) => (
             <StatBox key={index} icon={stat.icon} name={stat.name} currentCount={stat.currentCount} />
           ))}
         </div>
       </section>
 
-      <button className={styles.btnPrimary}> <LuCalendarPlus />SOLICITA O REZERVARE</button>
+      <button className={styles.btnPrimary} onClick={() => dispatch(openRequestAppointment())}> <LuCalendarPlus />SOLICITA O REZERVARE</button>
 
     </main>
     <ReviewsCarousel />

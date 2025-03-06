@@ -1,0 +1,48 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  h2 {
+    margin-bottom: 10px;
+  }
+  
+  p {
+    margin-bottom: 20px;
+  }
+  
+  .slotGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    max-width: 400px;
+  }
+  
+  .slot {
+    padding: 10px;
+    border: 1px solid #007bff;
+    background: white;
+    color: #007bff;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .slot:hover {
+    background: #007bff;
+    color: white;
+  }
+  
+  .selected {
+    background: #007bff;
+    color: white;
+    font-weight: bold;
+  }
+  
+  .noSlots {
+    color: red;
+    font-size: 16px;
+  }

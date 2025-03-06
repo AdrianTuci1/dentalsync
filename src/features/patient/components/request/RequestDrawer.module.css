@@ -1,0 +1,41 @@
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    z-index: 999;
+}
+
+.overlay.open {
+    visibility: visible;
+    opacity: 1;
+}
+
+.drawer {
+    height: 100%;
+    background: white;
+    position: fixed;
+    top: 0;
+    right: -100%;
+    transition: right 0.3s ease-in-out;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.closeButton {
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    align-self: flex-end;
+}

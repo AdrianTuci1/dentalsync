@@ -8,6 +8,7 @@ import SettingsPage from './routes/SettingsPage';
 import './styles/dashboard.scss';
 import './styles/fonts.css'
 import Navbar from './components/Navbar';
+import RequestDrawer from './components/request/RequestDrawer';
 
 function PatientDashboard() {
   const authState = useSelector((state: any) => state.auth); // Access auth state
@@ -39,6 +40,10 @@ function PatientDashboard() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+
+      <div className="global-request-drawer">
+        <RequestDrawer />
+      </div>
     </div>
   );
 }

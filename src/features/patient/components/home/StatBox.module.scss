@@ -23,7 +23,7 @@
     }
   }
 
-  .firstSection{
+  .firstSec{
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -41,7 +41,7 @@
 
 
 @media(max-width:'1024px'){
-    .firstSection{
+    .firstSec{
         flex-direction: row;
         align-items: center;
         padding-inline: 20px;

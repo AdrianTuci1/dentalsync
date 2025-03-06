@@ -10,7 +10,7 @@ interface StatBoxProps {
 const StatBox: React.FC<StatBoxProps> = ({ icon, name, currentCount }) => {
     return (
         <div className={styles.statBox}>
-            <div className={styles.firstSection}>
+            <div className={styles.firstSec}>
                 <p className={styles.statIcon}>{icon}</p>
                 <p className={styles.statCont}>{name}</p>
             </div>
